@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <PackageId>$(AssemblyName) GhostOptimizer</PackageId>
+    <Title>GhostOptimizer</Title>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Referencia para ServiceController (gestión de servicios de Windows) -->
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    
+    <!-- Referencia para WMI (obtener info del sistema) -->
+    <PackageReference Include="System.Management" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>
