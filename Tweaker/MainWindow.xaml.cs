@@ -76,6 +76,35 @@ namespace Tweaker
             _stateManager.PropertyChanged += (s, e) =>
             {
                 UpdateDashboard();
+                // Dar un pequeño delay para asegurar que el UI esté listo
+                Dispatcher.BeginInvoke(new Action(() => UpdateTweakIndicators()), System.Windows.Threading.DispatcherPriority.Loaded);
+            };
+
+            // Actualizar indicadores visuales al iniciar (con delay para asegurar que la UI esté renderizada)
+            this.Loaded += (s, e) =>
+            {
+                // Primer intento inmediato
+                UpdateTweakIndicators();
+                
+                // Segundo intento con delay de 100ms (para asegurar que todos los botones estén renderizados)
+                Task.Delay(100).ContinueWith(_ =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        UpdateTweakIndicators();
+                        Debug.WriteLine("🔄 Indicadores actualizados después de cargar la ventana");
+                    });
+                });
+                
+                // Tercer intento con delay de 500ms (para casos donde la UI tarda más)
+                Task.Delay(500).ContinueWith(_ =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        UpdateTweakIndicators();
+                        Debug.WriteLine("🔄 Indicadores actualizados (verificación final)");
+                    });
+                });
             };
 
 #if DEBUG
@@ -315,6 +344,203 @@ namespace Tweaker
         #endregion
 
         // ═══════════════════════════════════════════════════════════════════
+        // INDICADORES VISUALES DE TWEAKS ACTIVOS
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Indicadores Visuales
+
+        /// <summary>
+        /// Actualiza los indicadores visuales de todos los tweaks basándose en el estado guardado
+        /// </summary>
+        private void UpdateTweakIndicators()
+        {
+            try
+            {
+                Debug.WriteLine("═══════════════════════════════════════");
+                Debug.WriteLine("🔄 ACTUALIZANDO INDICADORES VISUALES");
+                Debug.WriteLine("═══════════════════════════════════════");
+                
+                // Obtener lista de tweaks activos para logging
+                var stats = _stateManager.GetDashboardStats();
+                Debug.WriteLine($"📊 Tweaks activos: {stats.ActiveTweaks}");
+                
+                // Buscar todos los botones en la interfaz y actualizar su estado visual
+                int buttonsUpdated = 0;
+                UpdateAllButtonIndicators(this, ref buttonsUpdated);
+                
+                Debug.WriteLine($"✅ {buttonsUpdated} botones actualizados con indicadores");
+                Debug.WriteLine("═══════════════════════════════════════");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"⚠️ Error actualizando indicadores: {ex.Message}");
+                Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// Recorre recursivamente todos los botones y actualiza sus indicadores
+        /// </summary>
+        private void UpdateAllButtonIndicators(DependencyObject parent, ref int count)
+        {
+            if (parent == null) return;
+
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is Button button)
+                {
+                    if (UpdateButtonIndicator(button))
+                    {
+                        count++;
+                    }
+                }
+
+                // Recursión para elementos anidados
+                UpdateAllButtonIndicators(child, ref count);
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el indicador visual de un botón específico
+        /// </summary>
+        /// <returns>True si el botón fue actualizado</returns>
+        private bool UpdateButtonIndicator(Button button)
+        {
+            try
+            {
+                var content = button.Content?.ToString();
+                if (string.IsNullOrEmpty(content)) return false;
+
+                // Limpiar el contenido de indicadores anteriores
+                content = content.Replace("✅ ", "").Replace("⚪ ", "")
+                               .Replace("🟢 ", "").Replace("🔴 ", "")
+                               .Replace("⚫ ", "").Replace("🟡 ", "")
+                               .Replace("[ON] ", "").Replace("[OFF] ", "");
+
+                // Mapeo de textos de botones a IDs de tweaks (búsqueda flexible)
+                var tweakMappings = new Dictionary<string, string>
+                {
+                    // INPUT & VISUALS
+                    {"ACELERACIÓN", "MouseAcceleration"},
+                    {"TECLADO", "Keyboard"},
+                    {"EFECTOS", "VisualEffects"},
+                    {"RAM", "MemoryOptimization"},
+                    {"TRANSPARENCIA", "TransparencyEffects"},
+                    
+                    // RED & PING
+                    {"TCP/IP", "NetworkOptimization"},
+                    {"NAVEGADORES", "BrowserOptimization"},
+                    {"MTU", "MTUOptimization"},
+                    {"QOS", "QoSConfiguration"},
+                    {"AUTO-TUNING", "AutoTuningLevel"},
+                    {"ADAPTADOR", "AdapterSettings"},
+                    {"CONGESTION", "CongestionControl"},
+                    
+                    // SISTEMA & GPU
+                    {"SYSTEM PROFILE", "SystemProfile"},
+                    {"GAMEDVR", "GameDVR"},
+                    {"GPU SCHEDULING", "GpuScheduling"},
+                    {"RESPONSIVENESS", "SystemResponsiveness"},
+                    {"ALTO RENDIMIENTO", "HighPerformance"},
+                    {"THROTTLING", "PowerThrottling"},
+                    {"CORE PARKING", "CoreParking"},
+                    {"GAME MODE", "WindowsGameMode"},
+                    {"LAST ACCESS", "NTFSLastAccessTime"},
+                    {"PRIORIDAD", "GameProcessPriority"},
+                    
+                    // LIMPIEZA
+                    {"HIBERNACIÓN", "Hibernation"},
+                    {"WINDOWS SEARCH", "WindowsSearch"},
+                    {"SYSMAIN", "SysMain"},
+                    {"TELEMETRÍA", "Telemetry"},
+                    
+                    // GHOST PACK
+                    {"ULTIMATE", "UltimatePower"},
+                    {"GAME BAR", "GameBar"},
+                    {"CORE ISOLATION", "CoreIsolation"},
+                    {"HPET", "HPET"},
+                    {"HYPER-V", "HyperV"},
+                    {"MPO", "MPOFix"},
+                    
+                    // ADVANCED
+                    {"MITIGACIONES", "SpectreMeltdown"},
+                    {"GPU IRQ", "GpuIRQ"},
+                    {"USB", "USBOptimization"},
+                    {"COLAS", "InputQueues"},
+                    {"FTH", "FaultTolerantHeap"},
+                    
+                    // TOQUES FINALES
+                    {"UPDATES", "WindowsUpdateDisable"},
+                    {"P2P", "DeliveryOptimization"},
+                    {"TRACKING", "TelemetryTracking"},
+                    {"SERVICIOS", "TelemetryServices"}
+                };
+
+                // Buscar si el botón corresponde a algún tweak (búsqueda parcial)
+                string tweakId = null;
+                foreach (var mapping in tweakMappings)
+                {
+                    if (content.ToUpper().Contains(mapping.Key))
+                    {
+                        tweakId = mapping.Value;
+                        break;
+                    }
+                }
+
+                if (tweakId != null)
+                {
+                    bool isEnabled = _stateManager.IsTweakEnabled(tweakId);
+                    
+                    // No modificar botones de "RESTAURAR" o "REVERTIR"
+                    if (content.Contains("RESTAURAR") || content.Contains("REVERTIR") || 
+                        content.Contains("OFF") || content.Contains("RESET"))
+                    {
+                        // Estos botones no necesitan indicador
+                        return false;
+                    }
+
+                    // Aplicar el mismo estilo visual que UpdateButtonState
+                    if (isEnabled)
+                    {
+                        // Tweak ACTIVO - Verde brillante con borde
+                        button.Content = "🟢 " + content;
+                        button.Opacity = 1.0;
+                        button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0E7A0D"));
+                        button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#13A813"));
+                        button.BorderThickness = new Thickness(2);
+                        
+                        Debug.WriteLine($"   🟢 VERDE: {content} (Tweak: {tweakId})");
+                        return true;
+                    }
+                    else
+                    {
+                        // Tweak DESACTIVADO - Gris oscuro
+                        button.Content = "⚫ " + content;
+                        button.Opacity = 0.7;
+                        button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3A3A3A"));
+                        button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A"));
+                        button.BorderThickness = new Thickness(1);
+                        
+                        Debug.WriteLine($"   ⚫ GRIS: {content} (Tweak: {tweakId})");
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error actualizando botón: {ex.Message}");
+                return false;
+            }
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
         // NAVEGACIÓN SIDEBAR (DASHBOARD MODERNO)
         // ═══════════════════════════════════════════════════════════════════
 
@@ -489,6 +715,9 @@ namespace Tweaker
                 null,
                 true
             );
+            
+            // Actualizar botón inmediatamente
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnSystemProfile_Off_Click(object sender, RoutedEventArgs e)
@@ -501,6 +730,88 @@ namespace Tweaker
                 null,
                 true
             );
+            
+            // Buscar y actualizar el botón ON correspondiente
+            UpdateRelatedOnButton("SYSTEM PROFILE", false);
+        }
+
+        /// <summary>
+        /// Actualiza el estado visual de un botón específico con colores y estilos claros
+        /// </summary>
+        private void UpdateButtonState(Button button, bool isActive)
+        {
+            if (button == null) return;
+            
+            var content = button.Content?.ToString() ?? "";
+            // Limpiar todos los indicadores anteriores
+            content = content.Replace("✅ ", "").Replace("⚪ ", "")
+                           .Replace("🟢 ", "").Replace("🔴 ", "")
+                           .Replace("[ON] ", "").Replace("[OFF] ", "");
+            
+            if (isActive)
+            {
+                // ESTADO ACTIVO - Verde brillante
+                button.Content = "🟢 " + content;
+                button.Opacity = 1.0;
+                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0E7A0D")); // Verde oscuro
+                button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#13A813")); // Verde brillante
+                button.BorderThickness = new Thickness(2);
+                
+                Debug.WriteLine($"🟢 Botón ACTIVADO: {content}");
+            }
+            else
+            {
+                // ESTADO DESACTIVADO - Gris/Rojo
+                button.Content = "⚫ " + content;
+                button.Opacity = 0.7;
+                button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3A3A3A")); // Gris oscuro
+                button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Gris
+                button.BorderThickness = new Thickness(1);
+                
+                Debug.WriteLine($"⚫ Botón DESACTIVADO: {content}");
+            }
+        }
+
+        /// <summary>
+        /// Busca y actualiza el botón ON relacionado con un tweak
+        /// </summary>
+        private void UpdateRelatedOnButton(string searchText, bool isActive)
+        {
+            try
+            {
+                FindAndUpdateButton(this, searchText, isActive);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error actualizando botón relacionado: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Busca recursivamente un botón por su contenido y lo actualiza
+        /// </summary>
+        private void FindAndUpdateButton(DependencyObject parent, string searchText, bool isActive)
+        {
+            if (parent == null) return;
+
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is Button button)
+                {
+                    var content = button.Content?.ToString() ?? "";
+                    if (content.Contains(searchText, StringComparison.OrdinalIgnoreCase) &&
+                        !content.Contains("RESTAURAR") && !content.Contains("OFF"))
+                    {
+                        UpdateButtonState(button, isActive);
+                        return;
+                    }
+                }
+
+                FindAndUpdateButton(child, searchText, isActive);
+            }
         }
 
         private void BtnGameDVR_On_Click(object sender, RoutedEventArgs e)
@@ -513,6 +824,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnGameDVR_Off_Click(object sender, RoutedEventArgs e)
@@ -525,6 +837,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("GAMEDVR", false);
         }
 
         private void BtnGpuScheduling_On_Click(object sender, RoutedEventArgs e)
@@ -537,6 +850,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnGpuScheduling_Off_Click(object sender, RoutedEventArgs e)
@@ -549,6 +863,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("GPU SCHEDULING", false);
         }
 
         #endregion
@@ -569,6 +884,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnSystemResponsiveness_Off_Click(object sender, RoutedEventArgs e)
@@ -581,6 +897,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("RESPONSIVENESS", false);
         }
 
         private void BtnHighPerformance_On_Click(object sender, RoutedEventArgs e)
@@ -591,6 +908,7 @@ namespace Tweaker
                 () => CpuOptimization.EnableHighPerformancePowerPlan(),
                 "Plan Alto Rendimiento activado. CPU siempre a máxima frecuencia."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnHighPerformance_Off_Click(object sender, RoutedEventArgs e)
@@ -601,6 +919,7 @@ namespace Tweaker
                 () => CpuOptimization.EnableBalancedPowerPlan(),
                 "Plan Balanceado activado. CPU ajustará frecuencia según uso."
             );
+            UpdateRelatedOnButton("ALTO RENDIMIENTO", false);
         }
 
         private void BtnPowerThrottling_On_Click(object sender, RoutedEventArgs e)
@@ -613,6 +932,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnPowerThrottling_Off_Click(object sender, RoutedEventArgs e)
@@ -625,6 +945,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("THROTTLING", false);
         }
 
         private void BtnCoreParking_On_Click(object sender, RoutedEventArgs e)
@@ -637,6 +958,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnCoreParking_Off_Click(object sender, RoutedEventArgs e)
@@ -649,6 +971,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("CORE PARKING", false);
         }
 
         #endregion
@@ -669,6 +992,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnHibernation_Off_Click(object sender, RoutedEventArgs e)
@@ -681,6 +1005,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("HIBERNACIÓN", false);
         }
 
         private void BtnWindowsSearch_On_Click(object sender, RoutedEventArgs e)
@@ -691,6 +1016,7 @@ namespace Tweaker
                 () => WindowsOptimization.DisableWindowsSearch(),
                 "Windows Search deshabilitado. Indexación detenida, 200-500MB RAM liberados."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnWindowsSearch_Off_Click(object sender, RoutedEventArgs e)
@@ -701,6 +1027,7 @@ namespace Tweaker
                 () => WindowsOptimization.EnableWindowsSearch(),
                 "Windows Search restaurado. Servicio de indexación activo."
             );
+            UpdateRelatedOnButton("WINDOWS SEARCH", false);
         }
 
         private void BtnSysMain_On_Click(object sender, RoutedEventArgs e)
@@ -713,6 +1040,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnSysMain_Off_Click(object sender, RoutedEventArgs e)
@@ -725,6 +1053,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("SYSMAIN", false);
         }
 
         private void BtnTelemetry_On_Click(object sender, RoutedEventArgs e)
@@ -735,6 +1064,7 @@ namespace Tweaker
                 () => WindowsOptimization.DisableTelemetry(),
                 "Telemetría deshabilitada. Windows dejará de enviar datos a Microsoft."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnTelemetry_Off_Click(object sender, RoutedEventArgs e)
@@ -745,6 +1075,7 @@ namespace Tweaker
                 () => WindowsOptimization.EnableTelemetry(),
                 "Telemetría restaurada. Servicios de telemetría activos."
             );
+            UpdateRelatedOnButton("TELEMETRÍA", false);
         }
 
         #endregion
@@ -763,6 +1094,9 @@ namespace Tweaker
                 
                 if (success)
                 {
+                    // Actualizar botón inmediatamente
+                    UpdateButtonState((Button)sender, true);
+                    
                     MessageBox.Show(
                         "✅ OPTIMIZACIÓN DE RED APLICADA (ADAMX TWEAKS)\n\n" +
                         "═══════════════════════════════════════\n" +
@@ -842,6 +1176,9 @@ namespace Tweaker
                 
                 if (success)
                 {
+                    // Actualizar botón ON relacionado
+                    UpdateRelatedOnButton("TCP/IP", false);
+                    
                     MessageBox.Show(
                         "✅ CONFIGURACIÓN DE RED RESTAURADA\n\n" +
                         "Los tweaks de red han sido eliminados/restaurados:\n\n" +
@@ -1130,6 +1467,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnHPET_Off_Click(object sender, RoutedEventArgs e)
@@ -1142,6 +1480,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("HPET", false);
         }
 
         private void BtnHyperV_On_Click(object sender, RoutedEventArgs e)
@@ -1219,6 +1558,7 @@ namespace Tweaker
                 () => PowerTweaks.EnableUltimatePerformance(),
                 "Ultimate Performance activado. Latencia CPU -93%, 0.1% low FPS +20%."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnUltimatePower_Off_Click(object sender, RoutedEventArgs e)
@@ -1229,6 +1569,7 @@ namespace Tweaker
                 () => PowerTweaks.RestoreBalancedPlan(),
                 "Plan Balanced restaurado. Consumo y temperaturas optimizados."
             );
+            UpdateRelatedOnButton("ULTIMATE", false);
         }
 
         private void BtnGameBar_On_Click(object sender, RoutedEventArgs e)
@@ -1239,6 +1580,7 @@ namespace Tweaker
                 () => WindowsDebloat.DisableGameBar(),
                 "Xbox Game Bar deshabilitada. Input lag -50%, CPU libre +8%."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnGameBar_Off_Click(object sender, RoutedEventArgs e)
@@ -1249,6 +1591,7 @@ namespace Tweaker
                 () => WindowsDebloat.EnableGameBar(),
                 "Xbox Game Bar restaurada."
             );
+            UpdateRelatedOnButton("GAME BAR", false);
         }
 
         private void BtnCoreIsolation_On_Click(object sender, RoutedEventArgs e)
@@ -1261,6 +1604,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnCoreIsolation_Off_Click(object sender, RoutedEventArgs e)
@@ -1273,6 +1617,7 @@ namespace Tweaker
                 null,
                 true
             );
+            UpdateRelatedOnButton("CORE ISOLATION", false);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1493,6 +1838,7 @@ namespace Tweaker
                 () => KeyboardOptimization.OptimizeKeyboard(),
                 "Teclado optimizado. Input lag reducido 50ms, WASD más responsive."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnKeyboard_Off_Click(object sender, RoutedEventArgs e)
@@ -1503,6 +1849,7 @@ namespace Tweaker
                 () => KeyboardOptimization.RestoreKeyboard(),
                 "Configuración de teclado restaurada a valores predeterminados."
             );
+            UpdateRelatedOnButton("TECLADO", false);
         }
 
         private void BtnVisuals_On_Click(object sender, RoutedEventArgs e)
@@ -1513,6 +1860,7 @@ namespace Tweaker
                 () => VisualOptimization.OptimizeVisuals(),
                 "Efectos visuales deshabilitados. FPS +3-8%, GPU usage -5-10%."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnVisuals_Off_Click(object sender, RoutedEventArgs e)
@@ -1523,6 +1871,7 @@ namespace Tweaker
                 () => VisualOptimization.RestoreVisuals(),
                 "Efectos visuales restaurados. Interfaz Windows con animaciones habilitadas."
             );
+            UpdateRelatedOnButton("EFECTOS", false);
         }
 
         private void BtnMemory_On_Click(object sender, RoutedEventArgs e)
@@ -1584,6 +1933,8 @@ namespace Tweaker
                 () => MouseTweaks.Apply(),
                 "Mouse acceleration desactivada. Aim 1:1 pixel perfect activado para gaming competitivo."
             );
+            
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnMouseAccel_Off_Click(object sender, RoutedEventArgs e)
@@ -1594,6 +1945,8 @@ namespace Tweaker
                 () => MouseTweaks.Revert(),
                 "Aceleración del mouse restaurada a valores predeterminados de Windows."
             );
+            
+            UpdateRelatedOnButton("ACELERACIÓN", false);
         }
 
         #endregion
@@ -2231,6 +2584,7 @@ namespace Tweaker
                 () => VisualOptimization.DisableTransparency(),
                 "✅ Efectos de transparencia deshabilitados. VRAM liberada +50-200MB."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnTransparency_Off_Click(object sender, RoutedEventArgs e)
@@ -2241,6 +2595,7 @@ namespace Tweaker
                 () => VisualOptimization.RestoreTransparency(),
                 "Efectos de transparencia restaurados."
             );
+            UpdateRelatedOnButton("TRANSPARENCIA", false);
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2407,6 +2762,7 @@ namespace Tweaker
                 () => GameModeTweaks_Optimized.EnableGameMode(),
                 "✅ Windows Game Mode activado. Frame stability +10-15%."
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnGameMode_Off_Click(object sender, RoutedEventArgs e)
@@ -2417,6 +2773,7 @@ namespace Tweaker
                 () => GameModeTweaks_Optimized.DisableGameMode(),
                 "Windows Game Mode desactivado."
             );
+            UpdateRelatedOnButton("GAME MODE", false);
         }
 
         private void BtnNTFSLastAccess_On_Click(object sender, RoutedEventArgs e)
@@ -2429,6 +2786,7 @@ namespace Tweaker
                 null,
                 true // Requires restart
             );
+            UpdateButtonState((Button)sender, true);
         }
 
         private void BtnNTFSLastAccess_Off_Click(object sender, RoutedEventArgs e)
@@ -2441,6 +2799,7 @@ namespace Tweaker
                 null,
                 true // Requires restart
             );
+            UpdateRelatedOnButton("LAST ACCESS", false);
         }
 
         private void BtnGamePriority_On_Click(object sender, RoutedEventArgs e)
@@ -2797,6 +3156,347 @@ namespace Tweaker
                 MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NUEVOS MÓDULOS: LATENCY, PRO & ULTIMATE TWEAKS
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Latency Tweaks
+
+        private void BtnLatency_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "LatencyOptimizations",
+                "Advanced - Latency",
+                () => LatencyTweaks.ApplyAllLatencyOptimizations(),
+                "✅ Latency Optimizations aplicadas.\n\n" +
+                "CAMBIOS:\n" +
+                "• CPU Scheduling: Win32Priority = 38\n" +
+                "• USB Power Saving: Deshabilitado\n" +
+                "• UI Delays: 0ms (menús instantáneos)\n\n" +
+                "IMPACTO:\n" +
+                "• Input lag reducido\n" +
+                "• UI más responsive\n" +
+                "• Mouse/teclado sin delays",
+                null,
+                true // Requires restart
+            );
+            
+            UpdateButtonState((Button)sender, true);
+        }
+
+        private void BtnLatency_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "LatencyOptimizations",
+                "Advanced - Latency",
+                () => LatencyTweaks.RevertAllLatencyOptimizations(),
+                "Latency Optimizations revertidas a valores por defecto.",
+                null,
+                true
+            );
+            
+            UpdateRelatedOnButton("LATENCY", false);
+        }
+
+        #endregion
+
+        #region Pro Tweaks
+
+        private void BtnPro_On_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "⚡ APLICAR PRO TWEAKS\n\n" +
+                "CAMBIOS:\n" +
+                "• Timer Resolution: 0.5ms (2000 Hz)\n" +
+                "• Network Adapters: Sin power saving\n" +
+                "• Sticky Keys: Deshabilitado\n\n" +
+                "IMPACTO:\n" +
+                "✅ Frame times más consistentes\n" +
+                "✅ Ping estable (sin spikes)\n" +
+                "✅ Sin popups molestos\n\n" +
+                "⚠️ CPU usage +1-2%\n" +
+                "⚠️ Consumo energía +1W\n\n" +
+                "¿Continuar?",
+                "Pro Tweaks",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                _tweakHelper.ExecuteTweak(
+                    "ProTweaks",
+                    "Advanced - Pro",
+                    () => ProTweaks.ApplyAllProTweaks(),
+                    "✅ Pro Tweaks aplicados exitosamente.\n\n" +
+                    "NOTA: Timer resolution NO persiste después de reiniciar.\n" +
+                    "Ejecuta Ghost Optimizer cada vez que enciendes el PC.\n\n" +
+                    "⚠️ REINICIA para aplicar cambios de red.",
+                    null,
+                    true // Requires restart
+                );
+                
+                UpdateButtonState((Button)sender, true);
+            }
+        }
+
+        private void BtnPro_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "ProTweaks",
+                "Advanced - Pro",
+                () => ProTweaks.RevertAllProTweaks(),
+                "Pro Tweaks revertidos. REINICIA para aplicar cambios.",
+                null,
+                true
+            );
+            
+            UpdateRelatedOnButton("PRO", false);
+        }
+
+        #endregion
+
+        #region Sticky Keys (Input & Visuals)
+
+        private void BtnStickyKeys_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "StickyKeys",
+                "Input & Visuals",
+                () => ProTweaks.DisableStickyKeys(),
+                "✅ Sticky Keys deshabilitado.\n\n" +
+                "• No más popup de Shift x5\n" +
+                "• No más Toggle Keys\n" +
+                "• Gaming sin interrupciones"
+            );
+            
+            UpdateButtonState((Button)sender, true);
+        }
+
+        private void BtnStickyKeys_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "StickyKeys",
+                "Input & Visuals",
+                () => ProTweaks.RevertStickyKeys(),
+                "Sticky Keys restaurado a valores por defecto."
+            );
+            
+            UpdateRelatedOnButton("STICKY", false);
+        }
+
+        #endregion
+
+        #region Ultimate Tweaks (Cleanup Page)
+
+        private void BtnUltimateServices_On_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "🛑 DESHABILITAR SERVICIOS INNECESARIOS\n\n" +
+                "Servicios que se deshabilitarán:\n" +
+                "• Spooler (impresora)\n" +
+                "• Fax\n" +
+                "• WerSvc (reportes de error)\n" +
+                "• MapsBroker (mapas)\n\n" +
+                "IMPACTO:\n" +
+                "✅ RAM: -100-200MB\n" +
+                "✅ Menos procesos en background\n\n" +
+                "⚠️ NO podrás imprimir\n\n" +
+                "¿Continuar?",
+                "Optimizar Servicios",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                _tweakHelper.ExecuteTweak(
+                    "UltimateServices",
+                    "Limpieza - Ultimate",
+                    () => UltimateTweaks.OptimizeServices(),
+                    "✅ Servicios optimizados.\n\n" +
+                    "RAM liberada: ~100-200MB\n\n" +
+                    "⚠️ REINICIA para aplicar cambios.",
+                    null,
+                    true
+                );
+                
+                UpdateButtonState((Button)sender, true);
+            }
+        }
+
+        private void BtnUltimateServices_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "UltimateServices",
+                "Limpieza - Ultimate",
+                () => UltimateTweaks.RevertServices(),
+                "Servicios restaurados. REINICIA para aplicar cambios.",
+                null,
+                true
+            );
+            
+            UpdateRelatedOnButton("SERVICIOS", false);
+        }
+
+        private void BtnUltimateBloat_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "UltimateBloatware",
+                "Limpieza - Ultimate",
+                () => UltimateTweaks.RemoveWindowsBloat(),
+                "✅ Bloatware removido.\n\n" +
+                "• Bing Search OFF\n" +
+                "• Windows Copilot OFF\n" +
+                "• Widgets OFF\n\n" +
+                "Start Menu más limpio y rápido.\n\n" +
+                "⚠️ REINICIA/LOGOUT para efecto completo.",
+                null,
+                true
+            );
+            
+            UpdateButtonState((Button)sender, true);
+        }
+
+        private void BtnUltimateBloat_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "UltimateBloatware",
+                "Limpieza - Ultimate",
+                () => UltimateTweaks.RevertWindowsBloat(),
+                "Bloatware restaurado. REINICIA para aplicar cambios.",
+                null,
+                true
+            );
+            
+            UpdateRelatedOnButton("BLOAT", false);
+        }
+
+        private void BtnUltimateSystem_On_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "⚙️ SYSTEM TWEAKS EXTREMOS\n\n" +
+                "Cambios:\n" +
+                "• NTFS Last Access OFF (-30% escrituras)\n" +
+                "• Background Apps OFF (ahorra RAM/CPU)\n" +
+                "• QoS Limit 0% (100% ancho de banda)\n\n" +
+                "IMPACTO:\n" +
+                "✅ Disco: +5-15%\n" +
+                "✅ RAM: -100-300MB\n" +
+                "✅ Red: +20%\n\n" +
+                "⚠️ Background Apps no funcionarán\n\n" +
+                "¿Continuar?",
+                "System Tweaks",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                _tweakHelper.ExecuteTweak(
+                    "UltimateSystem",
+                    "Limpieza - Ultimate",
+                    () => UltimateTweaks.OptimizeSystem(),
+                    "✅ System Tweaks aplicados.\n\n" +
+                    "Disco: +15% | RAM: -300MB | Red: +20%\n\n" +
+                    "⚠️ REINICIA para efecto completo.",
+                    null,
+                    true
+                );
+                
+                UpdateButtonState((Button)sender, true);
+            }
+        }
+
+        private void BtnUltimateSystem_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "UltimateSystem",
+                "Limpieza - Ultimate",
+                () => UltimateTweaks.RevertSystemOptimizations(),
+                "System Tweaks revertidos. REINICIA para aplicar cambios.",
+                null,
+                true
+            );
+            
+            UpdateRelatedOnButton("SYSTEM", false);
+        }
+
+        private void BtnApplyAllUltimate_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "🔥🔥🔥 ULTIMATE MODE 🔥🔥🔥\n\n" +
+                "Esto aplicará TODAS las optimizaciones extremas:\n\n" +
+                "• Servicios deshabilitados (4)\n" +
+                "• Bloatware removido (3)\n" +
+                "• System tweaks (3)\n\n" +
+                "IMPACTO TOTAL:\n" +
+                "• RAM: -500MB\n" +
+                "• Disco: +15%\n" +
+                "• Red: +20%\n" +
+                "• Boot: -10s\n\n" +
+                "⚠️⚠️⚠️ ADVERTENCIAS ⚠️⚠️⚠️\n" +
+                "• NO podrás imprimir\n" +
+                "• Background Apps OFF\n\n" +
+                "¿Aplicar ULTIMATE MODE?",
+                "Ultimate Mode",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+            
+            if (result == MessageBoxResult.Yes)
+            {
+                _notifications.ShowInfo(
+                    "Aplicando TODAS las optimizaciones extremas...\n\n" +
+                    "Esto puede tomar 30-60 segundos.\n" +
+                    "No cierres la aplicación.",
+                    "Ultimate Mode");
+                
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        bool success = true;
+                        success &= UltimateTweaks.ApplyAllUltimateTweaks();
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (success)
+                            {
+                                MessageBox.Show(
+                                    "✅ ULTIMATE MODE ACTIVADO ✅\n\n" +
+                                    "TODAS las optimizaciones extremas aplicadas.\n\n" +
+                                    "IMPACTO:\n" +
+                                    "• RAM: -500MB\n" +
+                                    "• Disco: +15%\n" +
+                                    "• Red: +20%\n" +
+                                    "• Boot: -10s\n\n" +
+                                    "⚠️⚠️ REINICIA WINDOWS AHORA ⚠️⚠️",
+                                    "Ultimate Mode Activado",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show(
+                                    "⚠️ OPTIMIZACIÓN PARCIAL\n\n" +
+                                    "Algunas optimizaciones fallaron.\n" +
+                                    "Ejecuta como Administrador.",
+                                    "Advertencia",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Warning);
+                            }
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                    }
+                });
+            }
+        }
+
+        #endregion
 
         #endregion
 

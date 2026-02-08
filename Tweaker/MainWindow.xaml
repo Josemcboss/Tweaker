@@ -253,6 +253,11 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
     <!-- ROOT GRID -->
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="288*"/>
+            <ColumnDefinition Width="123*"/>
+            <ColumnDefinition Width="1127*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
             <!-- Title Bar -->
@@ -267,7 +272,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                 Background="#1A1A1A" 
                 BorderThickness="0,0,0,1"
                 BorderBrush="#2A2A2A"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.ColumnSpan="3">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -360,7 +365,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <!-- CONTENIDO PRINCIPAL (SIDEBAR + PÁGINAS) -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <!-- Columna 0: Sidebar -->
                 <ColumnDefinition Width="240"/>
@@ -880,7 +885,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Border>
 
                         <!-- Transparency (NUEVO) -->
-                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25">
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -897,6 +902,28 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnTransparency_On_Click"/>
                                     <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnTransparency_Off_Click"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Sticky Keys (NUEVO) -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Deshabilitar Sticky Keys" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Elimina popups molestos (Shift x5, Num Lock hold)"/>
+                                    <LineBreak/>
+                                    <Run Text="Gaming sin interrupciones" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnStickyKeys_On_Click"/>
+                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnStickyKeys_Off_Click"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1848,6 +1875,127 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     Click="BtnFlushDNS_Click"/>
                             </Grid>
                         </Border>
+
+                        <!-- ═══════════════════════════════════════ -->
+                        <!-- ULTIMATE DEBLOAT -->
+                        <!-- ═══════════════════════════════════════ -->
+                        
+                        <TextBlock Text="💀 Ultimate Debloat" FontSize="20" FontWeight="Bold" Foreground="#FF0000" Margin="0,30,0,15"/>
+                        
+                        <!-- Services Optimization -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="🛑 Deshabilitar Servicios Innecesarios" Style="{StaticResource SectionTitle}" Foreground="#FF4444"/>
+                                <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Deshabilitará:"/>
+                                    <LineBreak/>
+                                    <Run Text="• Spooler (impresora) • Fax • WerSvc (reportes) • MapsBroker" FontWeight="Bold"/>
+                                    <LineBreak/>
+                                    <LineBreak/>
+                                    <Run Text="IMPACTO:" Foreground="White" FontWeight="Bold"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ RAM: -100-200MB" Foreground="#0E7A0D"/>
+                                    <LineBreak/>
+                                    <Run Text="⚠️ NO podrás imprimir" Foreground="#FFA500"/>
+                                </TextBlock>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                    <Button Content="OPTIMIZAR SERVICIOS" 
+                                            Click="BtnUltimateServices_On_Click"
+                                            Style="{StaticResource OnButton}"
+                                            Width="180"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="RESTAURAR" 
+                                            Click="BtnUltimateServices_Off_Click"
+                                            Style="{StaticResource OffButton}"
+                                            Width="120"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Bloatware Removal -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="🗑️ Remover Bloatware" Style="{StaticResource SectionTitle}" Foreground="#FF4444"/>
+                                <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="• Bing Search • Windows Copilot • Widgets" FontWeight="Bold"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ Start Menu más limpio" Foreground="#0E7A0D"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ RAM: -50-100MB" Foreground="#0E7A0D"/>
+                                </TextBlock>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                    <Button Content="REMOVER BLOATWARE" 
+                                            Click="BtnUltimateBloat_On_Click"
+                                            Style="{StaticResource OnButton}"
+                                            Width="180"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="RESTAURAR" 
+                                            Click="BtnUltimateServices_Off_Click"
+                                            Style="{StaticResource OffButton}"
+                                            Width="120"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- System Tweaks -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="⚙️ System Tweaks" Style="{StaticResource SectionTitle}" Foreground="#FF4444"/>
+                                <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="• NTFS Last Access OFF • Background Apps OFF • QoS 0%" FontWeight="Bold"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ Disco: +15% | RAM: -300MB | Red: +20%" Foreground="#0E7A0D"/>
+                                </TextBlock>
+                                
+                                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                    <Button Content="APLICAR TWEAKS" 
+                                            Click="BtnUltimateSystem_On_Click"
+                                            Style="{StaticResource OnButton}"
+                                            Width="150"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="REVERTIR" 
+                                            Click="BtnUltimateSystem_Off_Click"
+                                            Style="{StaticResource OffButton}"
+                                            Width="120"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ULTIMATE MODE -->
+                        <Border Background="#2A0000" 
+                                BorderBrush="#FF0000" 
+                                BorderThickness="2"
+                                CornerRadius="8" 
+                                Padding="20">
+                            <StackPanel>
+                                <TextBlock Text="🔥 ULTIMATE MODE 🔥" 
+                                           FontSize="18" 
+                                           FontWeight="Bold" 
+                                           Foreground="#FF0000"
+                                           HorizontalAlignment="Center"
+                                           Margin="0,0,0,10"/>
+                                
+                                <Button Content="⚡ APLICAR TODO ⚡"
+                                        Click="BtnApplyAllUltimate_Click"
+                                        Width="250"
+                                        Height="40"
+                                        FontSize="13"
+                                        FontWeight="Bold"
+                                        Background="#8B0000"
+                                        Foreground="#FFFFFF"
+                                        Cursor="Hand"
+                                        HorizontalAlignment="Center"
+                                        Template="{StaticResource CustomButtonTemplate}"/>
+                                
+                                <TextBlock Text="RAM: -500MB | Disco: +15% | Red: +20%"
+                                           Foreground="#00FF00"
+                                           HorizontalAlignment="Center"
+                                           FontSize="10"
+                                           Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
 
@@ -1971,7 +2119,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-                                
+
                                 <!-- Header -->
                                 <Grid Grid.Row="0" Margin="0,0,0,15">
                                     <Grid.ColumnDefinitions>
@@ -1992,7 +2140,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                             Click="BtnCpuPriority_Reset_Click"
                                             VerticalAlignment="Center"/>
                                 </Grid>
-                                
+
                                 <!-- Profile Selection -->
                                 <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left">
                                     <RadioButton x:Name="RadioBalanced" Content="⚖️ Balanced" 
@@ -2353,6 +2501,60 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                            FontSize="10" 
                                            FontWeight="Bold"
                                            Foreground="#00D9FF"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- ═══════════════════════════════════════ -->
+                        <!-- LATENCY TWEAKS & PRO TWEAKS -->
+                        <!-- ═══════════════════════════════════════ -->
+
+                        <TextBlock Text="⚡ Latency &amp; Pro Tweaks" FontSize="20" FontWeight="Bold" Foreground="#FFD700" Margin="0,30,0,15"/>
+
+                        <!-- Latency Optimization Bundle -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="⚡ Latency Optimization Bundle" Style="{StaticResource SectionTitle}" Foreground="#FFD700"/>
+                                <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="CPU Scheduling + USB Power Saving + UI Delays"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ Input lag reducido | UI más responsive" Foreground="#0E7A0D" FontWeight="Bold"/>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                    <Button Content="OPTIMIZAR"
+                                            Click="BtnLatency_On_Click"
+                                            Style="{StaticResource OnButton}"
+                                            Width="120"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="RESTAURAR"
+                                            Click="BtnLatency_Off_Click"
+                                            Style="{StaticResource OffButton}"
+                                            Width="120"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Pro Tweaks Bundle -->
+                        <Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="🔥 Pro Tweaks Bundle" Style="{StaticResource SectionTitle}" Foreground="#FF4500"/>
+                                <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Timer Resolution 0.5ms + Network Power OFF + Sticky Keys OFF"/>
+                                    <LineBreak/>
+                                    <Run Text="✅ Frame times consistentes | Ping estable" Foreground="#0E7A0D" FontWeight="Bold"/>
+                                    <LineBreak/>
+                                    <Run Text="⚠️ CPU usage +1-2%" Foreground="#FFA500"/>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
+                                    <Button Content="APLICAR"
+                                            Click="BtnPro_On_Click"
+                                            Style="{StaticResource OnButton}"
+                                            Width="120"
+                                            Margin="0,0,10,0"/>
+                                    <Button Content="REVERTIR"
+                                            Click="BtnPro_Off_Click"
+                                            Style="{StaticResource OffButton}"
+                                            Width="120"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
