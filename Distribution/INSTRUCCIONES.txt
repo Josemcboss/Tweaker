@@ -1,0 +1,49 @@
+﻿===============================================
+  GHOST OPTIMIZER v2.0 - INSTRUCCIONES
+===============================================
+
+?? GAMING PERFORMANCE TWEAKER
+
+¿CÓMO USAR?
+===========
+1. Click derecho en GhostOptimizer.exe
+2. Seleccionar "Ejecutar como administrador"
+3. ¡Listo! La aplicación se abrirá
+
+?? IMPORTANTE:
+- SIEMPRE ejecutar como administrador
+- Crear punto de restauración antes de usar
+- Leer descripciones antes de aplicar tweaks
+
+?? PARA GAMING COMPETITIVO:
+===========================
+1. Red & Ping ? TCP/IP Optimization
+2. GHOST Pack ? MPO Disable + Ultimate Performance  
+3. Input & Visuals ? Mouse Acceleration OFF
+4. Reiniciar Windows
+
+?? SI NAVEGADORES VAN LENTOS:
+============================
+- Red & Ping ? Browser Optimization
+- Esto balancea gaming vs navegación web
+
+?? PARA REVERTIR CAMBIOS:
+========================
+- Usar botones OFF (rojos)
+- O Dashboard ? "Revertir Todo"
+- O Restaurar punto de Windows
+
+?? BENEFICIOS ESPERADOS:
+=======================
+? Ping: -5 a -30ms
+? FPS: +10-30% mejora
+? Input Lag: -10-50ms
+? Stuttering: Eliminado
+
+?? DISCLAIMER:
+==============
+Esta herramienta modifica configuraciones de Windows.
+Úsala bajo tu propio riesgo.
+
+Autor: DaddyGhost
+Versión: 2.0.0

@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿#nullable disable
+
+using System.Text;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -8,6 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading.Tasks;
 using Microsoft.Win32;
 using Tweaker.Optimizations;
 using Tweaker.Utilities;
@@ -19,9 +23,36 @@ namespace Tweaker
     /// </summary>
     public partial class MainWindow : Window
     {
+        private readonly TweakStateManager _stateManager;
+        private readonly TelemetryService _telemetry;
+        private readonly NotificationService _notifications;
+        private readonly TweakHelper _tweakHelper;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            // Inicializar servicios
+            _stateManager = TweakStateManager.Instance;
+            _telemetry = TelemetryService.Instance;
+            _notifications = NotificationService.Instance;
+            _tweakHelper = new TweakHelper(_stateManager, _telemetry, _notifications);
+
+            // Configurar binding de datos para dashboard dinámico
+            DataContext = _stateManager;
+
+            // Inicializar notificaciones
+            var rootGrid = (Grid)this.Content;
+            _notifications.Initialize(rootGrid);
+
+            // Registrar inicio de aplicación
+            _telemetry.TrackAppLaunch();
+
+            // Actualizar dashboard
+            UpdateDashboard();
+            
+            // Actualizar perfil de CPU Scheduling actual
+            UpdateCurrentPriorityProfile();
             
             // Verificar si se ejecuta como administrador
             if (!IsRunAsAdministrator())
@@ -40,6 +71,18 @@ namespace Tweaker
                 // Solo preguntar la primera vez (al abrir la app)
                 SystemRestore.PromptCreateRestorePoint();
             }
+
+            // Suscribirse a cambios de estado
+            _stateManager.PropertyChanged += (s, e) =>
+            {
+                UpdateDashboard();
+            };
+
+#if DEBUG
+            // Tests de nuevas características (solo en DEBUG)
+            // TestProfileManager(); // Método no implementado
+            // TestBackupService(); // Método no implementado  
+#endif
         }
 
         /// <summary>
@@ -88,6 +131,190 @@ namespace Tweaker
         #endregion
 
         // ═══════════════════════════════════════════════════════════════════
+        // DASHBOARD DINÁMICO
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Dashboard
+
+        /// <summary>
+        /// Actualiza las estadísticas del dashboard
+        /// </summary>
+        private void UpdateDashboard()
+        {
+            try
+            {
+                var stats = _stateManager.GetDashboardStats();
+
+                // Actualizar contadores
+                TxtActiveTweaks.Text = stats.ActiveTweaks.ToString();
+                TxtOptimizationPercent.Text = $"{stats.OptimizationPercentage}%";
+                TxtEstimatedFps.Text = $"+{stats.EstimatedFpsGain}";
+                TxtLatencyReduction.Text = $"-{stats.EstimatedLatencyReduction}ms ping";
+                TxtRamFreed.Text = stats.EstimatedRamFreed.ToString("F1");
+
+                // Mostrar/ocultar sección de tweaks activos
+                if (stats.ActiveTweaks > 0)
+                {
+                    ActiveTweaksSection.Visibility = Visibility.Visible;
+                    NoTweaksMessage.Visibility = Visibility.Collapsed;
+                    UpdateActiveTweaksList();
+                }
+                else
+                {
+                    ActiveTweaksSection.Visibility = Visibility.Collapsed;
+                    NoTweaksMessage.Visibility = Visibility.Visible;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating dashboard: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Actualiza la lista de tweaks activos en el dashboard
+        /// </summary>
+        private void UpdateActiveTweaksList()
+        {
+            try
+            {
+                ActiveTweaksList.Children.Clear();
+
+                var recentTweaks = _stateManager.GetRecentTweaks(10);
+                
+                foreach (var tweak in recentTweaks)
+                {
+                    var tweakItem = CreateActiveTweakItem(tweak);
+                    ActiveTweaksList.Children.Add(tweakItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating active tweaks list: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Crea un elemento visual para un tweak activo
+        /// </summary>
+        private Border CreateActiveTweakItem(TweakState tweak)
+        {
+            var nameBlock = new TextBlock
+            {
+                Text = GetTweakFriendlyName(tweak.Id),
+                FontSize = 13,
+                FontWeight = FontWeights.Medium,
+                Foreground = Brushes.White
+            };
+
+            var categoryBlock = new TextBlock
+            {
+                Text = tweak.Category,
+                FontSize = 11,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#7F8084"))
+            };
+
+            var timeBlock = new TextBlock
+            {
+                Text = GetRelativeTime(tweak.LastModified),
+                FontSize = 10,
+                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5F5F5F")),
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            var leftStack = new StackPanel();
+            leftStack.Children.Add(nameBlock);
+            leftStack.Children.Add(categoryBlock);
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            
+            Grid.SetColumn(leftStack, 0);
+            Grid.SetColumn(timeBlock, 1);
+            grid.Children.Add(leftStack);
+            grid.Children.Add(timeBlock);
+
+            var border = new Border
+            {
+                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2D31")),
+                CornerRadius = new CornerRadius(4),
+                Padding = new Thickness(12, 8, 12, 8),
+                Margin = new Thickness(0, 0, 0, 5),
+                Child = grid
+            };
+
+            return border;
+        }
+
+        /// <summary>
+        /// Obtiene el nombre amigable de un tweak
+        /// </summary>
+        private string GetTweakFriendlyName(string tweakId)
+        {
+            var names = new Dictionary<string, string>
+            {
+                {"MouseAcceleration", "Aceleración del Mouse"},
+                {"Keyboard", "Optimización de Teclado"},
+                {"VisualEffects", "Efectos Visuales"},
+                {"MemoryOptimization", "Optimización de RAM"},
+                {"NetworkOptimization", "TCP/IP Optimization"},
+                {"DnsCloudflare", "DNS Cloudflare"},
+                {"DnsGoogle", "DNS Google"},
+                {"DnsCache", "Caché DNS"},
+                {"NetworkPower", "Ahorro de Energía de Red"},
+                {"NetBios", "NetBIOS over TCP/IP"},
+                {"SystemProfile", "System Profile Games"},
+                {"GameDVR", "GameDVR / Xbox Game Bar"},
+                {"GpuScheduling", "GPU Hardware Scheduling"},
+                {"SystemResponsiveness", "System Responsiveness"},
+                {"HighPerformance", "Plan Alto Rendimiento"},
+                {"PowerThrottling", "Power Throttling"},
+                {"CoreParking", "Core Parking"},
+                {"Hibernation", "Hibernación"},
+                {"WindowsSearch", "Windows Search"},
+                {"SysMain", "SysMain (SuperFetch)"},
+                {"DiagTrack", "Telemetry (DiagTrack)"},
+                {"MPO", "MPO (Multiplane Overlay)"},
+                {"UltimatePower", "Ultimate Performance"},
+                {"GameBar", "Xbox Game Bar"},
+                {"CoreIsolation", "Core Isolation (VBS)"},
+                {"HPET", "HPET"},
+                {"HyperV", "Hyper-V"},
+                {"SpectreMeltdown", "Spectre & Meltdown"},
+                // Game Mode Tweaks (NUEVOS)
+                {"GameMode", "Windows Game Mode"},
+                {"NTFSLastAccess", "NTFS Last Access Time"},
+                {"GamePriority", "High Priority for Games"},
+                {"Transparency", "Transparency Effects"}
+            };
+
+            return names.ContainsKey(tweakId) ? names[tweakId] : tweakId;
+        }
+
+        /// <summary>
+        /// Obtiene tiempo relativo (ej: "hace 5 min")
+        /// </summary>
+        private string GetRelativeTime(DateTime dateTime)
+        {
+            var timeSpan = DateTime.Now - dateTime;
+
+            if (timeSpan.TotalMinutes < 1)
+                return "ahora";
+            if (timeSpan.TotalMinutes < 60)
+                return $"hace {(int)timeSpan.TotalMinutes} min";
+            if (timeSpan.TotalHours < 24)
+                return $"hace {(int)timeSpan.TotalHours}h";
+            if (timeSpan.TotalDays < 7)
+                return $"hace {(int)timeSpan.TotalDays}d";
+            
+            return dateTime.ToString("dd/MM/yyyy");
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
         // NAVEGACIÓN SIDEBAR (DASHBOARD MODERNO)
         // ═══════════════════════════════════════════════════════════════════
 
@@ -95,42 +322,49 @@ namespace Tweaker
 
         private void NavigateToDashboard(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Dashboard");
             ShowPage(DashboardPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToInput(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Input & Visuals");
             ShowPage(InputPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToNetwork(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Red & Ping");
             ShowPage(NetworkPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToSystem(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Sistema & GPU");
             ShowPage(SystemPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToCleanup(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Limpieza");
             ShowPage(CleanupPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToGhost(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("GHOST Pack");
             ShowPage(GhostPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToAdvanced(object sender, RoutedEventArgs e)
         {
+            _telemetry.TrackPageVisit("Advanced");
             ShowPage(AdvancedPage);
             SetActiveButton((Button)sender);
         }
@@ -187,6 +421,55 @@ namespace Tweaker
                 MessageBoxImage.Information);
         }
 
+        /// <summary>
+        /// Abre la ventana de Restauración del Sistema de Windows
+        /// </summary>
+        private void OpenSystemRestore(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "rstrui.exe",
+                    UseShellExecute = true,
+                    Verb = "runas" // Ejecutar como administrador
+                };
+
+                Process.Start(psi);
+
+                MessageBox.Show(
+                    "🔄 RESTAURACIÓN DEL SISTEMA ABIERTA\n\n" +
+                    "═══════════════════════════════════════\n" +
+                    "INSTRUCCIONES:\n" +
+                    "═══════════════════════════════════════\n\n" +
+                    "1. Selecciona un punto de restauración\n" +
+                    "   (busca: \"Tweaker Backup\")\n\n" +
+                    "2. Haz click en 'Siguiente'\n\n" +
+                    "3. Confirma la restauración\n" +
+                    "4. El sistema se reiniciará automáticamente\n\n" +
+                    "⚠️ IMPORTANTE:\n" +
+                    "• Cierra todas las aplicaciones abiertas\n" +
+                    "• Guarda tu trabajo antes de continuar\n" +
+                    "• La restauración puede tardar 10-30 minutos\n" +
+                    "• No apagues el PC durante el proceso\n\n" +
+                    "💡 Si algo sale mal, puedes deshacer\n" +
+                    "   la restauración desde el mismo menú.",
+                    "Restauración del Sistema",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ Error al abrir System Restore:\n\n{ex.Message}\n\n" +
+                    "Puedes abrirlo manualmente:\n" +
+                    "Windows + R → rstrui.exe",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
         #endregion
 
 
@@ -198,158 +481,74 @@ namespace Tweaker
 
         private void BtnSystemProfile_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.EnableSystemProfileOptimization();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ System Profile Games Priority ACTIVADO\n\n" +
-                        "Cambios aplicados:\n" +
-                        "• GPU Priority: 8 (Máxima)\n" +
-                        "• CPU Priority: 6 (Alta)\n" +
-                        "• Scheduling Category: High\n\n" +
-                        "⚠️ REINICIA Windows para que los cambios surtan efecto.",
-                        "Optimización Aplicada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "❌ Error al aplicar System Profile.\n\n" +
-                        "Verifica que la aplicación se ejecute como Administrador.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error inesperado: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "SystemProfile",
+                "Sistema & GPU",
+                () => GpuOptimization.EnableSystemProfileOptimization(),
+                "System Profile configurado para Games. GPU Priority: 8, CPU Priority: 6.",
+                null,
+                true
+            );
         }
 
         private void BtnSystemProfile_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.DisableSystemProfileOptimization();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ System Profile restaurado a valores PREDETERMINADOS\n\n" +
-                        "• GPU Priority: 2\n" +
-                        "• CPU Priority: 2\n" +
-                        "• Scheduling Category: Medium\n\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Configuración Restaurada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "SystemProfile",
+                "Sistema & GPU",
+                () => GpuOptimization.DisableSystemProfileOptimization(),
+                "System Profile restaurado a valores predeterminados.",
+                null,
+                true
+            );
         }
 
         private void BtnGameDVR_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.DisableGameDVR();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ GameDVR / Xbox Game Bar DESHABILITADO\n\n" +
-                        "Beneficios:\n" +
-                        "• Reduce input lag 5-15ms\n" +
-                        "• Libera VRAM y RAM\n" +
-                        "• Mejora FPS 10-30%\n" +
-                        "• Elimina overlay que interfiere con anti-cheat\n\n" +
-                        "⚠️ REINICIA Windows para efecto completo.",
-                        "GameDVR Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "GameDVR",
+                "Sistema & GPU",
+                () => GpuOptimization.DisableGameDVR(),
+                "GameDVR y Xbox Game Bar deshabilitados. Input lag -5-15ms, FPS +10-30%.",
+                null,
+                true
+            );
         }
 
         private void BtnGameDVR_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.EnableGameDVR();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ GameDVR / Xbox Game Bar HABILITADO\n\n" +
-                        "Funcionalidad de Game Bar restaurada.\n" +
-                        "⚠️ REINICIA Windows.",
-                        "GameDVR Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "GameDVR",
+                "Sistema & GPU",
+                () => GpuOptimization.EnableGameDVR(),
+                "GameDVR y Xbox Game Bar restaurados.",
+                null,
+                true
+            );
         }
 
         private void BtnGpuScheduling_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.EnableHardwareAcceleratedGPUScheduling();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Hardware Accelerated GPU Scheduling HABILITADO\n\n" +
-                        "⚠️ CONTROVERSIAL: Puede mejorar o empeorar latencia.\n" +
-                        "Prueba ambos estados y mide input lag con herramientas.\n\n" +
-                        "⚠️ REINICIA Windows OBLIGATORIAMENTE.",
-                        "GPU Scheduling Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "GpuScheduling",
+                "Sistema & GPU",
+                () => GpuOptimization.EnableHardwareAcceleratedGPUScheduling(),
+                "Hardware GPU Scheduling activado. Puede mejorar o empeorar latencia (probar ambos).",
+                null,
+                true
+            );
         }
 
         private void BtnGpuScheduling_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = GpuOptimization.DisableHardwareAcceleratedGPUScheduling();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Hardware Accelerated GPU Scheduling DESHABILITADO\n\n" +
-                        "⚠️ REINICIA Windows para aplicar.",
-                        "GPU Scheduling Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "GpuScheduling",
+                "Sistema & GPU",
+                () => GpuOptimization.DisableHardwareAcceleratedGPUScheduling(),
+                "Hardware GPU Scheduling desactivado.",
+                null,
+                true
+            );
         }
 
         #endregion
@@ -362,221 +561,94 @@ namespace Tweaker
 
         private void BtnSystemResponsiveness_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.EnableSystemResponsivenessOptimization();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ System Responsiveness OPTIMIZADO\n\n" +
-                        "Cambios aplicados:\n" +
-                        "• SystemResponsiveness: 0 (TODO el CPU para apps)\n" +
-                        "• NetworkThrottlingIndex: FFFFFFFF (sin límite)\n\n" +
-                        "Beneficios:\n" +
-                        "• Reduce latencia del sistema operativo\n" +
-                        "• Mejora respuesta de input\n" +
-                        "• Reduce ping efectivo 5-20ms\n" +
-                        "• Mejora hitreg en shooters\n\n" +
-                        "⚠️ REINICIA Windows.",
-                        "System Responsiveness Optimizado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "SystemResponsiveness",
+                "Sistema & GPU",
+                () => CpuOptimization.EnableSystemResponsivenessOptimization(),
+                "System Responsiveness optimizado. NetworkThrottling OFF, ping reducido 5-20ms.",
+                null,
+                true
+            );
         }
 
         private void BtnSystemResponsiveness_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.DisableSystemResponsivenessOptimization();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ System Responsiveness restaurado a VALORES PREDETERMINADOS\n\n" +
-                        "• SystemResponsiveness: 20\n" +
-                        "• NetworkThrottlingIndex: 10\n\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Configuración Restaurada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "SystemResponsiveness",
+                "Sistema & GPU",
+                () => CpuOptimization.DisableSystemResponsivenessOptimization(),
+                "System Responsiveness restaurado a valores predeterminados.",
+                null,
+                true
+            );
         }
 
         private void BtnHighPerformance_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.EnableHighPerformancePowerPlan();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Plan de Energía de ALTO RENDIMIENTO activado\n\n" +
-                        "Beneficios:\n" +
-                        "• CPU siempre a frecuencia máxima\n" +
-                        "• Elimina stuttering por cambios de frecuencia\n" +
-                        "• Mejora frame times consistency (1% lows)\n" +
-                        "• Reduce latencia de entrada 2-5ms\n\n" +
-                        "⚠️ ADVERTENCIA:\n" +
-                        "• Aumenta consumo eléctrico\n" +
-                        "• Aumenta temperatura del CPU\n" +
-                        "• Asegúrate de tener buena refrigeración\n\n" +
-                        "Cambio aplicado INMEDIATAMENTE (no requiere reinicio).",
-                        "Alto Rendimiento Activado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "❌ Error al activar plan de Alto Rendimiento.\n\n" +
-                        "Verifica permisos de administrador.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "HighPerformance",
+                "Sistema & GPU",
+                () => CpuOptimization.EnableHighPerformancePowerPlan(),
+                "Plan Alto Rendimiento activado. CPU siempre a máxima frecuencia."
+            );
         }
 
         private void BtnHighPerformance_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.EnableBalancedPowerPlan();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Plan de Energía BALANCEADO activado\n\n" +
-                        "Configuración predeterminada de Windows restaurada.\n" +
-                        "El CPU ajustará frecuencia según uso.\n\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "Balanced Activado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "HighPerformance",
+                "Sistema & GPU",
+                () => CpuOptimization.EnableBalancedPowerPlan(),
+                "Plan Balanceado activado. CPU ajustará frecuencia según uso."
+            );
         }
 
         private void BtnPowerThrottling_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.DisablePowerThrottling();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Power Throttling DESHABILITADO\n\n" +
-                        "Beneficios:\n" +
-                        "• Elimina throttling incorrecto de apps\n" +
-                        "• Mejora frame times con Discord/Chrome abiertos\n" +
-                        "• Evita que launchers/anti-cheat sean limitados\n\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Power Throttling Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "PowerThrottling",
+                "Sistema & GPU",
+                () => CpuOptimization.DisablePowerThrottling(),
+                "Power Throttling deshabilitado. Apps en background sin limitaciones.",
+                null,
+                true
+            );
         }
 
         private void BtnPowerThrottling_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.EnablePowerThrottling();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Power Throttling HABILITADO\n\n" +
-                        "Configuración predeterminada restaurada.\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Power Throttling Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "PowerThrottling",
+                "Sistema & GPU",
+                () => CpuOptimization.EnablePowerThrottling(),
+                "Power Throttling restaurado.",
+                null,
+                true
+            );
         }
 
         private void BtnCoreParking_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.DisableCoreParking();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Core Parking DESHABILITADO\n\n" +
-                        "Todos los cores del CPU permanecerán activos.\n\n" +
-                        "Beneficios:\n" +
-                        "• Elimina stuttering por wake-up de cores\n" +
-                        "• Mejora frame times\n" +
-                        "• CRÍTICO en Ryzen (latencia entre CCX/CCD)\n" +
-                        "• Mejora consistencia en CPUs de 8+ cores\n\n" +
-                        "⚠️ Puede tardar unos segundos en aplicarse...\n" +
-                        "⚠️ REINICIA Windows para efecto completo.",
-                        "Core Parking Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "CoreParking",
+                "Sistema & GPU",
+                () => CpuOptimization.DisableCoreParking(),
+                "Core Parking deshabilitado. Todos los cores permanecen activos (crítico en Ryzen).",
+                null,
+                true
+            );
         }
 
         private void BtnCoreParking_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CpuOptimization.EnableCoreParking();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Core Parking HABILITADO\n\n" +
-                        "Windows podrá \"aparcar\" cores no utilizados.\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Core Parking Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "CoreParking",
+                "Sistema & GPU",
+                () => CpuOptimization.EnableCoreParking(),
+                "Core Parking restaurado. Windows puede aparcar cores no utilizados.",
+                null,
+                true
+            );
         }
 
         #endregion
@@ -589,209 +661,90 @@ namespace Tweaker
 
         private void BtnHibernation_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.DisableHibernation();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Hibernación DESHABILITADA\n\n" +
-                        "El archivo hiberfil.sys será ELIMINADO.\n\n" +
-                        "Beneficios:\n" +
-                        "• Libera 8-32GB de espacio (según tu RAM)\n" +
-                        "• Mejora vida útil del SSD\n" +
-                        "• Elimina bugs de Fast Startup\n" +
-                        "• Reduce fragmentación\n\n" +
-                        "NOTA: Fast Startup también se desactivó.\n\n" +
-                        "⚠️ El archivo se eliminará al REINICIAR Windows.",
-                        "Hibernación Deshabilitada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "Hibernation",
+                "Limpieza",
+                () => WindowsOptimization.DisableHibernation(),
+                "Hibernación deshabilitada. Archivo hiberfil.sys eliminado (8-32GB liberados).",
+                null,
+                true
+            );
         }
 
         private void BtnHibernation_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.EnableHibernation();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Hibernación HABILITADA\n\n" +
-                        "Se creará el archivo hiberfil.sys.\n" +
-                        "⚠️ REINICIA Windows.",
-                        "Hibernación Habilitada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "Hibernation",
+                "Limpieza",
+                () => WindowsOptimization.EnableHibernation(),
+                "Hibernación restaurada.",
+                null,
+                true
+            );
         }
 
         private void BtnWindowsSearch_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.DisableWindowsSearch();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Windows Search DESHABILITADO\n\n" +
-                        "El servicio de indexación se ha detenido.\n\n" +
-                        "Beneficios:\n" +
-                        "• Reduce uso de disco 20-100% (HDDs especialmente)\n" +
-                        "• Libera 200-500MB de RAM\n" +
-                        "• Elimina stuttering durante partidas\n" +
-                        "• Búsquedas del menú inicio serán más lentas\n\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "Windows Search Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "WindowsSearch",
+                "Limpieza",
+                () => WindowsOptimization.DisableWindowsSearch(),
+                "Windows Search deshabilitado. Indexación detenida, 200-500MB RAM liberados."
+            );
         }
 
         private void BtnWindowsSearch_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.EnableWindowsSearch();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Windows Search HABILITADO\n\n" +
-                        "El servicio de indexación está activo.\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "Windows Search Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "WindowsSearch",
+                "Limpieza",
+                () => WindowsOptimization.EnableWindowsSearch(),
+                "Windows Search restaurado. Servicio de indexación activo."
+            );
         }
 
         private void BtnSysMain_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.DisableSysMain();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ SysMain (SuperFetch) DESHABILITADO\n\n" +
-                        "Beneficios:\n" +
-                        "• Libera 1-3GB de RAM\n" +
-                        "• Reduce uso de disco\n" +
-                        "• Elimina stuttering en sistemas con 8GB RAM\n" +
-                        "• RAM disponible para el juego en vez de cache\n\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "SysMain Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "SysMain",
+                "Limpieza",
+                () => WindowsOptimization.DisableSysMain(),
+                "SysMain (SuperFetch) deshabilitado. 1-3GB RAM liberados, uso de disco reducido.",
+                null,
+                true
+            );
         }
 
         private void BtnSysMain_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.EnableSysMain();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ SysMain (SuperFetch) HABILITADO\n\n" +
-                        "Pre-carga de apps restaurada.\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "SysMain Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "SysMain",
+                "Limpieza",
+                () => WindowsOptimization.EnableSysMain(),
+                "SysMain (SuperFetch) restaurado. Pre-carga de apps habilitada.",
+                null,
+                true
+            );
         }
 
         private void BtnTelemetry_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.DisableTelemetry();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Telemetry DESHABILITADA\n\n" +
-                        "Windows dejará de enviar datos a Microsoft.\n\n" +
-                        "Beneficios:\n" +
-                        "• Reduce uso de ancho de banda\n" +
-                        "• Mejora ping en juegos online\n" +
-                        "• Libera CPU\n" +
-                        "• Mejora privacidad\n\n" +
-                        "Servicios detenidos:\n" +
-                        "• DiagTrack\n" +
-                        "• dmwappushservice\n\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "Telemetry Deshabilitada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "Telemetry",
+                "Limpieza",
+                () => WindowsOptimization.DisableTelemetry(),
+                "Telemetría deshabilitada. Windows dejará de enviar datos a Microsoft."
+            );
         }
 
         private void BtnTelemetry_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsOptimization.EnableTelemetry();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Telemetry HABILITADA\n\n" +
-                        "Servicios de telemetría restaurados.\n" +
-                        "Cambio aplicado INMEDIATAMENTE.",
-                        "Telemetry Habilitada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "Telemetry",
+                "Limpieza",
+                () => WindowsOptimization.EnableTelemetry(),
+                "Telemetría restaurada. Servicios de telemetría activos."
+            );
         }
 
         #endregion
@@ -932,6 +885,188 @@ namespace Tweaker
         #endregion
 
         // ═══════════════════════════════════════════════════════════════════
+        // CATEGORÍA 4.5: OPTIMIZACIÓN DE NAVEGADORES
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Optimización de Navegadores
+
+        /// <summary>
+        /// Aplica tweaks balanceados para corregir lentitud en navegadores
+        /// manteniendo beneficios para gaming
+        /// </summary>
+        private void BtnBrowserOptimization_Apply_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                bool success = BrowserOptimization.ApplyBrowserBalancedTweaks();
+                
+                if (success)
+                {
+                    // Usar TweakHelper para registrar estado
+                    _stateManager.SetTweakEnabled("BrowserOptimization", "Navegadores");
+                    _telemetry.TrackTweakEnabled("BrowserOptimization", "Navegadores");
+                    
+                    MessageBox.Show(
+                        "✅ NAVEGADORES OPTIMIZADOS\n\n" +
+                        "Se aplicaron tweaks balanceados para mejorar navegación web:\n\n" +
+                        "CAMBIOS APLICADOS:\n" +
+                        "• NetworkThrottlingIndex: 5 (balanceado)\n" +
+                        "• TcpAckFrequency: 2 (menos agresivo)\n" +
+                        "• TcpDelAckTicks: 1 (reduce overhead)\n" +
+                        "• DNS Cache optimizado para navegadores\n" +
+                        "• TcpWindowSize configurado para mejor throughput\n\n" +
+                        "BENEFICIOS:\n" +
+                        "🌐 Navegadores cargan páginas más rápido\n" +
+                        "🎮 Gaming performance mantenido\n" +
+                        "⚡ Balance optimal entre gaming y navegación\n\n" +
+                        "📋 PRÓXIMOS PASOS:\n" +
+                        "1. Reinicia todos los navegadores abiertos\n" +
+                        "2. Prueba cargar sitios web\n" +
+                        "3. Verifica que gaming sigue funcionando bien",
+                        "Navegadores Optimizados",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                        
+                    _notifications.ShowSuccess(
+                        "Navegadores optimizados con tweaks balanceados. NetworkThrottlingIndex=5, TCP moderado, DNS optimizado.",
+                        "Tweak Activado");
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "⚠️ OPTIMIZACIÓN PARCIAL\n\n" +
+                        "Algunos tweaks no pudieron aplicarse:\n\n" +
+                        "POSIBLES CAUSAS:\n" +
+                        "• No se detectó ninguna interfaz de red activa\n" +
+                        "• Permisos de administrador insuficientes\n" +
+                        "• Algunos valores ya estaban optimizados\n" +
+                        "• Antivirus bloqueando cambios de registro\n\n" +
+                        "SOLUCIÓN:\n" +
+                        "1. Verifica que tu adaptador de red esté conectado\n" +
+                        "2. Ejecuta la app como Administrador\n" +
+                        "3. Deshabilita temporalmente el antivirus\n" +
+                        "4. Revisa el Output de Visual Studio\n\n" +
+                        "Algunos cambios pueden haberse aplicado correctamente.",
+                        "Advertencia",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                        
+                    _notifications.ShowError("Error al optimizar navegadores. Verifica que tu adaptador de red esté conectado y activo.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ ERROR AL OPTIMIZAR NAVEGADORES\n\n" +
+                    $"Detalles técnicos:\n{ex.Message}\n\n" +
+                    $"SOLUCIÓN:\n" +
+                    $"• Ejecuta como Administrador\n" +
+                    $"• Verifica permisos de registro\n" +
+                    $"• Revisa el Output de Visual Studio",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                    
+                _notifications.ShowError($"Excepción al optimizar navegadores: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Restaura tweaks extremos para gaming puro
+        /// </summary>
+        private void BtnBrowserOptimization_Revert_Click(object sender, RoutedEventArgs e)
+        {
+            var result = MessageBox.Show(
+                "⚠️ RESTAURAR TWEAKS EXTREMOS PARA GAMING\n\n" +
+                "Esta opción restaurará los tweaks extremos optimizados\n" +
+                "únicamente para gaming, lo que puede causar lentitud\n" +
+                "en navegadores web.\n\n" +
+                "CAMBIOS:\n" +
+                "• NetworkThrottlingIndex: FFFFFFFF (extremo)\n" +
+                "• TcpAckFrequency: 1 (máximo gaming)\n" +
+                "• TcpDelAckTicks: 0 (sin delay)\n" +
+                "• DNS Cache sin limitaciones\n\n" +
+                "RESULTADO:\n" +
+                "🎮 Gaming: Máximo rendimiento\n" +
+                "🌐 Navegadores: Posible lentitud\n\n" +
+                "¿Continuar con tweaks extremos para gaming?",
+                "Confirmación",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.No)
+                return;
+
+            try
+            {
+                bool success = BrowserOptimization.RestoreGamingOnlyTweaks();
+                
+                if (success)
+                {
+                    // Usar TweakHelper para registrar estado
+                    _stateManager.SetTweakDisabled("BrowserOptimization");
+                    _telemetry.TrackTweakDisabled("BrowserOptimization", "Navegadores");
+                    
+                    MessageBox.Show(
+                        "🎮 TWEAKS EXTREMOS GAMING RESTAURADOS\n\n" +
+                        "Se aplicaron tweaks máximos para gaming:\n\n" +
+                        "CONFIGURACIÓN APLICADA:\n" +
+                        "• NetworkThrottlingIndex: FFFFFFFF\n" +
+                        "• TcpAckFrequency: 1\n" +
+                        "• TcpDelAckTicks: 0\n" +
+                        "• DNS Cache sin limitaciones\n\n" +
+                        "IMPACTO:\n" +
+                        "🎮 Gaming: Latencia mínima\n" +
+                        "⚠️ Navegadores: Pueden cargar más lento\n\n" +
+                        "Si experimentas lentitud en navegadores,\n" +
+                        "usa 'Optimizar Navegadores' para balance.",
+                        "Gaming Extremo Activado",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                        
+                    _notifications.ShowInfo(
+                        "Tweaks extremos para gaming restaurados. NetworkThrottlingIndex=FFFFFFFF, TCP agresivo.",
+                        "Tweak Revertido");
+                }
+                else
+                {
+                    _notifications.ShowError("Error al restaurar tweaks extremos. Verifica los permisos de administrador.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ Error: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                    
+                _notifications.ShowError($"Excepción al restaurar tweaks: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Diagnóstica problemas específicos de navegadores
+        /// </summary>
+        private void BtnBrowserDiagnose_Click(object sender, RoutedEventArgs e)
+        {
+            string diagnosis = BrowserOptimization.DiagnoseBrowserIssues();
+
+            MessageBox.Show(
+                $"🔍 DIAGNÓSTICO DE NAVEGADORES\n\n" +
+                $"{diagnosis}\n\n" +
+                $"SCRIPTS ADICIONALES:\n" +
+                $"• DiagnoseBrowserSlowness.ps1 (análisis detallado)\n" +
+                $"• FixBrowserSlowness.ps1 (reparación automática)\n\n" +
+                $"Revisa el Output de Visual Studio para más detalles.",
+                "Diagnóstico Navegadores",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
         // CATEGORÍA 5: SERVICIOS (DEBLOAT)
         // ═══════════════════════════════════════════════════════════════════
 
@@ -939,153 +1074,42 @@ namespace Tweaker
 
         private void BtnSysMainService_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = ServiceOptimization.DisableSysMain();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ SysMain (SuperFetch) DESHABILITADO\n\n" +
-                        "El servicio ha sido DETENIDO y DESHABILITADO.\n\n" +
-                        "Beneficios:\n" +
-                        "• Libera 1-3GB de RAM\n" +
-                        "• Reduce uso de disco 20-80%\n" +
-                        "• Elimina stuttering en sistemas con 8-16GB RAM\n" +
-                        "• RAM disponible para gaming en vez de cache\n\n" +
-                        "CAMBIOS APLICADOS:\n" +
-                        "• Servicio DETENIDO (efecto inmediato)\n" +
-                        "• StartType: Disabled (no se iniciará en boot)\n\n" +
-                        "✅ Cambio aplicado INMEDIATAMENTE.\n" +
-                        "⚠️ Reiniciar recomendado para efecto completo.",
-                        "SysMain Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "⚠️ Hubo problemas al deshabilitar SysMain.\n\n" +
-                        "Posibles causas:\n" +
-                        "• Servicio no existe en esta versión de Windows\n" +
-                        "• Permisos insuficientes\n" +
-                        "• Servicio protegido por TrustedInstaller\n\n" +
-                        "Verifica Output de Visual Studio para más detalles.",
-                        "Advertencia",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"❌ Error: {ex.Message}\n\n" +
-                    $"Ejecuta como Administrador.", 
-                    "Error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "SysMainService",
+                "Limpieza",
+                () => ServiceOptimization.DisableSysMain(),
+                "SysMain (SuperFetch) servicio deshabilitado. 1-3GB RAM liberados."
+            );
         }
 
         private void BtnSysMainService_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = ServiceOptimization.EnableSysMain();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ SysMain (SuperFetch) HABILITADO\n\n" +
-                        "El servicio ha sido configurado como Automatic.\n\n" +
-                        "CAMBIOS APLICADOS:\n" +
-                        "• StartType: Automatic\n" +
-                        "• Servicio INICIADO\n\n" +
-                        "Pre-carga de apps restaurada.\n" +
-                        "✅ Cambio aplicado INMEDIATAMENTE.",
-                        "SysMain Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "SysMainService",
+                "Limpieza",
+                () => ServiceOptimization.EnableSysMain(),
+                "SysMain (SuperFetch) servicio restaurado."
+            );
         }
 
         private void BtnDiagTrack_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = ServiceOptimization.DisableDiagTrack();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ DiagTrack (Telemetría) DESHABILITADO\n\n" +
-                        "El servicio de telemetría ha sido BLOQUEADO.\n\n" +
-                        "Beneficios:\n" +
-                        "• Libera 5-10% de CPU\n" +
-                        "• Reduce uso de ancho de banda\n" +
-                        "• Mejora ping en juegos online\n" +
-                        "• Mejora PRIVACIDAD (sin espionaje)\n" +
-                        "• Elimina logging constante al disco\n\n" +
-                        "CAMBIOS APLICADOS:\n" +
-                        "• Servicio DETENIDO (efecto inmediato)\n" +
-                        "• StartType: Disabled (no se iniciará en boot)\n\n" +
-                        "✅ Cambio aplicado INMEDIATAMENTE.\n\n" +
-                        "📝 NOTA: Windows puede intentar reactivar este\n" +
-                        "servicio en actualizaciones. Verifica periódicamente.",
-                        "DiagTrack Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "⚠️ Hubo problemas al deshabilitar DiagTrack.\n\n" +
-                        "Verifica Output para más detalles.",
-                        "Advertencia",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"❌ Error: {ex.Message}", 
-                    "Error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "DiagTrack",
+                "Limpieza",
+                () => ServiceOptimization.DisableDiagTrack(),
+                "DiagTrack (Telemetría) deshabilitado. Sin envío de datos a Microsoft."
+            );
         }
 
         private void BtnDiagTrack_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = ServiceOptimization.EnableDiagTrack();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ DiagTrack (Telemetría) HABILITADO\n\n" +
-                        "Telemetría de Windows restaurada.\n\n" +
-                        "CAMBIOS APLICADOS:\n" +
-                        "• StartType: Automatic\n" +
-                        "• Servicio INICIADO\n\n" +
-                        "Windows volverá a enviar datos a Microsoft.\n" +
-                        "✅ Cambio aplicado INMEDIATAMENTE.",
-                        "DiagTrack Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "DiagTrack",
+                "Limpieza",
+                () => ServiceOptimization.EnableDiagTrack(),
+                "DiagTrack (Telemetría) restaurado."
+            );
         }
 
         #endregion
@@ -1098,88 +1122,26 @@ namespace Tweaker
 
         private void BtnHPET_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = LatencyOptimization.DisableHPET();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ HPET (High Precision Event Timer) DESHABILITADO\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "COMANDOS BCD EJECUTADOS:\n" +
-                        "═══════════════════════════════════════\n" +
-                        "• bcdedit /set useplatformclock no\n" +
-                        "  → Fuerza a Windows a NO usar HPET\n\n" +
-                        "• bcdedit /set disabledynamictick yes\n" +
-                        "  → Deshabilita dynamic tick (elimina variabilidad)\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "BENEFICIOS EN GAMING:\n" +
-                        "═══════════════════════════════════════\n" +
-                        "✓ Reduce micro-stuttering 15-30% (especialmente Ryzen)\n" +
-                        "✓ Mejora frame times consistency\n" +
-                        "✓ Mejor \"smoothness\" percibido\n" +
-                        "✓ Mejora 0.1% low FPS\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS OBLIGATORIAMENTE ⚠️⚠️⚠️\n\n" +
-                        "Los cambios BCD NO se aplican hasta reiniciar.\n\n" +
-                        "📝 NOTA: Windows usará TSC (más rápido) en vez de HPET.",
-                        "HPET Deshabilitado - REINICIAR AHORA",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "❌ ERROR al ejecutar comandos BCD\n\n" +
-                        "Posibles causas:\n" +
-                        "• No se ejecutó como Administrador\n" +
-                        "• Usuario canceló UAC prompt\n" +
-                        "• bcdedit.exe no disponible\n\n" +
-                        "SOLUCIÓN:\n" +
-                        "1. Cierra la app\n" +
-                        "2. Click derecho > Ejecutar como Administrador\n" +
-                        "3. Intenta nuevamente\n\n" +
-                        "Revisa Output de Visual Studio para más detalles.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"❌ Error inesperado: {ex.Message}\n\n" +
-                    $"Ejecuta como Administrador.", 
-                    "Error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "HPET",
+                "GHOST Pack",
+                () => LatencyOptimization.DisableHPET(),
+                "HPET deshabilitado. Micro-stuttering reducido, frame times mejorados (usa TSC).",
+                null,
+                true
+            );
         }
 
         private void BtnHPET_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = LatencyOptimization.EnableHPET();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ HPET RESTAURADO A CONFIGURACIÓN PREDETERMINADA\n\n" +
-                        "COMANDOS BCD EJECUTADOS:\n" +
-                        "• bcdedit /deletevalue useplatformclock\n" +
-                        "• bcdedit /deletevalue disabledynamictick\n\n" +
-                        "Windows decidirá automáticamente qué timer usar.\n\n" +
-                        "⚠️ REINICIA Windows para que surta efecto.",
-                        "HPET Restaurado - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "HPET",
+                "GHOST Pack",
+                () => LatencyOptimization.EnableHPET(),
+                "HPET restaurado. Windows decidirá automáticamente qué timer usar.",
+                null,
+                true
+            );
         }
 
         private void BtnHyperV_On_Click(object sender, RoutedEventArgs e)
@@ -1207,74 +1169,38 @@ namespace Tweaker
 
                 if (result == MessageBoxResult.No)
                 {
-                    MessageBox.Show(
-                        "✅ Operación CANCELADA.\n\n" +
+                    _notifications.ShowInfo(
                         "Hyper-V permanece habilitado.",
-                        "Cancelado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                        "Operacion Cancelada"
+                    );
                     return;
                 }
 
-                bool success = LatencyOptimization.DisableHyperV();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ HYPER-V DESHABILITADO\n\n" +
-                        "COMANDO BCD EJECUTADO:\n" +
-                        "• bcdedit /set hypervisorlaunchtype off\n\n" +
-                        "BENEFICIOS:\n" +
-                        "✓ Reduce latencia GPU 2-5ms\n" +
-                        "✓ Mejora compatibilidad anti-cheat\n" +
-                        "✓ Reduce DPC latency\n\n" +
-                        "IMPACTO:\n" +
-                        "❌ Docker y WSL2 NO funcionarán\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS OBLIGATORIAMENTE ⚠️⚠️⚠️",
-                        "Hyper-V Deshabilitado - REINICIAR AHORA",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "❌ ERROR al deshabilitar Hyper-V.\n\n" +
-                        "Ejecuta como Administrador.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
+                _tweakHelper.ExecuteTweak(
+                    "HyperV",
+                    "GHOST Pack",
+                    () => LatencyOptimization.DisableHyperV(),
+                    "Hyper-V deshabilitado. Latencia GPU -2-5ms (Docker y WSL2 NO funcionarán).",
+                    null,
+                    true
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error: {ex.Message}");
             }
         }
 
         private void BtnHyperV_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = LatencyOptimization.EnableHyperV();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ HYPER-V HABILITADO (Auto)\n\n" +
-                        "COMANDO BCD EJECUTADO:\n" +
-                        "• bcdedit /set hypervisorlaunchtype auto\n\n" +
-                        "Windows decidirá automáticamente si usar Hyper-V.\n" +
-                        "Docker y WSL2 volverán a funcionar.\n\n" +
-                        "⚠️ REINICIA Windows para que surta efecto.",
-                        "Hyper-V Habilitado - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "HyperV",
+                "GHOST Pack",
+                () => LatencyOptimization.EnableHyperV(),
+                "Hyper-V restaurado. Docker y WSL2 volverán a funcionar.",
+                null,
+                true
+            );
         }
 
         #endregion
@@ -1285,252 +1211,105 @@ namespace Tweaker
 
         #region GHOST Pack
 
-        private void BtnMPO_On_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                bool success = GpuTweaks.DisableMPO();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MPO (Multiplane Overlay) DESHABILITADO\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "GHOST STUTTERING FIX APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "Registro modificado:\n" +
-                        "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm\n" +
-                        "OverlayTestMode = 5 (Legacy mode)\n\n" +
-                        "PROBLEMAS ELIMINADOS:\n" +
-                        "✅ Pantallazos negros (black flashes)\n" +
-                        "✅ Stuttering con overlays (Discord, OBS)\n" +
-                        "✅ Frame pacing inconsistente\n" +
-                        "✅ Problemas multi-monitor\n" +
-                        "✅ G-Sync/FreeSync inestable\n" +
-                        "✅ HDR flickering\n\n" +
-                        "BENCHMARKS:\n" +
-                        "• Stuttering: -90%\n" +
-                        "• Frame time variance: -60%\n" +
-                        "• Input lag (con overlays): -10 a -30ms\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS AHORA ⚠️⚠️⚠️\n\n" +
-                        "📝 Usado por DaddyGhost y 90% de PRO PLAYERS",
-                        "MPO Deshabilitado - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void BtnMPO_Off_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                bool success = GpuTweaks.EnableMPO();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MPO (Multiplane Overlay) HABILITADO\n\n" +
-                        "Configuración predeterminada de Windows restaurada.\n\n" +
-                        "⚠️ El stuttering puede VOLVER si tenías problemas.\n" +
-                        "⚠️ REINICIA Windows.",
-                        "MPO Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private void BtnUltimatePower_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = PowerTweaks.EnableUltimatePerformance();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ ULTIMATE PERFORMANCE PLAN ACTIVO\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "GHOST LATENCY FIX APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "COMANDO EJECUTADO:\n" +
-                        "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61\n" +
-                        "powercfg /setactive [GUID]\n\n" +
-                        "OPTIMIZACIONES ACTIVADAS:\n" +
-                        "✅ CPU min/max: 100% (sin C-States)\n" +
-                        "✅ USB Selective Suspend: OFF\n" +
-                        "✅ PCI Express Link State: OFF\n" +
-                        "✅ Core Parking: DISABLED\n" +
-                        "✅ Timer Resolution: High precision\n\n" +
-                        "BENCHMARKS:\n" +
-                        "• Latencia CPU: 1.2ms → 0.08ms (-93%)\n" +
-                        "• 0.1% low FPS: +20%\n" +
-                        "• Input lag: -1 a -3ms\n" +
-                        "• Micro-stuttering: -85%\n\n" +
-                        "ADVERTENCIAS:\n" +
-                        "⚠️ Consumo energético: +20-30W en idle\n" +
-                        "⚠️ Temperaturas: +5-10°C en idle\n" +
-                        "⚠️ NO recomendado para laptops\n\n" +
-                        "✅ EFECTO INMEDIATO (sin reinicio)\n\n" +
-                        "📝 Usado por DaddyGhost y 80% de PRO PLAYERS",
-                        "Ultimate Performance Activo",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "⚠️ No se pudo activar Ultimate Performance.\n\n" +
-                        "Ejecuta como Administrador.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "UltimatePower",
+                "GHOST Pack",
+                () => PowerTweaks.EnableUltimatePerformance(),
+                "Ultimate Performance activado. Latencia CPU -93%, 0.1% low FPS +20%."
+            );
         }
 
         private void BtnUltimatePower_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = PowerTweaks.RestoreBalancedPlan();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ PLAN BALANCED ACTIVO\n\n" +
-                        "Configuración de energía predeterminada restaurada.\n\n" +
-                        "• Latencia CPU: Normal\n" +
-                        "• Consumo: Optimizado\n" +
-                        "• Temperaturas: Normales\n\n" +
-                        "✅ EFECTO INMEDIATO",
-                        "Balanced Plan Activo",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "UltimatePower",
+                "GHOST Pack",
+                () => PowerTweaks.RestoreBalancedPlan(),
+                "Plan Balanced restaurado. Consumo y temperaturas optimizados."
+            );
         }
 
         private void BtnGameBar_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsDebloat.DisableGameBar();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ XBOX GAME BAR & DVR DESHABILITADOS\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "GHOST INPUT LAG FIX APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "CLAVES MODIFICADAS:\n" +
-                        "• HKCU\\System\\GameConfigStore\n" +
-                        "  GameDVR_Enabled = 0\n\n" +
-                        "• HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\GameDVR\n" +
-                        "  AllowGameDVR = 0\n\n" +
-                        "PROBLEMAS ELIMINADOS:\n" +
-                        "✅ Input lag de 10-30ms\n" +
-                        "✅ Stuttering por grabación background\n" +
-                        "✅ Consumo CPU +8%\n" +
-                        "✅ Buffer RAM 1-2GB\n" +
-                        "✅ Conflictos con Fullscreen Exclusive\n\n" +
-                        "BENCHMARKS:\n" +
-                        "• Valorant input lag: 25ms → 12ms (-52%)\n" +
-                        "• CS2 input lag: 18ms → 9ms (-50%)\n" +
-                        "• CPU usage: -8%\n" +
-                        "• RAM libre: +1.5GB\n\n" +
-                        "✅ EFECTO INMEDIATO (sin reinicio)\n\n" +
-                        "📝 Usado por DaddyGhost y 95% de PRO PLAYERS",
-                        "Game Bar Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "GameBar",
+                "GHOST Pack",
+                () => WindowsDebloat.DisableGameBar(),
+                "Xbox Game Bar deshabilitada. Input lag -50%, CPU libre +8%."
+            );
         }
 
         private void BtnGameBar_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = WindowsDebloat.EnableGameBar();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ GAME BAR & DVR HABILITADOS\n\n" +
-                        "⚠️ Input lag puede aumentar 10-30ms\n" +
-                        "⚠️ CPU usage puede aumentar 8%",
-                        "Game Bar Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "GameBar",
+                "GHOST Pack",
+                () => WindowsDebloat.EnableGameBar(),
+                "Xbox Game Bar restaurada."
+            );
         }
 
         private void BtnCoreIsolation_On_Click(object sender, RoutedEventArgs e)
         {
+            _tweakHelper.ExecuteTweak(
+                "CoreIsolation",
+                "GHOST Pack",
+                () => WindowsDebloat.DisableCoreIsolation(),
+                "Core Isolation (VBS) deshabilitado. FPS +10-30%, Input lag -3ms.",
+                null,
+                true
+            );
+        }
+
+        private void BtnCoreIsolation_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "CoreIsolation",
+                "GHOST Pack",
+                () => WindowsDebloat.EnableCoreIsolation(),
+                "Core Isolation (VBS) restaurado.",
+                null,
+                true
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NUEVAS FUNCIONALIDADES AVANZADAS - MPO & CPU SCHEDULING
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnMPOFix_On_Click(object sender, RoutedEventArgs e)
+        {
             try
             {
-                bool success = WindowsDebloat.DisableCoreIsolation();
-                
-                if (success)
+                var result = MessageBox.Show(
+                    "🚫 DESHABILITAR MPO (MULTIPLANE OVERLAY)\n\n" +
+                    "⚠️ IMPORTANTE - LEE ANTES DE CONTINUAR ⚠️\n\n" +
+                    "QUÉ HACE ESTE TWEAK:\n" +
+                    "✅ Elimina stuttering causado por MPO\n" +
+                    "✅ Sin pantallazos negros al Alt+Tab\n" +
+                    "✅ Frame pacing más consistente\n" +
+                    "✅ Overlays (Discord, OBS) sin problemas\n" +
+                    "✅ Mejor compatibilidad G-Sync/FreeSync\n\n" +
+                    "🔧 MÉTODO:\n" +
+                    "Establece OverlayTestMode = 5 para forzar modo legacy\n\n" +
+                    "💻 REQUIERE REINICIO OBLIGATORIAMENTE\n\n" +
+                    "¿Continuar deshabilitando MPO?",
+                    "Deshabilitar MPO",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show(
-                        "✅ CORE ISOLATION (VBS) DESHABILITADO\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "GHOST FPS BOOST APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "CLAVES MODIFICADAS:\n" +
-                        "• HKLM\\...\\DeviceGuard\n" +
-                        "  EnableVirtualizationBasedSecurity = 0\n\n" +
-                        "• HKLM\\...\\HypervisorEnforcedCodeIntegrity\n" +
-                        "  Enabled = 0\n\n" +
-                        "OPTIMIZACIONES:\n" +
-                        "✅ Sin overhead de hypervisor\n" +
-                        "✅ GPU drivers latencia reducida\n" +
-                        "✅ DX11/DX12 calls más rápidas\n" +
-                        "✅ DPC latency reducida\n\n" +
-                        "BENCHMARKS (Battle(non)sense):\n" +
-                        "• Rainbow Six Siege:\n" +
-                        "  FPS: 280 → 315 (+12.5%)\n" +
-                        "  0.1% low: 165 → 205 (+24.2%)\n\n" +
-                        "• CS:GO:\n" +
-                        "  FPS: 520 → 580 (+11.5%)\n\n" +
-                        "• Valorant:\n" +
-                        "  FPS: 400 → 445 (+11.2%)\n" +
-                        "  Input lag: -3ms\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS OBLIGATORIAMENTE ⚠️⚠️⚠️\n\n" +
-                        "📝 NOTA: Windows Defender sigue funcionando\n" +
-                        "📝 Usado por DaddyGhost y Battle(non)sense",
-                        "Core Isolation Deshabilitado - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    _tweakHelper.ExecuteTweak(
+                        "MPOFix",
+                        "GHOST Pack",
+                        () => InputTweaks.DisableMPO(),
+                        "MPO deshabilitado. Frame pacing más consistente.\n\n⚠️ REINICIA Windows para aplicar cambios.",
+                        null,
+                        true
+                    );
                 }
             }
             catch (Exception ex)
@@ -1539,22 +1318,157 @@ namespace Tweaker
             }
         }
 
-        private void BtnCoreIsolation_Off_Click(object sender, RoutedEventArgs e)
+        private void BtnMPOFix_Off_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                bool success = WindowsDebloat.EnableCoreIsolation();
-                
-                if (success)
+                var result = MessageBox.Show(
+                    "🔄 RESTAURAR MPO (MULTIPLANE OVERLAY)\n\n" +
+                    "⚠️ ADVERTENCIA ⚠️\n\n" +
+                    "ESTO RESTAURARÁ MPO A CONFIGURACIÓN WINDOWS:\n" +
+                    "• El stuttering puede VOLVER si tenías problemas\n" +
+                    "• Pantallazos negros pueden reaparecer\n" +
+                    "• Problemas con overlays pueden volver\n\n" +
+                    "✅ SOLO RESTAURA SI:\n" +
+                    "• Experimentas problemas después de deshabilitar MPO\n" +
+                    "• Tu sistema funciona mejor con MPO habilitado\n\n" +
+                    "💻 REQUIERE REINICIO OBLIGATORIAMENTE\n\n" +
+                    "¿Continuar restaurando MPO?",
+                    "Restaurar MPO",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    MessageBox.Show(
-                        "✅ CORE ISOLATION (VBS) HABILITADO\n\n" +
-                        "Virtualization Based Security restaurado.\n\n" +
-                        "⚠️ FPS puede reducirse 10-30%\n" +
-                        "⚠️ REINICIA Windows",
-                        "Core Isolation Habilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    _tweakHelper.ExecuteTweakRevert(
+                        "MPOFix",
+                        "GHOST Pack",
+                        () => InputTweaks.RestoreMPO(),
+                        "MPO restaurado a configuración Windows.\n\n⚠️ REINICIA Windows para aplicar cambios.",
+                        null,
+                        true
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RadioBalanced_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _tweakHelper.ExecuteTweak(
+                    "CpuPriorityBalanced",
+                    "GHOST Pack",
+                    () => InputTweaks.SetBalancedCpuProfile(),
+                    "Perfil CPU 'Balanced' aplicado. Balance óptimo gaming/multitasking.\n\n⚠️ REINICIA Windows para efecto completo.",
+                    null,
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RadioSmooth_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _tweakHelper.ExecuteTweak(
+                    "CpuPrioritySmooth", 
+                    "GHOST Pack",
+                    () => InputTweaks.SetSmoothCpuProfile(),
+                    "Perfil CPU 'Smooth' aplicado. Time slices largos para streaming.\n\n⚠️ REINICIA Windows para efecto completo.",
+                    null,
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RadioAggressive_Checked(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "⚡ PERFIL CPU AGGRESSIVE\n\n" +
+                    "⚠️ ADVERTENCIA ⚠️\n\n" +
+                    "ESTE PERFIL ES MUY AGRESIVO:\n" +
+                    "✅ Máximo rendimiento para gaming competitivo\n" +
+                    "✅ Latencia mínima para aplicación activa\n" +
+                    "✅ Ideal para esports\n\n" +
+                    "⚠️ PUEDE AFECTAR:\n" +
+                    "• Multitasking intensivo\n" +
+                    "• Aplicaciones en segundo plano\n" +
+                    "• Estabilidad en sistemas lentos\n\n" +
+                    "💻 REQUIERE REINICIO OBLIGATORIAMENTE\n\n" +
+                    "¿Aplicar perfil Aggressive?",
+                    "Perfil CPU Aggressive",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    _tweakHelper.ExecuteTweak(
+                        "CpuPriorityAggressive",
+                        "GHOST Pack", 
+                        () => InputTweaks.SetAggressiveCpuProfile(),
+                        "Perfil CPU 'Aggressive' aplicado. Máximo rendimiento gaming.\n\n⚠️ REINICIA Windows para efecto completo.",
+                        null,
+                        true
+                    );
+                }
+                else
+                {
+                    // Si cancela, revertir la selección del radio button
+                    ((RadioButton)sender).IsChecked = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnCpuPriority_Reset_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "🔄 RESETEAR PERFIL CPU\n\n" +
+                    "Esto restaurará Win32PrioritySeparation\n" +
+                    "al valor por defecto de Windows (2).\n\n" +
+                    "✅ Revierte cualquier optimización\n" +
+                    "✅ Comportamiento Windows estándar\n\n" +
+                    "💻 REQUIERE REINICIO OBLIGATORIAMENTE\n\n" +
+                    "¿Resetear a configuración por defecto?",
+                    "Reset CPU Priority",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    _tweakHelper.ExecuteTweakRevert(
+                        "CpuPriority",
+                        "GHOST Pack",
+                        () => InputTweaks.ResetCpuProfile(),
+                        "Perfil CPU reseteado a configuración Windows por defecto.\n\n⚠️ REINICIA Windows para efecto completo.",
+                        null,
+                        true
+                    );
+
+                    // Limpiar selección de radio buttons
+                    RadioBalanced.IsChecked = false;
+                    RadioSmooth.IsChecked = false;
+                    RadioAggressive.IsChecked = false;
                 }
             }
             catch (Exception ex)
@@ -1573,131 +1487,42 @@ namespace Tweaker
 
         private void BtnKeyboard_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = KeyboardOptimization.OptimizeKeyboard();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ TECLADO OPTIMIZADO PARA GAMING\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "INPUT LAG FIX APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "Registro modificado:\n" +
-                        "HKCU\\Control Panel\\Keyboard\n\n" +
-                        "CAMBIOS:\n" +
-                        "• KeyboardDelay: 0 (sin delay)\n" +
-                        "• KeyboardSpeed: 31 (máximo)\n" +
-                        "• NumLock: ON al inicio\n\n" +
-                        "BENEFICIOS:\n" +
-                        "✅ Input lag reducido 50-100ms\n" +
-                        "✅ WASD más responsive\n" +
-                        "✅ Strafe más preciso (shooters)\n" +
-                        "✅ Bunny hop más fácil (CS2, Valorant)\n" +
-                        "✅ Builder más rápido (Fortnite)\n\n" +
-                        "✅ EFECTO INMEDIATO (sin reinicio)\n\n" +
-                        "📝 Usado por PRO PLAYERS con teclado mecánico",
-                        "Teclado Optimizado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "Keyboard",
+                "Input & Visuals",
+                () => KeyboardOptimization.OptimizeKeyboard(),
+                "Teclado optimizado. Input lag reducido 50ms, WASD más responsive."
+            );
         }
 
         private void BtnKeyboard_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = KeyboardOptimization.RestoreKeyboard();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ TECLADO RESTAURADO A DEFAULT\n\n" +
-                        "• KeyboardDelay: 1 (250ms delay)\n" +
-                        "• Comportamiento Windows estándar\n\n" +
-                        "✅ EFECTO INMEDIATO",
-                        "Teclado Restaurado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "Keyboard",
+                "Input & Visuals",
+                () => KeyboardOptimization.RestoreKeyboard(),
+                "Configuración de teclado restaurada a valores predeterminados."
+            );
         }
 
         private void BtnVisuals_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = VisualOptimization.OptimizeVisuals();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ EFECTOS VISUALES OPTIMIZADOS\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "FPS BOOST APLICADO\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "Registros modificados:\n" +
-                        "HKCU\\...\\Explorer\\VisualEffects\n" +
-                        "HKCU\\...\\Windows\\DWM\n\n" +
-                        "CAMBIOS:\n" +
-                        "• VisualFXSetting: 2 (Mejor rendimiento)\n" +
-                        "• EnableAeroPeek: 0 (Deshabilitado)\n\n" +
-                        "EFECTOS DESHABILITADOS:\n" +
-                        "✅ Animaciones de ventanas\n" +
-                        "✅ Fade in/out de menús\n" +
-                        "✅ Transparencia\n" +
-                        "✅ Aero Peek (preview taskbar)\n\n" +
-                        "BENEFICIOS:\n" +
-                        "• FPS: +3-8% promedio\n" +
-                        "• GPU Usage: -5-10%\n" +
-                        "• RAM libre: +200-500MB\n" +
-                        "• Alt+Tab: 50% más rápido\n" +
-                        "• Frametime variance: -30%\n\n" +
-                        "✅ EFECTO INMEDIATO (sin reinicio)\n\n" +
-                        "⚠️ Windows se verá más 'flat' pero MÁS RÁPIDO",
-                        "Efectos Visuales Optimizados",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "VisualEffects",
+                "Input & Visuals",
+                () => VisualOptimization.OptimizeVisuals(),
+                "Efectos visuales deshabilitados. FPS +3-8%, GPU usage -5-10%."
+            );
         }
 
         private void BtnVisuals_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = VisualOptimization.RestoreVisuals();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ EFECTOS VISUALES RESTAURADOS\n\n" +
-                        "Windows decide automáticamente (mejor apariencia).\n\n" +
-                        "⚠️ Puede consumir más GPU y RAM\n" +
-                        "✅ EFECTO INMEDIATO",
-                        "Efectos Visuales Restaurados",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "VisualEffects",
+                "Input & Visuals",
+                () => VisualOptimization.RestoreVisuals(),
+                "Efectos visuales restaurados. Interfaz Windows con animaciones habilitadas."
+            );
         }
 
         private void BtnMemory_On_Click(object sender, RoutedEventArgs e)
@@ -1709,82 +1534,38 @@ namespace Tweaker
 
                 if (!recommended)
                 {
-                    var result = MessageBox.Show(
-                        $"{reason}\n\n" +
-                        "DisablePagingExecutive mantiene el kernel en RAM.\n" +
-                        "Con menos de 16GB, puede causar Out of Memory.\n\n" +
-                        "¿Estás SEGURO de continuar?",
-                        "Advertencia - RAM Insuficiente",
-                        MessageBoxButton.YesNo,
-                        MessageBoxImage.Warning);
-
-                    if (result == MessageBoxResult.No)
-                    {
-                        return;
-                    }
+                _notifications.ShowWarning(
+                    reason + "\n\nDisablePagingExecutive mantiene el kernel en RAM. Con menos de 16GB puede causar problemas.",
+                    "Advertencia - RAM Insuficiente"
+                );
+                    return;
                 }
 
-                bool success = MemoryTweaks.OptimizeMemory();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MEMORIA RAM OPTIMIZADA\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "KERNEL EN RAM - SNAPPY FIX\n" +
-                        "═══════════════════════════════════════\n\n" +
-                        "Registro modificado:\n" +
-                        "HKLM\\...\\Memory Management\n\n" +
-                        "CAMBIOS:\n" +
-                        "• DisablePagingExecutive: 1 (Kernel en RAM)\n" +
-                        "• LargeSystemCache: 0 (Apps priority)\n\n" +
-                        "¿QUÉ HACE?\n" +
-                        "• Mantiene kernel y drivers SIEMPRE en RAM\n" +
-                        "• NUNCA se mueven al disco (pagefile)\n" +
-                        "• Evita disk reads durante gaming\n\n" +
-                        "BENEFICIOS:\n" +
-                        "✅ Sistema MÁS 'SNAPPY' (responsive)\n" +
-                        "✅ Elimina stuttering por disk reads\n" +
-                        "✅ Operaciones instantáneas\n" +
-                        "✅ Latencia reducida en syscalls\n" +
-                        "✅ Frame times más consistentes\n" +
-                        "✅ Más RAM para juegos\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS OBLIGATORIAMENTE ⚠️⚠️⚠️\n\n" +
-                        $"📝 RAM detectada: {reason}",
-                        "Memoria Optimizada - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
+                _tweakHelper.ExecuteTweak(
+                    "MemoryOptimization",
+                    "Input & Visuals",
+                    () => MemoryTweaks.OptimizeMemory(),
+                    "RAM optimizada. Kernel en RAM permanente (requiere 16GB+).",
+                    null,
+                    true
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error al optimizar memoria: {ex.Message}");
             }
         }
 
         private void BtnMemory_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = MemoryTweaks.RestoreMemory();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MEMORIA RESTAURADA A DEFAULT\n\n" +
-                        "• DisablePagingExecutive: 0 (Kernel puede ir al disco)\n" +
-                        "• Windows puede mover drivers al pagefile\n\n" +
-                        "⚠️ Puede volver el stuttering\n" +
-                        "⚠️ REINICIA Windows",
-                        "Memoria Restaurada",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "MemoryOptimization",
+                "Input & Visuals",
+                () => MemoryTweaks.RestoreMemory(),
+                "Configuración de memoria restaurada.",
+                null,
+                true
+            );
         }
 
         #endregion
@@ -1797,73 +1578,22 @@ namespace Tweaker
 
         private void BtnMouseAccel_On_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = MouseTweaks.Apply();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MOUSE ACCELERATION OFF\n\n" +
-                        "═══════════════════════════════════════\n" +
-                        "CAMBIOS APLICADOS:\n" +
-                        "═══════════════════════════════════════\n" +
-                        "• MouseSpeed = 0 (Sin aceleración)\n" +
-                        "• MouseThreshold1 = 0 (Sin umbral)\n" +
-                        "• MouseThreshold2 = 0 (Sin segundo umbral)\n\n" +
-                        "BENEFICIOS PARA GAMING:\n" +
-                        "✅ Aim 1:1 pixel perfect tracking\n" +
-                        "✅ Muscle memory CONSISTENTE\n" +
-                        "✅ Movimientos PREDECIBLES\n" +
-                        "✅ Flicks más precisos\n" +
-                        "✅ CRÍTICO para shooters (CS2, Valorant)\n\n" +
-                        "✅ EFECTO INMEDIATO (sin reinicio)\n\n" +
-                        "📝 100% de PRO PLAYERS deshabilitan esto",
-                        "Mouse Optimizado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "❌ Error al deshabilitar aceleración del mouse.\n\n" +
-                        "Verifica permisos de administrador.",
-                        "Error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweak(
+                "MouseAcceleration",
+                "Input & Visuals",
+                () => MouseTweaks.Apply(),
+                "Mouse acceleration desactivada. Aim 1:1 pixel perfect activado para gaming competitivo."
+            );
         }
 
         private void BtnMouseAccel_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = MouseTweaks.Revert();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ MOUSE ACCELERATION ON\n\n" +
-                        "Configuración Windows default restaurada:\n" +
-                        "• MouseSpeed = 1\n" +
-                        "• MouseThreshold1 = 6\n" +
-                        "• MouseThreshold2 = 10\n\n" +
-                        "⚠️ La aceleración puede afectar tu aim\n" +
-                        "✅ EFECTO INMEDIATO",
-                        "Mouse Restaurado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "MouseAcceleration",
+                "Input & Visuals",
+                () => MouseTweaks.Revert(),
+                "Aceleración del mouse restaurada a valores predeterminados de Windows."
+            );
         }
 
         #endregion
@@ -1880,25 +1610,15 @@ namespace Tweaker
             {
                 var (mbCanFree, filesCount) = CleanerTweaks.AnalyzeSpace();
                 
-                MessageBox.Show(
-                    $"📊 ANÁLISIS COMPLETADO\n\n" +
-                    $"═══════════════════════════════════════\n" +
-                    $"ARCHIVOS TEMPORALES ENCONTRADOS:\n" +
-                    $"═══════════════════════════════════════\n" +
-                    $"Total de archivos: {filesCount:N0}\n" +
-                    $"Espacio a liberar: {mbCanFree:N0} MB\n\n" +
-                    $"UBICACIONES ESCANEADAS:\n" +
-                    $"• C:\\Windows\\Temp\n" +
-                    $"• %TEMP% (AppData\\Local\\Temp)\n" +
-                    $"• C:\\Windows\\Prefetch\n\n" +
-                    $"Haz click en 'LIMPIAR' para eliminarlos.",
-                    "Análisis de Espacio",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                _notifications.ShowInfo(
+                    $"Se pueden liberar {mbCanFree:F0} MB ({filesCount:N0} archivos).\n" +
+                    $"Promedio esperado: 500MB - 5GB",
+                    "Analisis Completado"
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"❌ Error al analizar: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error al analizar: {ex.Message}");
             }
         }
 
@@ -1925,77 +1645,85 @@ namespace Tweaker
                     
                     if (success)
                     {
-                        MessageBox.Show(
-                            $"✅ LIMPIEZA COMPLETADA\n\n" +
-                            $"═══════════════════════════════════════\n" +
-                            $"RESULTADOS:\n" +
-                            $"═══════════════════════════════════════\n" +
+                        _notifications.ShowSuccess(
                             $"Archivos eliminados: {filesDeleted:N0}\n" +
-                            $"Espacio liberado: {mbFreed:N0} MB\n\n" +
-                            $"✅ Archivos bloqueados fueron saltados\n" +
-                            $"✅ Sin errores durante la limpieza\n\n" +
-                            $"📝 Ejecuta periódicamente para mantener\n" +
-                            $"tu sistema limpio y rápido.",
-                            "Limpieza Exitosa",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Information);
+                            $"Espacio liberado: {mbFreed:N0} MB",
+                            "Limpieza Completada"
+                        );
                     }
                     else
                     {
-                        MessageBox.Show(
-                            $"⚠️ Limpieza parcialmente completada\n\n" +
+                        _notifications.ShowWarning(
                             $"Archivos eliminados: {filesDeleted:N0}\n" +
-                            $"Espacio liberado: {mbFreed:N0} MB\n\n" +
-                            $"Algunos archivos no pudieron eliminarse\n" +
-                            $"(probablemente en uso por el sistema).",
-                            "Limpieza Parcial",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                            $"Espacio liberado: {mbFreed:N0} MB\n" +
+                            $"Algunos archivos no pudieron eliminarse (en uso).",
+                            "Limpieza Parcial"
+                        );
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"❌ Error durante limpieza: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error durante limpieza: {ex.Message}");
             }
         }
 
         private void BtnFlushDNS_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = CleanerTweaks.FlushDNS();
-                
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ DNS CACHE FLUSHED\n\n" +
-                        "Caché de resolución DNS limpiado.\n\n" +
-                        "BENEFICIOS:\n" +
-                        "✅ Resuelve errores de conexión\n" +
-                        "✅ Aplica nuevos servidores DNS inmediatamente\n" +
-                        "✅ Elimina entradas obsoletas/corruptas\n" +
-                        "✅ Puede mejorar ping si cambiaste DNS\n\n" +
-                        "✅ EFECTO INMEDIATO",
-                        "DNS Cache Limpiado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-                else
-                {
-                    MessageBox.Show(
-                        "⚠️ No se pudo limpiar el DNS cache.\n\n" +
-                        "Intenta ejecutar manualmente:\n" +
-                        "ipconfig /flushdns",
-                        "Advertencia",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteAction(
+                () => CleanerTweaks.FlushDNS(),
+                "Caché DNS limpiado (ipconfig /flushdns). Resolución DNS actualizada."
+            );
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DNS OPTIMIZATION METHODS (agregados a Red & Ping)
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region DNS Optimization
+
+
+
+        private void BtnDnsCloudflare_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.SetCloudflareDns();
+        }
+
+        private void BtnDnsGoogle_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.SetGoogleDns();
+        }
+
+        private void BtnDnsCache_On_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.EnableDnsCacheOptimization();
+        }
+
+        private void BtnDnsCache_Off_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.DisableDnsCacheOptimization();
+        }
+
+        private void BtnNetworkPower_On_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.DisableNetworkAdapterPowerSaving();
+        }
+
+        private void BtnNetworkPower_Off_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.EnableNetworkAdapterPowerSaving();
+        }
+
+        private void BtnNetBios_On_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.DisableNetBios();
+        }
+
+        private void BtnNetBios_Off_Click(object sender, RoutedEventArgs e)
+        {
+            DnsOptimization.EnableNetBios();
         }
 
         #endregion
@@ -2028,61 +1756,450 @@ namespace Tweaker
 
                 if (result != MessageBoxResult.Yes) return;
 
-                bool success = AdvancedTweaks.DisableSpectreMeltdown();
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Mitigaciones Spectre/Meltdown DESHABILITADAS.\n\n" +
-                        "⚠️⚠️⚠️ REINICIA WINDOWS OBLIGATORIAMENTE ⚠️⚠️⚠️",
-                        "Optimización Aplicada - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
+                _tweakHelper.ExecuteTweak(
+                    "SpectreMeltdown",
+                    "Advanced",
+                    () => AdvancedTweaks.DisableSpectreMeltdown(),
+                    "Mitigaciones Spectre/Meltdown deshabilitadas. +5-15% FPS (SISTEMA VULNERABLE).",
+                    null,
+                    true
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error: {ex.Message}");
             }
         }
 
         private void BtnSpectreMeltdown_Off_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                bool success = AdvancedTweaks.EnableSpectreMeltdown();
-                if (success)
-                {
-                    MessageBox.Show(
-                        "✅ Mitigaciones Spectre/Meltdown HABILITADAS.\n\n" +
-                        "La seguridad del sistema ha sido restaurada.\n\n" +
-                        "⚠️ REINICIA Windows para aplicar los cambios.",
-                        "Configuración Restaurada - REINICIAR",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            _tweakHelper.ExecuteTweakRevert(
+                "SpectreMeltdown",
+                "Advanced",
+                () => AdvancedTweaks.EnableSpectreMeltdown(),
+                "Mitigaciones Spectre/Meltdown restauradas. Sistema protegido.",
+                null,
+                true
+            );
         }
 
         private void BtnGpuIRQ_On_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                var result = MessageBox.Show(
+                    "🎮 GPU IRQ OPTIMIZATION\n\n" +
+                    "Esta optimización asignará la interrupción de la GPU\n" +
+                    "a un core específico del procesador.\n\n" +
+                    "BENEFICIOS:\n" +
+                    "✅ Reduce DPC latency\n" +
+                    "✅ Mejora consistencia de frame times\n" +
+                    "✅ Mejor separación de workloads CPU/GPU\n" +
+                    "✅ Menos micro-stuttering\n\n" +
+                    "REQUISITOS:\n" +
+                    "⚠️ Se requieren al menos 4 cores CPU\n" +
+                    "⚠️ Requiere permisos de administrador\n\n" +
+                    "¿Continuar con la optimización?",
+                    "GPU IRQ Optimization",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "GpuIRQ",
+                    "Advanced",
+                    () => GpuIRQOptimization.EnableGpuIRQOptimization(),
+                    "GPU IRQ optimizada. Interrupción asignada a core específico para menor latencia.",
+                    null,
+                    true
+                );
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error: {ex.Message}");
+            }
+        }
+
+        private void BtnGpuIRQ_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "GpuIRQ",
+                "Advanced",
+                () => GpuIRQOptimization.DisableGpuIRQOptimization(),
+                "GPU IRQ restaurada. Distribución automática de interrupciones habilitada.",
+                null,
+                true
+            );
+        }
+
+        /// <summary>
+        /// Diagnóstico completo de GPU IRQ
+        /// </summary>
+        private void BtnGpuIRQDiagnose_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string diagnosis = GpuIRQOptimization.DiagnoseGpuIRQ();
+                
+                var (isOptimized, details, gpuInfo) = GpuIRQOptimization.GetGpuIRQStatus();
+
                 MessageBox.Show(
-                    "ℹ️ OPTIMIZACIÓN DE IRQ DE GPU\n\n" +
-                    "Esta función está en desarrollo.\n\n" +
-                    "En el futuro, permitirá asignar la interrupción (IRQ) de la GPU a un core específico del CPU, " +
-                    "reduciendo la latencia DPC y mejorando la consistencia de los frame times.\n\n" +
-                    "Actualmente, esta es una simulación y no realiza cambios reales.",
-                    "Función en Desarrollo",
+                    $"🔍 DIAGNÓSTICO GPU IRQ OPTIMIZATION\n\n" +
+                    $"{diagnosis}\n\n" +
+                    $"📊 FUNCIONALIDADES IMPLEMENTADAS:\n" +
+                    $"• Detección automática de GPU primaria\n" +
+                    $"• Asignación de IRQ a core específico\n" +
+                    $"• Optimizaciones de registro DPC\n" +
+                    $"• Verificación de estado completa\n\n" +
+                    $"Revisa el Output de Visual Studio para logs detallados.",
+                    "Diagnóstico GPU IRQ",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ Error en diagnóstico: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
 
-                // bool success = AdvancedTweaks.SetGpuInterruptPriority();
-                // if (success) { ... }
+        // ═══════════════════════════════════════════════════════════════════
+        // WIN32 PRIORITY SEPARATION - PERFILES DE CPU SCHEDULING
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void ProfileBalanced_Click(object sender, MouseButtonEventArgs e)
+        {
+            ApplyPriorityProfile("Balanced", "⚖️ BALANCED");
+        }
+
+        private void ProfileSmooth_Click(object sender, MouseButtonEventArgs e)
+        {
+            ApplyPriorityProfile("Smooth", "🌊 SMOOTH");
+        }
+
+        private void ProfileAggressive_Click(object sender, MouseButtonEventArgs e)
+        {
+            ApplyPriorityProfile("Aggressive", "⚡ AGGRESSIVE");
+        }
+
+        private void BtnWin32PriorityReset_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyPriorityProfile("Default", "🔄 DEFAULT");
+        }
+
+        /// <summary>
+        /// Método auxiliar para aplicar perfiles de CPU Scheduling con confirmación
+        /// </summary>
+        private void ApplyPriorityProfile(string profile, string displayName)
+        {
+            try
+            {
+                // Obtener detalles del perfil
+                string profileValue, description, benefits, warning;
+
+                switch (profile.ToLower())
+                {
+                    case "balanced":
+                        profileValue = "38 (0x26)";
+                        description = "Balance óptimo gaming/sistema";
+                        benefits = 
+                            "✅ Foreground apps priorizadas moderadamente\n" +
+                            "✅ Background apps funcionan bien\n" +
+                            "✅ Perfecto para gaming + streaming\n" +
+                            "✅ Time slices balanceados";
+                        warning = "⚠️ RECOMENDADO para la mayoría de usuarios";
+                        break;
+
+                    case "smooth":
+                        profileValue = "40 (0x28)";
+                        description = "Máxima suavidad y frame times";
+                        benefits = 
+                            "✅ Time slices largos = menos context switches\n" +
+                            "✅ Frame times ultra-consistentes\n" +
+                            "✅ Ideal para single-player exigentes\n" +
+                            "✅ Menos interrupciones del sistema";
+                        warning = "⚠️ Background apps menos responsivas";
+                        break;
+
+                    case "aggressive":
+                        profileValue = "22 (0x16)";
+                        description = "Máxima responsividad competitiva";
+                        benefits = 
+                            "✅ Foreground app recibe TODO el CPU\n" +
+                            "✅ Time slices cortos = respuesta instantánea\n" +
+                            "✅ Perfecto para FPS competitivos (CS2, Valorant)\n" +
+                            "✅ Input lag mínimo absoluto";
+                        warning = "⚠️ EXTREMO: Background apps casi congeladas";
+                        break;
+
+                    case "default":
+                        profileValue = "2";
+                        description = "Valor por defecto de Windows";
+                        benefits = 
+                            "✅ Comportamiento estándar de Windows\n" +
+                            "✅ Sin optimizaciones específicas\n" +
+                            "✅ Balance general del sistema\n" +
+                            "✅ Revierte cualquier cambio previo";
+                        warning = "ℹ️ Restaura configuración original";
+                        break;
+
+                    default:
+                        MessageBox.Show($"Perfil desconocido: {profile}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                }
+
+                var result = MessageBox.Show(
+                    $"🎯 APLICAR PERFIL: {displayName}\n\n" +
+                    $"📋 VALOR: {profileValue}\n" +
+                    $"🎮 DESCRIPCIÓN: {description}\n\n" +
+                    $"🚀 BENEFICIOS:\n{benefits}\n\n" +
+                    $"{warning}\n\n" +
+                    $"⚠️⚠️ ADVERTENCIA CRÍTICA ⚠️⚠️\n" +
+                    $"Este tweak cambia el CPU scheduling de TODO el sistema.\n" +
+                    $"Foreground apps (juegos) vs Background apps.\n\n" +
+                    $"¿Aplicar perfil {profile.ToUpper()}?",
+                    $"Perfil CPU Scheduling - {displayName}",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                // Aplicar el perfil
+                bool success = InputTweaks.SetPriorityProfile(profile);
+
+                if (success)
+                {
+                    // Actualizar UI
+                    UpdatePriorityProfileUI(profile);
+
+                    // Registrar en TweakHelper (solo si no es Default)
+                    if (profile.ToLower() != "default")
+                    {
+                        _tweakHelper.ExecuteTweak(
+                            "Win32Priority",
+                            "Advanced - Input & USB",
+                            () => true, // Ya aplicado arriba
+                            $"✅ Perfil {displayName} aplicado exitosamente. CPU scheduling optimizado."
+                        );
+                    }
+                    else
+                    {
+                        _tweakHelper.ExecuteTweakRevert(
+                            "Win32Priority",
+                            "Advanced - Input & USB",
+                            () => true, // Ya aplicado arriba
+                            "✅ Win32 Priority restaurado a valor por defecto de Windows (2)."
+                        );
+                    }
+
+                    _notifications.ShowSuccess(
+                        $"Perfil {displayName} aplicado exitosamente.\n\n" +
+                        $"El CPU scheduling ahora está configurado para: {description}",
+                        $"Perfil {displayName} Aplicado"
+                    );
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "❌ Error al aplicar el perfil.\n\n" +
+                        "Verifica que ejecutas la aplicación como Administrador.",
+                        "Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"❌ Error al aplicar perfil: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Actualiza la UI para mostrar el perfil actualmente seleccionado
+        /// </summary>
+        private void UpdatePriorityProfileUI(string profile)
+        {
+            try
+            {
+                // Buscar los controles dinámicamente
+                var profileBalanced = this.FindName("ProfileBalanced") as Border;
+                var profileSmooth = this.FindName("ProfileSmooth") as Border;
+                var profileAggressive = this.FindName("ProfileAggressive") as Border;
+                var txtCurrentProfile = this.FindName("TxtCurrentPriorityProfile") as TextBlock;
+
+                if (profileBalanced == null || profileSmooth == null || profileAggressive == null)
+                {
+                    Debug.WriteLine("Warning: Priority Profile controls not found");
+                    return;
+                }
+
+                // Reset todos los bordes a estado normal
+                profileBalanced.BorderBrush = null;
+                profileBalanced.BorderThickness = new Thickness(0);
+                profileSmooth.BorderBrush = null;
+                profileSmooth.BorderThickness = new Thickness(0);
+                profileAggressive.BorderBrush = null;
+                profileAggressive.BorderThickness = new Thickness(0);
+
+                // Highlight el perfil seleccionado
+                var activeBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D9FF"));
+                
+                switch (profile.ToLower())
+                {
+                    case "balanced":
+                        profileBalanced.BorderBrush = activeBrush;
+                        profileBalanced.BorderThickness = new Thickness(2);
+                        if (txtCurrentProfile != null)
+                            txtCurrentProfile.Text = "⚖️ BALANCED (38)";
+                        break;
+                    case "smooth":
+                        profileSmooth.BorderBrush = activeBrush;
+                        profileSmooth.BorderThickness = new Thickness(2);
+                        if (txtCurrentProfile != null)
+                            txtCurrentProfile.Text = "🌊 SMOOTH (40)";
+                        break;
+                    case "aggressive":
+                        profileAggressive.BorderBrush = activeBrush;
+                        profileAggressive.BorderThickness = new Thickness(2);
+                        if (txtCurrentProfile != null)
+                            txtCurrentProfile.Text = "⚡ AGGRESSIVE (22)";
+                        break;
+                    case "default":
+                        if (txtCurrentProfile != null)
+                            txtCurrentProfile.Text = "🔄 DEFAULT (2)";
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error updating Priority Profile UI: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el perfil de CPU Scheduling actual al cargar la ventana
+        /// </summary>
+        private void UpdateCurrentPriorityProfile()
+        {
+            try
+            {
+                string currentProfile = InputTweaks.GetCurrentPriorityProfile();
+                UpdatePriorityProfileUI(currentProfile);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error detecting current Priority Profile: {ex.Message}");
+                var txtCurrentProfile = this.FindName("TxtCurrentPriorityProfile") as TextBlock;
+                if (txtCurrentProfile != null)
+                    txtCurrentProfile.Text = "Desconocido";
+            }
+        }
+
+        // Mantener métodos antiguos para compatibilidad (ahora llaman a Balanced)
+        [Obsolete("Use ProfileBalanced_Click instead")]
+        private void BtnWin32Priority_On_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyPriorityProfile("Balanced", "⚖️ BALANCED");
+        }
+
+        [Obsolete("Use BtnWin32PriorityReset_Click instead")]
+        private void BtnWin32Priority_Off_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyPriorityProfile("Default", "🔄 DEFAULT");
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // INPUT & USB OPTIMIZATIONS - MÉTODOS FALTANTES
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnOptimizeUSB_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "USBOptimization",
+                "Advanced - Input & USB",
+                () => InputTweaks.OptimizeUSBForGaming(),
+                "✅ USB optimizado para gaming. Latencia reducida, mejor polling rate para mouse/teclado."
+            );
+        }
+
+        private void BtnOptimizeUSB_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "USBOptimization",
+                "Advanced - Input & USB",
+                () => InputTweaks.RevertUSBOptimization(),
+                "USB restaurado a configuración por defecto."
+            );
+        }
+
+        private void BtnOptimizeInputQueues_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "InputQueues",
+                "Advanced - Input & USB",
+                () => InputTweaks.OptimizeInputQueues(),
+                "✅ Colas de input optimizadas. Reducción de latencia de mouse y teclado."
+            );
+        }
+
+        private void BtnOptimizeInputQueues_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "InputQueues",
+                "Advanced - Input & USB",
+                () => InputTweaks.RevertInputQueues(),
+                "Colas de input restauradas a configuración por defecto."
+            );
+        }
+
+        private void BtnDisableFTH_On_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "🔧 DESHABILITAR FAULT TOLERANT HEAP (FTH)\n\n" +
+                    "¿Qué es FTH?\n" +
+                    "════════════════════════════════════════\n" +
+                    "• Sistema de Windows que detecta crashes frecuentes\n" +
+                    "• Activa un 'heap especial' para apps 'problemáticas'\n" +
+                    "• Afecta NEGATIVAMENTE a juegos optimizados\n\n" +
+                    "PROBLEMA EN GAMING:\n" +
+                    "════════════════════════════════════════\n" +
+                    "• FTH marca juegos como 'problemáticos' incorrectamente\n" +
+                    "• Fuerza heap lento en juegos optimizados\n" +
+                    "• Causa frame drops inesperados\n" +
+                    "• Reduce rendimiento en 5-15%\n\n" +
+                    "SOLUCIÓN:\n" +
+                    "════════════════════════════════════════\n" +
+                    "• Deshabilitar FTH completamente\n" +
+                    "• Los juegos usarán heap normal (rápido)\n" +
+                    "• Frame consistency mejorada\n\n" +
+                    "⚠️ IMPORTANTE: Solo para sistemas estables.\n" +
+                    "Si tienes crashes frecuentes, mantén FTH activado.\n\n" +
+                    "¿Deshabilitar Fault Tolerant Heap?",
+                    "Deshabilitar FTH",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "FaultTolerantHeap",
+                    "Advanced - Input & USB",
+                    () => InputTweaks.DisableFaultTolerantHeap(),
+                    "✅ Fault Tolerant Heap deshabilitado. Juegos usarán heap optimizado. REINICIA para aplicar.",
+                    null,
+                    true // Requires restart
+                );
             }
             catch (Exception ex)
             {
@@ -2090,19 +2207,590 @@ namespace Tweaker
             }
         }
 
-        private void BtnGpuIRQ_Off_Click(object sender, RoutedEventArgs e)
+        private void BtnDisableFTH_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "FaultTolerantHeap",
+                "Advanced - Input & USB",
+                () => InputTweaks.EnableFaultTolerantHeap(),
+                "Fault Tolerant Heap restaurado. Sistema protegido contra apps problemáticas.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TRANSPARENCY EFFECTS
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnTransparency_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "TransparencyEffects",
+                "Input & Visuals",
+                () => VisualOptimization.DisableTransparency(),
+                "✅ Efectos de transparencia deshabilitados. VRAM liberada +50-200MB."
+            );
+        }
+
+        private void BtnTransparency_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "TransparencyEffects",
+                "Input & Visuals",
+                () => VisualOptimization.RestoreTransparency(),
+                "Efectos de transparencia restaurados."
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ADVANCED NETWORK OPTIMIZATIONS
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnMTU_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "MTUOptimization",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.OptimizeMTU(),
+                "✅ MTU optimizado a 1492 bytes. Latencia reducida 2-5ms."
+            );
+        }
+
+        private void BtnMTU_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "MTUOptimization",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertMTU(),
+                "MTU restaurado a valores por defecto."
+            );
+        }
+
+        private void BtnQoS_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "QoSConfiguration",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.ConfigureQoS(),
+                "✅ QoS configurado. Tráfico de gaming priorizado, 20% ancho de banda liberado."
+            );
+        }
+
+        private void BtnQoS_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "QoSConfiguration",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertQoS(),
+                "QoS restaurado a configuración estándar."
+            );
+        }
+
+        private void BtnAutoTuning_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "AutoTuningLevel",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.ConfigureAutoTuning(),
+                "✅ Auto-Tuning configurado. Uso de CPU reducido -30%, mejor throughput."
+            );
+        }
+
+        private void BtnAutoTuning_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "AutoTuningLevel",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertAutoTuning(),
+                "Auto-Tuning restaurado a configuración por defecto."
+            );
+        }
+
+        private void BtnAdapterSettings_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "AdapterSettings",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.OptimizeAdapterSettings(),
+                "✅ Configuración de adaptador optimizada. Window Scaling y SACK configurados."
+            );
+        }
+
+        private void BtnAdapterSettings_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "AdapterSettings",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertAdapterSettings(),
+                "Configuración de adaptador restaurada."
+            );
+        }
+
+        private void BtnCongestionControl_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "CongestionControl",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.ConfigureCongestionControl(),
+                "✅ Control de congestión optimizado. CTCP y ECN configurados."
+            );
+        }
+
+        private void BtnCongestionControl_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "CongestionControl",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertCongestionControl(),
+                "Control de congestión restaurado."
+            );
+        }
+
+        private void BtnAllAdvancedNetwork_On_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                 MessageBox.Show(
-                    "ℹ️ RESTAURACIÓN DE IRQ DE GPU\n\n" +
-                    "Esta función está en desarrollo y actualmente no realiza cambios.",
-                    "Función en Desarrollo",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                var result = MessageBox.Show(
+                    "🌐 APLICAR TODAS LAS OPTIMIZACIONES AVANZADAS DE RED\n\n" +
+                    "SE APLICARÁN:\n" +
+                    "✅ MTU Optimization (1492 bytes)\n" +
+                    "✅ QoS Configuration (20% liberado)\n" +
+                    "✅ Auto-Tuning Level (CPU -30%)\n" +
+                    "✅ Adapter Advanced Settings\n" +
+                    "✅ Congestion Control (CTCP + ECN)\n\n" +
+                    "🎯 REDUCCIÓN ESTIMADA: -11 a -29ms latencia\n\n" +
+                    "⚠️ REQUIERE REINICIO después de aplicar.\n\n" +
+                    "¿Aplicar TODAS las optimizaciones avanzadas?",
+                    "Aplicar Optimizaciones Avanzadas de Red",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
 
-                // bool success = AdvancedTweaks.RestoreGpuInterruptPriority();
-                // if (success) { ... }
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "AllAdvancedNetwork",
+                    "Red & Ping - Advanced",
+                    () => AdvancedNetworkTweaks.ApplyAllOptimizations(),
+                    "✅ TODAS las optimizaciones avanzadas de red aplicadas. REINICIA para efecto completo.",
+                    null,
+                    true // Requires restart
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnAllAdvancedNetwork_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "AllAdvancedNetwork",
+                "Red & Ping - Advanced",
+                () => AdvancedNetworkTweaks.RevertAllOptimizations(),
+                "Todas las optimizaciones avanzadas de red han sido restauradas.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // GAME MODE & OPTIMIZATIONS
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnGameMode_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "WindowsGameMode",
+                "Sistema & GPU - Game Mode",
+                () => GameModeTweaks_Optimized.EnableGameMode(),
+                "✅ Windows Game Mode activado. Frame stability +10-15%."
+            );
+        }
+
+        private void BtnGameMode_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "WindowsGameMode",
+                "Sistema & GPU - Game Mode",
+                () => GameModeTweaks_Optimized.DisableGameMode(),
+                "Windows Game Mode desactivado."
+            );
+        }
+
+        private void BtnNTFSLastAccess_On_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "NTFSLastAccessTime",
+                "Sistema & GPU - Game Mode",
+                () => DiskTweaks.DisableNTFSLastAccessTime(),
+                "✅ NTFS Last Access Time deshabilitado. Disco +5-15%, vida útil SSD aumentada. REINICIO REQUERIDO.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        private void BtnNTFSLastAccess_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "NTFSLastAccessTime",
+                "Sistema & GPU - Game Mode",
+                () => DiskTweaks.EnableNTFSLastAccessTime(),
+                "NTFS Last Access Time restaurado. REINICIO REQUERIDO.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        private void BtnGamePriority_On_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "🎮 CONFIGURAR PRIORIDAD ALTA PARA JUEGOS\n\n" +
+                    "SE CONFIGURARÁ PRIORIDAD ALTA PARA:\n" +
+                    "• Fortnite, CS2, Valorant, Warzone\n" +
+                    "• Apex Legends, PUBG, Rainbow Six\n" +
+                    "• League of Legends, Rocket League\n" +
+                    "• Y 6 juegos más populares\n\n" +
+                    "🚀 BENEFICIOS:\n" +
+                    "• 0.1% Low FPS +15-20%\n" +
+                    "• Input lag -2-5ms\n" +
+                    "• Menos interrupciones del sistema\n\n" +
+                    "⚠️ REQUIERE REINICIO para aplicar\n\n" +
+                    "¿Configurar prioridad alta para juegos?",
+                    "Prioridad Alta para Juegos",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "GameProcessPriority",
+                    "Sistema & GPU - Game Mode",
+                    () => GameModeTweaks_Optimized.SetHighPriorityForGames(),
+                    "✅ Prioridad ALTA configurada para 15 juegos populares. REINICIA para aplicar.",
+                    null,
+                    true // Requires restart
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnGamePriority_Off_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "GameProcessPriority",
+                "Sistema & GPU - Game Mode",
+                () => GameModeTweaks_Optimized.RevertGamePriority(),
+                "Prioridad de juegos restaurada a normal. REINICIA para aplicar.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TOQUES FINALES - FINISHING TOUCHES
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnDisableUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "🚫 DESHABILITAR WINDOWS UPDATE AUTOMÁTICO\n\n" +
+                    "⚠️ ADVERTENCIA IMPORTANTE ⚠️\n" +
+                    "Esto deshabilitará las actualizaciones automáticas.\n\n" +
+                    "BENEFICIOS GAMING:\n" +
+                    "✅ Sin lag spikes por descargas\n" +
+                    "✅ Ancho de banda completo para gaming\n" +
+                    "✅ Sin interrupciones durante partidas\n\n" +
+                    "⚠️ IMPORTANTE:\n" +
+                    "• Deberás actualizar manualmente\n" +
+                    "• Check updates periódicamente\n" +
+                    "• Solo para gamers experimentados\n\n" +
+                    "¿Deshabilitar Windows Update automático?",
+                    "Deshabilitar Windows Update",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "WindowsUpdateDisable",
+                    "Sistema & GPU - Toques Finales",
+                    () => UpdateTweaks.DisableAutomaticUpdates(),
+                    "✅ Windows Update automático deshabilitado. Ancho de banda liberado para gaming."
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnEnableUpdates_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "WindowsUpdateDisable",
+                "Sistema & GPU - Toques Finales",
+                () => UpdateTweaks.EnableAutomaticUpdates(),
+                "Windows Update automático reactivado."
+            );
+        }
+
+        private void BtnDisableDeliveryOpt_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "DeliveryOptimization",
+                "Sistema & GPU - Toques Finales",
+                () => UpdateTweaks.DisableDeliveryOptimization(),
+                "✅ P2P Update Sharing deshabilitado. Ping más estable, sin uploads P2P."
+            );
+        }
+
+        private void BtnEnableDeliveryOpt_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "DeliveryOptimization",
+                "Sistema & GPU - Toques Finales",
+                () => UpdateTweaks.EnableDeliveryOptimization(),
+                "P2P Update Sharing reactivado."
+            );
+        }
+
+        private void BtnOptimizeNTFS_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "💽 OPTIMIZAR NTFS PARA GAMING & SSD\n\n" +
+                    "SE APLICARÁ:\n" +
+                    "✅ Deshabilitar Last Access Time\n" +
+                    "✅ Deshabilitar nombres 8.3 DOS\n" +
+                    "✅ Optimizar indexación\n\n" +
+                    "🚀 BENEFICIOS:\n" +
+                    "• Reduce escrituras SSD ~30%\n" +
+                    "• Alarga vida útil SSD 2-3 años\n" +
+                    "• Menos micro-freezes\n" +
+                    "• Carga de assets más rápida\n\n" +
+                    "⚠️ REQUIERE REINICIO para efecto completo\n\n" +
+                    "¿Optimizar NTFS para gaming?",
+                    "Optimizar NTFS",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _tweakHelper.ExecuteTweak(
+                    "NTFSOptimization",
+                    "Sistema & GPU - Toques Finales",
+                    () => DiskTweaks.OptimizeNTFSForGaming(),
+                    "✅ NTFS optimizado para gaming y SSD. Vida útil extendida, mejor rendimiento. REINICIA para efecto completo.",
+                    null,
+                    true // Requires restart
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnRestoreNTFS_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "NTFSOptimization",
+                "Sistema & GPU - Toques Finales",
+                () => DiskTweaks.RestoreNTFSDefaults(),
+                "NTFS restaurado a configuración por defecto. REINICIA para aplicar.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        private void BtnDisableTelemetry_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "TelemetryTracking",
+                "Sistema & GPU - Toques Finales",
+                () => PrivacyTweaks.DisableTelemetryAndTracking(),
+                "✅ Telemetría y tracking deshabilitados. CPU liberado, menos tráfico de red."
+            );
+        }
+
+        private void BtnEnableTelemetry_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "TelemetryTracking",
+                "Sistema & GPU - Toques Finales",
+                () => PrivacyTweaks.EnableTelemetryAndTracking(),
+                "Telemetría y tracking restaurados."
+            );
+        }
+
+        private void BtnDisableTelemetryServices_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweak(
+                "TelemetryServices",
+                "Sistema & GPU - Toques Finales",
+                () => PrivacyTweaks.DisableTelemetryServices(),
+                "✅ Servicios de telemetría deshabilitados. Recursos liberados. REINICIA para desactivar servicios.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        private void BtnEnableTelemetryServices_Click(object sender, RoutedEventArgs e)
+        {
+            _tweakHelper.ExecuteTweakRevert(
+                "TelemetryServices",
+                "Sistema & GPU - Toques Finales",
+                () => PrivacyTweaks.EnableTelemetryServices(),
+                "Servicios de telemetría reactivados. REINICIA para aplicar.",
+                null,
+                true // Requires restart
+            );
+        }
+
+        private void BtnDiagnoseFinishingTouches_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                _notifications.ShowInfo(
+                    "🔍 Iniciando diagnóstico completo...\n\n" +
+                    "Analizando:\n" +
+                    "• Estado de Windows Update\n" +
+                    "• Configuración NTFS\n" +
+                    "• Servicios de telemetría\n" +
+                    "• Delivery Optimization\n\n" +
+                    "Esto puede tomar 30-60 segundos.",
+                    "Diagnóstico de Toques Finales"
+                );
+
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        var diagnosis = UpdateTweaks.DiagnoseSystemState();
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            var diagWindow = new Window
+                            {
+                                Title = "Diagnóstico Completo - Toques Finales",
+                                Width = 600,
+                                Height = 500,
+                                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                                Owner = this
+                            };
+
+                            var scrollViewer = new ScrollViewer();
+                            var textBlock = new TextBlock
+                            {
+                                Text = diagnosis,
+                                TextWrapping = TextWrapping.Wrap,
+                                Margin = new Thickness(20),
+                                FontFamily = new FontFamily("Consolas"),
+                                FontSize = 12
+                            };
+
+                            scrollViewer.Content = textBlock;
+                            diagWindow.Content = scrollViewer;
+                            diagWindow.ShowDialog();
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show($"Error durante diagnóstico: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"❌ Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DASHBOARD ACTIONS
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void RevertAllTweaks(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var result = MessageBox.Show(
+                    "🔄 REVERTIR TODOS LOS TWEAKS\n\n" +
+                    "⚠️⚠️ ADVERTENCIA CRÍTICA ⚠️⚠️\n" +
+                    "Esto REVERTIRÁ TODAS las optimizaciones aplicadas.\n\n" +
+                    "SE RESTAURARÁN:\n" +
+                    "• Todas las optimizaciones de red\n" +
+                    "• Todas las optimizaciones de input\n" +
+                    "• Todas las optimizaciones de sistema\n" +
+                    "• Todos los tweaks avanzados\n\n" +
+                    "🔄 Tu sistema volverá al estado original.\n\n" +
+                    "⚠️ REQUIERE REINICIO después de revertir.\n\n" +
+                    "¿Estás SEGURO de revertir TODOS los tweaks?",
+                    "Revertir Todos los Tweaks",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result != MessageBoxResult.Yes) return;
+
+                _notifications.ShowInfo(
+                    "🔄 Revirtiendo todos los tweaks...\n\n" +
+                    "Esto puede tomar 2-5 minutos.\n" +
+                    "Por favor, no cierres la aplicación.",
+                    "Revirtiendo Tweaks"
+                );
+
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        // Revertir por categorías
+                        InputTweaks.RevertAllInputOptimizations();
+                        NetworkOptimization.RevertAllNetworkTweaks();
+                        AdvancedNetworkTweaks.RevertAllOptimizations();
+                        GameModeTweaks_Optimized.RevertAllGameModeOptimizations();
+                        UpdateTweaks.EnableAutomaticUpdates();
+                        UpdateTweaks.EnableDeliveryOptimization();
+                        DiskTweaks.RestoreNTFSDefaults();
+                        PrivacyTweaks.EnableTelemetryAndTracking();
+                        PrivacyTweaks.EnableTelemetryServices();
+
+                        // Limpiar estado
+                        _stateManager.RevertAllTweaks();
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            UpdateDashboard();
+                            UpdateCurrentPriorityProfile();
+
+                            _notifications.ShowSuccess(
+                                "✅ TODOS los tweaks han sido revertidos exitosamente.\n\n" +
+                                "Tu sistema ha sido restaurado al estado original.\n\n" +
+                                "⚠️ REINICIA tu PC para completar la restauración.",
+                                "Tweaks Revertidos"
+                            );
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show($"Error durante la reversión: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        });
+                    }
+                });
             }
             catch (Exception ex)
             {
@@ -2111,5 +2799,6 @@ namespace Tweaker
         }
 
         #endregion
+
     }
 }

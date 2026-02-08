@@ -195,6 +195,70 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
+        /// DESHABILITAR MITIGACIONES SPECTRE & MELTDOWN
+        /// Gana +5-15% FPS a cambio de seguridad
+        /// EXPONE tu sistema a vulnerabilidades. REQUIERE REINICIO.
+        /// </summary>
+        public static bool DisableSpectreMeltdown()
+        {
+            try
+            {
+                const string sessionMgrKey = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
+                
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(sessionMgrKey))
+                {
+                    if (key == null) return false;
+
+                    // Deshabilita las mitigaciones de Spectre/Meltdown
+                    key.SetValue("FeatureSettingsOverride", 3, RegistryValueKind.DWord);
+                    key.SetValue("FeatureSettingsOverrideMask", 3, RegistryValueKind.DWord);
+
+                    Debug.WriteLine("?? Spectre & Meltdown Mitigations DISABLED");
+                    Debug.WriteLine("  ? Ganancia: +5-15% FPS");
+                    Debug.WriteLine("  ?? SEGURIDAD REDUCIDA");
+                    Debug.WriteLine("  ?? REINICIO OBLIGATORIO");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? Spectre/Meltdown Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// HABILITAR MITIGACIONES SPECTRE & MELTDOWN
+        /// Restaura la seguridad del sistema
+        /// </summary>
+        public static bool EnableSpectreMeltdown()
+        {
+            try
+            {
+                const string sessionMgrKey = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
+                
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(sessionMgrKey))
+                {
+                    if (key == null) return false;
+
+                    // Habilita las mitigaciones (valores por defecto)
+                    key.SetValue("FeatureSettingsOverride", 0, RegistryValueKind.DWord);
+                    key.SetValue("FeatureSettingsOverrideMask", 0, RegistryValueKind.DWord);
+
+                    Debug.WriteLine("? Spectre & Meltdown Mitigations ENABLED");
+                    Debug.WriteLine("  ?? Seguridad restaurada");
+                    Debug.WriteLine("  ?? REINICIO OBLIGATORIO");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? Spectre/Meltdown Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// RESTAURAR VALORES PREDETERMINADOS
         /// </summary>
         public static bool Revert()

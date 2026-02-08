@@ -77,70 +77,68 @@ namespace Tweaker.Optimizations
         /// - Input lag con overlays: -10 a -30ms
         /// 
         /// NOTA: Requiere REINICIO para efecto completo
+        /// 
+        /// ADVERTENCIA:
+        /// Este es un tweak controversial. Mientras que para muchos sistemas
+        /// soluciona problemas de stuttering, en algunas configuraciones de 
+        /// hardware/drivers puede causar el efecto contrario (parpadeo o 
+        /// inestabilidad). Usar con precaución.
+        /// </summary>
+        /// <summary>
+        /// DESHABILITA MPO (Multiplane Overlay) - TEMPORALMENTE DESHABILITADO
+        /// 
+        /// NOTA: Esta funcionalidad está temporalmente deshabilitada debido a
+        /// problemas de parpadeo reportados en algunos sistemas durante la restauración.
         /// </summary>
         public static bool DisableMPO()
         {
-            try
-            {
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(DWM_KEY, true))
-                {
-                    if (key == null)
-                    {
-                        // Crear la clave si no existe (raro, pero posible)
-                        using (RegistryKey newKey = Registry.LocalMachine.CreateSubKey(DWM_KEY))
-                        {
-                            newKey?.SetValue("OverlayTestMode", 5, RegistryValueKind.DWord);
-                        }
-                    }
-                    else
-                    {
-                        key.SetValue("OverlayTestMode", 5, RegistryValueKind.DWord);
-                    }
-
-                    Debug.WriteLine("? MPO (Multiplane Overlay) DESHABILITADO");
-                    Debug.WriteLine($"  Clave: HKLM\\{DWM_KEY}");
-                    Debug.WriteLine("  OverlayTestMode = 5 (Legacy mode)");
-                    Debug.WriteLine("? REINICIA Windows para eliminar stuttering");
-                    
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"? Error al deshabilitar MPO: {ex.Message}");
-                return false;
-            }
+            Debug.WriteLine("⚠️ MPO - FUNCIONALIDAD TEMPORALMENTE DESHABILITADA");
+            Debug.WriteLine("Esta opción fue removida temporalmente por problemas de compatibilidad");
+            Debug.WriteLine("Se reintegrará en una futura actualización con mejores validaciones");
+            return false;
         }
 
         /// <summary>
-        /// HABILITA MPO (Restaura comportamiento predeterminado de Windows)
+        /// HABILITA MPO (Restaura comportamiento predeterminado de Windows) - TEMPORALMENTE DESHABILITADO
         /// 
-        /// ADVERTENCIA: Esto VOLVER� A CAUSAR stuttering si ten�as problemas
-        /// Solo habilita si experimentas peor rendimiento sin MPO (muy raro)
+        /// NOTA: Esta funcionalidad está temporalmente deshabilitada debido a
+        /// problemas de parpadeo reportados en algunos sistemas.
         /// </summary>
         public static bool EnableMPO()
         {
-            try
-            {
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(DWM_KEY, true))
-                {
-                    if (key != null)
-                    {
-                        // Eliminar el valor = Windows usa su default (MPO habilitado)
-                        key.DeleteValue("OverlayTestMode", false);
-                        
-                        Debug.WriteLine("? MPO (Multiplane Overlay) HABILITADO (default)");
-                        Debug.WriteLine("? El stuttering puede VOLVER si ten�as problemas");
-                        Debug.WriteLine("? REINICIA Windows");
-                    }
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"? Error al habilitar MPO: {ex.Message}");
-                return false;
-            }
+            Debug.WriteLine("⚠️ MPO - FUNCIONALIDAD TEMPORALMENTE DESHABILITADA");
+            Debug.WriteLine("Esta opción fue removida temporalmente por problemas de compatibilidad");
+            Debug.WriteLine("Se reintegrará en una futura actualización con mejores validaciones");
+            return false;
+        }
+
+        /// <summary>
+        /// DIAGNÓSTICO COMPLETO DEL ESTADO MPO - TEMPORALMENTE DESHABILITADO
+        /// </summary>
+        public static string DiagnoseMPOState()
+        {
+            return "⚠️ MPO - FUNCIONALIDAD TEMPORALMENTE DESHABILITADA\n\n" +
+                   "Esta opción fue removida temporalmente debido a problemas de compatibilidad.\n" +
+                   "Se reintegrará en una futura actualización con mejores validaciones.\n\n" +
+                   "MOTIVO: Parpadeo en pantalla durante restauración en algunos sistemas.";
+        }
+
+        /// <summary>
+        /// MÉTODO MEJORADO PARA DESHABILITAR MPO - TEMPORALMENTE DESHABILITADO
+        /// </summary>
+        public static bool DisableMPOSafely()
+        {
+            Debug.WriteLine("⚠️ MPO - FUNCIONALIDAD TEMPORALMENTE DESHABILITADA");
+            return false;
+        }
+
+        /// <summary>
+        /// MÉTODO MEJORADO PARA RESTAURAR MPO - TEMPORALMENTE DESHABILITADO
+        /// </summary>
+        public static bool EnableMPOSafely()
+        {
+            Debug.WriteLine("⚠️ MPO - FUNCIONALIDAD TEMPORALMENTE DESHABILITADA");
+            return false;
         }
 
         /// <summary>

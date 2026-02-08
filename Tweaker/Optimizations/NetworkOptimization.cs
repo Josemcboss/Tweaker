@@ -444,5 +444,42 @@ namespace Tweaker.Optimizations
                 return $"Error obteniendo información: {ex.Message}";
             }
         }
+
+        /// <summary>
+        /// REVIERTE TODAS LAS OPTIMIZACIONES DE RED
+        /// </summary>
+        public static bool RevertAllNetworkTweaks()
+        {
+            try
+            {
+                Debug.WriteLine("?? REVIRTIENDO TODAS LAS OPTIMIZACIONES DE RED");
+                Debug.WriteLine("???????????????????????????????????????????????");
+
+                bool success = true;
+                
+                // Restaurar interfaces TCP/IP
+                success &= RestoreTcpIpInterface();
+                
+                // Restaurar configuraciones globales del sistema
+                success &= RestoreSystemNetworkSettings();
+
+                if (success)
+                {
+                    Debug.WriteLine("\n? TODAS LAS OPTIMIZACIONES DE RED REVERTIDAS");
+                    Debug.WriteLine("   Red restaurada a configuración por defecto");
+                }
+                else
+                {
+                    Debug.WriteLine("\n??  Algunas optimizaciones no se pudieron revertir");
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? Error revirtiendo optimizaciones de red: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

@@ -7,8 +7,38 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <PackageId>$(AssemblyName) GhostOptimizer</PackageId>
-    <Title>GhostOptimizer</Title>
+    <ApplicationIcon>Resources\GhostOptimizer.ico</ApplicationIcon>
+    
+    <!-- Información de la aplicación -->
+    <PackageId>GhostOptimizer</PackageId>
+    <Title>Ghost Optimizer</Title>
+    <Product>Ghost Optimizer</Product>
+    <Company>DaddyGhost</Company>
+    <Description>Advanced Gaming Performance Tweaker</Description>
+    <Copyright>Copyright © 2024 DaddyGhost</Copyright>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Version>2.0.0</Version>
+    
+    <!-- Configuración de publicación optimizada -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    
+    <!-- Configuración de Runtime -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseAppHost>true</UseAppHost>
+    
+    <!-- Optimizaciones adicionales -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
+    <EnablePreviewFeatures>false</EnablePreviewFeatures>
+    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +46,8 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     
     <!-- Referencia para WMI (obtener info del sistema) -->
-    <PackageReference Include="System.Management" Version="9.0.0" />
+    <PackageReference Include="System.Management" Version="10.0.2" />
   </ItemGroup>
 
 </Project>
+

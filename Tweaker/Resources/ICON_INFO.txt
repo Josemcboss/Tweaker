@@ -1,0 +1,23 @@
+﻿GHOST OPTIMIZER - ICONO PARA TASKBAR
+===================================
+
+Archivo creado: GhostOptimizer.ico
+Fecha: 2026-02-07 01:02:40
+Tamaño: 32x32 pixels
+Formato: Microsoft Windows Icon (.ico)
+
+Características:
+- Fondo circular púrpura
+- Fantasma blanco con ojos rojos
+- Optimizado para taskbar de Windows
+- Compatible con todos los tamaños de iconos de sistema
+
+Dónde aparecerá:
+? Taskbar (barra de tareas)
+? Alt + Tab (cambio de ventanas)
+? Explorador de archivos
+? Barra de título de la ventana
+? Notificaciones del sistema
+
+Configuración aplicada en: Tweaker.csproj
+<ApplicationIcon>Resources\GhostOptimizer.ico</ApplicationIcon>
