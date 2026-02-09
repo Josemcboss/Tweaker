@@ -148,10 +148,36 @@ namespace Tweaker.Utilities
         /// </summary>
         public int ActiveTweaksCount => _tweakStates.Count(t => t.Value.IsEnabled);
 
+
         /// <summary>
         /// Total de tweaks disponibles
+        /// 
+        /// DESGLOSE DE TWEAKS:
+        /// ????????????????????????????????????????????????????????????????
+        /// Input & Visuals: ~12 tweaks
+        ///   - Aceleración de mouse, teclado, efectos visuales, etc.
+        /// 
+        /// Red & Ping (Network): ~10 tweaks
+        ///   - DNS, NVDIA tweaks, TCP optimizer, QoS, etc.
+        /// 
+        /// Sistema & GPU: ~8 tweaks
+        ///   - Game Mode, GPU Scheduling, Game DVR, Power Profile, etc.
+        /// 
+        /// Limpieza (Cleanup): ~4 tweaks
+        ///   - Hibernation, Windows Search, SysMain, Temp Files
+        /// 
+        /// GHOST Pack: ~8 tweaks
+        ///   - Core Isolation, MPO, Ultimate Power, etc.
+        /// 
+        /// Advanced: ~11 tweaks (NUEVO)
+        ///   - Interrupt Moderation, Menu Delay, Win32 Priority, etc.
+        /// 
+        /// Servicios: ~5 tweaks
+        ///   - Telemetría, DiagTrack, servicios de background
+        /// 
+        /// TOTAL: 58 TWEAKS
         /// </summary>
-        public int TotalTweaksCount => 32;
+        public int TotalTweaksCount => 58;
 
         /// <summary>
         /// Porcentaje de optimización aplicado

@@ -325,7 +325,7 @@ namespace Tweaker.Optimizations
                     "PimIndexMaintenanceSvc",      // Contact Data
                     "UserDataSvc",                 // User Data Access
                     "UnistoreSvc",                 // User Data Storage
-                    "BrokerInfrastructure",        // Background Tasks Infrastructure Service
+                    // "BrokerInfrastructure",     // REMOVED: CRITICAL SYSTEM SERVICE - DO NOT DISABLE
                     "DcpSvc",                      // Data Collection and Publishing Service
                 };
 
@@ -402,7 +402,7 @@ namespace Tweaker.Optimizations
                     { "PimIndexMaintenanceSvc", 3 },       // Manual
                     { "UserDataSvc", 3 },                  // Manual
                     { "UnistoreSvc", 3 },                  // Manual
-                    { "BrokerInfrastructure", 2 },         // Automatic
+                    // { "BrokerInfrastructure", 2 },      // REMOVED: CRITICAL SYSTEM SERVICE - DO NOT MODIFY
                     { "DcpSvc", 3 },                       // Manual
                 };
 

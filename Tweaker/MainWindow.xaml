@@ -560,7 +560,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                                FontWeight="Bold" 
                                                Foreground="#7F8084"
                                                Margin="5,8,0,0"/>
-                                        <TextBlock Text="32" 
+                                        <TextBlock Text="58" 
                                                FontSize="20" 
                                                FontWeight="Bold" 
                                                Foreground="#7F8084"
@@ -1932,7 +1932,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                             Width="180"
                                             Margin="0,0,10,0"/>
                                     <Button Content="RESTAURAR" 
-                                            Click="BtnUltimateServices_Off_Click"
+                                            Click="BtnUltimateBloat_Off_Click"
                                             Style="{StaticResource OffButton}"
                                             Width="120"/>
                                 </StackPanel>
@@ -1986,8 +1986,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Background="#8B0000"
                                         Foreground="#FFFFFF"
                                         Cursor="Hand"
-                                        HorizontalAlignment="Center"
-                                        Template="{StaticResource CustomButtonTemplate}"/>
+                                        HorizontalAlignment="Center"/>
                                 
                                 <TextBlock Text="RAM: -500MB | Disco: +15% | Red: +20%"
                                            Foreground="#00FF00"

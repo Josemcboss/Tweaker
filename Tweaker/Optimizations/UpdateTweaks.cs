@@ -72,6 +72,8 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Desactiva Delivery Optimization (P2P) que consume ancho de banda para compartir updates
         /// Evita que el PC actúe como servidor de updates para otros dispositivos
+        /// 
+        /// SEGURIDAD v2.1: Ahora usa ServiceSafetyWrapper para validación
         /// </summary>
         public static bool DisableDeliveryOptimization()
         {
@@ -81,18 +83,13 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("DISABLING DELIVERY OPTIMIZATION (P2P)");
                 Debug.WriteLine("???????????????????????????????????????????????????????????");
 
-                // Desactivar servicio DoSvc (Delivery Optimization)
-                using (var key = Registry.LocalMachine.OpenSubKey(DELIVERY_OPTIMIZATION_KEY, true))
+                // SEGURIDAD v2.1: Usar ServiceSafetyWrapper en vez de modificar registro directamente
+                bool serviceDisabled = ServiceSafetyWrapper.SafeDisableService("DoSvc", "Delivery Optimization");
+                
+                if (!serviceDisabled)
                 {
-                    if (key == null)
-                    {
-                        Debug.WriteLine("?? WARNING: Delivery Optimization service key not found");
-                        return false;
-                    }
-
-                    // Start = 4 (Disabled)
-                    key.SetValue("Start", 4, RegistryValueKind.DWord);
-                    Debug.WriteLine("? DoSvc Start = 4 (Service disabled)");
+                    Debug.WriteLine("?? WARNING: No se pudo desactivar DoSvc de forma segura");
+                    Debug.WriteLine("   Esto puede significar que es un servicio protegido");
                 }
 
                 // Configuraciones adicionales de Delivery Optimization

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations
 {
@@ -34,7 +35,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool DisableSysMain()
         {
-            return DisableService("SysMain", "SysMain (Superfetch)");
+            return ServiceSafetyWrapper.SafeDisableService("SysMain", "SysMain (Superfetch)");
         }
 
         /// <summary>
@@ -60,7 +61,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool DisableDiagTrack()
         {
-            return DisableService("DiagTrack", "DiagTrack (Telemetría)");
+            return ServiceSafetyWrapper.SafeDisableService("DiagTrack", "DiagTrack (Telemetría)");
         }
 
         /// <summary>
@@ -87,7 +88,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool DisableWindowsSearch()
         {
-            return DisableService("WSearch", "Windows Search");
+            return ServiceSafetyWrapper.SafeDisableService("WSearch", "Windows Search");
         }
 
         /// <summary>
@@ -95,8 +96,27 @@ namespace Tweaker.Optimizations
         /// </summary>
         private static bool DisableService(string serviceName, string displayName)
         {
+            // ???????????????????????????????????????????????????????????????
+            // VERIFICACIÓN DE SEGURIDAD: ServiceGuard
+            // ???????????????????????????????????????????????????????????????
+            
+            if (ServiceGuard.IsProtected(serviceName))
+            {
+                Debug.WriteLine($"? OPERACIÓN BLOQUEADA: {displayName} es un servicio protegido");
+                return false; // NO MODIFICAR SERVICIOS CRÍTICOS
+            }
+
             try
             {
+                // ???????????????????????????????????????????????????????????????
+                // BACKUP DEL REGISTRO ANTES DE MODIFICAR
+                // ???????????????????????????????????????????????????????????????
+                
+                OptimizationBackup.BackupRegistryValue(
+                    $@"SYSTEM\CurrentControlSet\Services\{serviceName}",
+                    "Start"
+                );
+
                 using (ServiceController sc = new ServiceController(serviceName))
                 {
                     // Verificar si el servicio existe
@@ -149,7 +169,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool EnableSysMain()
         {
-            return EnableService("SysMain", "SysMain (Superfetch)");
+            return ServiceSafetyWrapper.SafeEnableService("SysMain", "SysMain (Superfetch)");
         }
 
         /// <summary>
@@ -157,7 +177,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool EnableDiagTrack()
         {
-            return EnableService("DiagTrack", "DiagTrack (Telemetría)");
+            return ServiceSafetyWrapper.SafeEnableService("DiagTrack", "DiagTrack (Telemetría)");
         }
 
         /// <summary>
@@ -165,7 +185,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool EnableWindowsSearch()
         {
-            return EnableService("WSearch", "Windows Search");
+            return ServiceSafetyWrapper.SafeEnableService("WSearch", "Windows Search");
         }
 
         /// <summary>

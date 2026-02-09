@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations
 {
@@ -35,45 +36,106 @@ namespace Tweaker.Optimizations
         /// ? 0.1% lows +15-25%
         /// 
         /// ?? REQUIERE REINICIO OBLIGATORIO
+        /// 
+        /// SEGURIDAD:
+        /// - Valida si los comandos se ejecutan correctamente
+        /// - Registra comandos en OptimizationBackup para auditoría
+        /// - No continúa si un comando falla
         /// </summary>
         public static bool OptimizeHPET()
         {
             try
             {
+                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                Debug.WriteLine("?? INICIANDO OPTIMIZACIÓN HPET");
+                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+
                 // PASO 1: Eliminar useplatformclock (fuerza TSC)
+                string command1 = "bcdedit /deletevalue useplatformclock";
+                Debug.WriteLine($"Ejecutando: {command1}");
+                
                 ProcessStartInfo psi1 = new ProcessStartInfo
                 {
                     FileName = "bcdedit",
                     Arguments = "/deletevalue useplatformclock",
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     Verb = "runas", // Admin
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
 
                 using (Process proc1 = Process.Start(psi1))
                 {
-                    proc1?.WaitForExit();
+                    if (proc1 == null)
+                    {
+                        Debug.WriteLine("? Error: No se pudo iniciar bcdedit");
+                        return false;
+                    }
+
+                    proc1.WaitForExit();
+                    int exitCode1 = proc1.ExitCode;
+
+                    if (exitCode1 != 0)
+                    {
+                        Debug.WriteLine($"?? Comando 1 puede haber fallado (Exit Code: {exitCode1})");
+                        Debug.WriteLine("   Continuando (puede estar ya eliminado)...");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("? useplatformclock eliminado exitosamente");
+                        OptimizationBackup.LogBcdCommand(command1);
+                    }
                 }
 
-                Debug.WriteLine("? HPET: useplatformclock eliminado");
                 Debug.WriteLine("  Windows usará TSC (más rápido)");
 
                 // PASO 2: Deshabilitar dynamic tick
+                string command2 = "bcdedit /set disabledynamictick yes";
+                Debug.WriteLine($"Ejecutando: {command2}");
+                
                 ProcessStartInfo psi2 = new ProcessStartInfo
                 {
                     FileName = "bcdedit",
                     Arguments = "/set disabledynamictick yes",
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     Verb = "runas",
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
 
                 using (Process proc2 = Process.Start(psi2))
                 {
-                    proc2?.WaitForExit();
+                    if (proc2 == null)
+                    {
+                        Debug.WriteLine("? Error: No se pudo iniciar bcdedit para comando 2");
+                        Debug.WriteLine("?? Optimización PARCIALMENTE aplicada");
+                        return false;
+                    }
+
+                    proc2.WaitForExit();
+                    int exitCode2 = proc2.ExitCode;
+
+                    if (exitCode2 != 0)
+                    {
+                        Debug.WriteLine($"? Comando 2 FALLÓ (Exit Code: {exitCode2})");
+                        Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                        Debug.WriteLine("?? OPTIMIZACIÓN HPET FALLÓ");
+                        Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                        Debug.WriteLine("POSIBLES CAUSAS:");
+                        Debug.WriteLine("  - No se ejecutó como Administrador");
+                        Debug.WriteLine("  - BCD está protegido por política de grupo");
+                        Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                        return false;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("? Dynamic Tick DESHABILITADO exitosamente");
+                        OptimizationBackup.LogBcdCommand(command2);
+                    }
                 }
 
-                Debug.WriteLine("? Dynamic Tick DESHABILITADO");
                 Debug.WriteLine("  Timer más consistente");
 
                 Debug.WriteLine("????????????????????????????????????????");
