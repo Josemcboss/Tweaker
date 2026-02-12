@@ -672,5 +672,22 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
+
+        /// <summary>
+        /// MÉTODO DE COMPATIBILIDAD PARA PRESETS
+        /// Aplica las optimizaciones principales del sistema
+        /// </summary>
+        public static bool Apply()
+        {
+            return ApplyAllAdvancedSystemTweaks();
+        }
+
+        /// <summary>
+        /// Revierte las optimizaciones del sistema
+        /// </summary>
+        public static bool Revert()
+        {
+            return RevertAllAdvancedSystemTweaks();
+        }
     }
 }

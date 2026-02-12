@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Diagnostics;
 using Tweaker.Utilities;
 
@@ -13,41 +13,41 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// OPTIMIZAR HPET (High Precision Event Timer)
         /// 
-        /// øQuÈ es HPET?
+        /// ¬øQu√© es HPET?
         /// ????????????????????????????????????????????????????????????????
-        /// Timer de alta precisiÛn usado por Windows para scheduling.
+        /// Timer de alta precisi√≥n usado por Windows para scheduling.
         /// 
         /// PROBLEMA:
         /// - HPET es MUY LENTO en CPUs Ryzen (especialmente Ryzen 5000)
         /// - Causa micro-stuttering cada 10-20 segundos
-        /// - TSC (Time Stamp Counter) es 10x m·s r·pido
+        /// - TSC (Time Stamp Counter) es 10x m√°s r√°pido
         /// 
-        /// SOLUCI”N:
+        /// SOLUCI√ìN:
         /// - Forzar Windows a usar TSC en lugar de HPET
         /// - Deshabilitar dynamic tick (mejora consistencia)
         /// 
         /// COMANDOS:
-        /// ï bcdedit /deletevalue useplatformclock
-        /// ï bcdedit /set disabledynamictick yes
+        /// ‚Ä¢ bcdedit /deletevalue useplatformclock
+        /// ‚Ä¢ bcdedit /set disabledynamictick yes
         /// 
         /// IMPACTO:
         /// ? Micro-stuttering -80% (Ryzen)
-        /// ? Frame times m·s consistentes
+        /// ? Frame times m√°s consistentes
         /// ? 0.1% lows +15-25%
         /// 
         /// ?? REQUIERE REINICIO OBLIGATORIO
         /// 
         /// SEGURIDAD:
         /// - Valida si los comandos se ejecutan correctamente
-        /// - Registra comandos en OptimizationBackup para auditorÌa
-        /// - No contin˙a si un comando falla
+        /// - Registra comandos en OptimizationBackup para auditor√≠a
+        /// - No contin√∫a si un comando falla
         /// </summary>
         public static bool OptimizeHPET()
         {
             try
             {
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine("?? INICIANDO OPTIMIZACI”N HPET");
+                Debug.WriteLine("?? INICIANDO OPTIMIZACI√ìN HPET");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
                 // PASO 1: Eliminar useplatformclock (fuerza TSC)
@@ -88,7 +88,7 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                Debug.WriteLine("  Windows usar· TSC (m·s r·pido)");
+                Debug.WriteLine("  Windows usar√° TSC (m√°s r√°pido)");
 
                 // PASO 2: Deshabilitar dynamic tick
                 string command2 = "bcdedit /set disabledynamictick yes";
@@ -110,7 +110,7 @@ namespace Tweaker.Optimizations
                     if (proc2 == null)
                     {
                         Debug.WriteLine("? Error: No se pudo iniciar bcdedit para comando 2");
-                        Debug.WriteLine("?? OptimizaciÛn PARCIALMENTE aplicada");
+                        Debug.WriteLine("?? Optimizaci√≥n PARCIALMENTE aplicada");
                         return false;
                     }
 
@@ -119,13 +119,13 @@ namespace Tweaker.Optimizations
 
                     if (exitCode2 != 0)
                     {
-                        Debug.WriteLine($"? Comando 2 FALL” (Exit Code: {exitCode2})");
+                        Debug.WriteLine($"? Comando 2 FALL√ì (Exit Code: {exitCode2})");
                         Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                        Debug.WriteLine("?? OPTIMIZACI”N HPET FALL”");
+                        Debug.WriteLine("?? OPTIMIZACI√ìN HPET FALL√ì");
                         Debug.WriteLine("???????????????????????????????????????????????????????????????");
                         Debug.WriteLine("POSIBLES CAUSAS:");
-                        Debug.WriteLine("  - No se ejecutÛ como Administrador");
-                        Debug.WriteLine("  - BCD est· protegido por polÌtica de grupo");
+                        Debug.WriteLine("  - No se ejecut√≥ como Administrador");
+                        Debug.WriteLine("  - BCD est√° protegido por pol√≠tica de grupo");
                         Debug.WriteLine("???????????????????????????????????????????????????????????????");
                         return false;
                     }
@@ -136,15 +136,15 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                Debug.WriteLine("  Timer m·s consistente");
+                Debug.WriteLine("  Timer m√°s consistente");
 
                 Debug.WriteLine("????????????????????????????????????????");
                 Debug.WriteLine("? HPET OPTIMIZADO");
                 Debug.WriteLine("????????????????????????????????????????");
                 Debug.WriteLine("BENEFICIOS:");
-                Debug.WriteLine("ï Micro-stuttering -80% (Ryzen)");
-                Debug.WriteLine("ï Frame times consistentes");
-                Debug.WriteLine("ï 0.1% lows +15-25%");
+                Debug.WriteLine("‚Ä¢ Micro-stuttering -80% (Ryzen)");
+                Debug.WriteLine("‚Ä¢ Frame times consistentes");
+                Debug.WriteLine("‚Ä¢ 0.1% lows +15-25%");
                 Debug.WriteLine("");
                 Debug.WriteLine("?????? REINICIA WINDOWS AHORA ??????");
 
@@ -153,7 +153,7 @@ namespace Tweaker.Optimizations
             catch (Exception ex)
             {
                 Debug.WriteLine($"? Error HPET: {ex.Message}");
-                Debug.WriteLine("?? Aseg˙rate de ejecutar como Admin");
+                Debug.WriteLine("?? Aseg√∫rate de ejecutar como Admin");
                 return false;
             }
         }
@@ -161,31 +161,31 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// OPTIMIZAR HYPER-V LAUNCHTYPE
         /// 
-        /// øQuÈ es Hyper-V?
+        /// ¬øQu√© es Hyper-V?
         /// ????????????????????????????????????????????????????????????????
-        /// Hypervisor (virtualizaciÛn) de Windows.
+        /// Hypervisor (virtualizaci√≥n) de Windows.
         /// 
         /// PROBLEMA EN GAMING:
-        /// - AÒade capa de abstracciÛn entre juego y hardware
+        /// - A√±ade capa de abstracci√≥n entre juego y hardware
         /// - Latencia GPU +2-5ms
         /// - Problemas con algunos anti-cheat (EAC, BattlEye)
         /// 
-        /// SOLUCI”N:
+        /// SOLUCI√ìN:
         /// - Deshabilitar completamente si NO usas:
         ///   * Docker Desktop
         ///   * WSL2
-        ///   * M·quinas virtuales
+        ///   * M√°quinas virtuales
         ///   * Windows Sandbox
         /// 
         /// COMANDO:
-        /// ï bcdedit /set hypervisorlaunchtype off
+        /// ‚Ä¢ bcdedit /set hypervisorlaunchtype off
         /// 
         /// IMPACTO:
         /// ? Latencia GPU -2-5ms
         /// ? Compatibilidad anti-cheat mejorada
         /// ? FPS +2-5% en algunos juegos
         /// 
-        /// ?? Docker y WSL2 NO FUNCIONAR¡N
+        /// ?? Docker y WSL2 NO FUNCIONAR√ÅN
         /// ?? REQUIERE REINICIO OBLIGATORIO
         /// </summary>
         public static bool OptimizeHyperV()
@@ -210,14 +210,14 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("? HYPER-V DESHABILITADO");
                 Debug.WriteLine("????????????????????????????????????????");
                 Debug.WriteLine("BENEFICIOS:");
-                Debug.WriteLine("ï Latencia GPU -2-5ms");
-                Debug.WriteLine("ï Mejor compatibilidad anti-cheat");
-                Debug.WriteLine("ï FPS +2-5%");
+                Debug.WriteLine("‚Ä¢ Latencia GPU -2-5ms");
+                Debug.WriteLine("‚Ä¢ Mejor compatibilidad anti-cheat");
+                Debug.WriteLine("‚Ä¢ FPS +2-5%");
                 Debug.WriteLine("");
                 Debug.WriteLine("?? ADVERTENCIAS:");
-                Debug.WriteLine("ï Docker Desktop NO funcionar·");
-                Debug.WriteLine("ï WSL2 NO funcionar·");
-                Debug.WriteLine("ï VirtualBox puede tener problemas");
+                Debug.WriteLine("‚Ä¢ Docker Desktop NO funcionar√°");
+                Debug.WriteLine("‚Ä¢ WSL2 NO funcionar√°");
+                Debug.WriteLine("‚Ä¢ VirtualBox puede tener problemas");
                 Debug.WriteLine("");
                 Debug.WriteLine("?????? REINICIA WINDOWS AHORA ??????");
 
@@ -287,13 +287,78 @@ namespace Tweaker.Optimizations
                 };
                 Process.Start(psi)?.WaitForExit();
 
-                Debug.WriteLine("? Hyper-V restaurado (Auto)");
-                Debug.WriteLine("?? Reinicia Windows");
+                Debug.WriteLine("‚úÖ Hyper-V restaurado (Auto)");
+                Debug.WriteLine("üîÑ Reinicia Windows");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error: {ex.Message}");
+                Debug.WriteLine($"‚ùå Error: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// M√âTODO DE COMPATIBILIDAD PARA PRESETS
+        /// Aplica todas las optimizaciones de kernel disponibles
+        /// </summary>
+        public static bool Apply()
+        {
+            try
+            {
+                Debug.WriteLine("üîß APLICANDO KERNEL TWEAKS...");
+                
+                bool hpetResult = OptimizeHPET();
+                bool hypervResult = OptimizeHyperV();
+                
+                bool success = hpetResult && hypervResult;
+                
+                if (success)
+                {
+                    Debug.WriteLine("‚úÖ KERNEL TWEAKS APLICADOS EXITOSAMENTE");
+                }
+                else
+                {
+                    Debug.WriteLine("‚ö†Ô∏è Algunos kernel tweaks fallaron");
+                }
+                
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"‚ùå Error aplicando kernel tweaks: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Revierte todas las optimizaciones de kernel
+        /// </summary>
+        public static bool Revert()
+        {
+            try
+            {
+                Debug.WriteLine("üîÑ REVIRTIENDO KERNEL TWEAKS...");
+                
+                bool hpetResult = RestoreHPET();
+                bool hypervResult = RestoreHyperV();
+                
+                bool success = hpetResult && hypervResult;
+                
+                if (success)
+                {
+                    Debug.WriteLine("‚úÖ KERNEL TWEAKS REVERTIDOS EXITOSAMENTE");
+                }
+                else
+                {
+                    Debug.WriteLine("‚ö†Ô∏è Algunos kernel tweaks no se pudieron revertir");
+                }
+                
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"‚ùå Error revirtiendo kernel tweaks: {ex.Message}");
                 return false;
             }
         }

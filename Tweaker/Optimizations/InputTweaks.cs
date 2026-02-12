@@ -1123,5 +1123,83 @@ namespace Tweaker.Optimizations
         {
             return RevertFTH();
         }
+
+        /// <summary>
+        /// MÉTODOS ESPECÍFICOS PARA PRESET COMPATIBILITY
+        /// </summary>
+
+        /// <summary>
+        /// Deshabilita Sticky Keys (teclas persistentes) 
+        /// </summary>
+        public static bool DisableStickyKeys()
+        {
+            try
+            {
+                const string accessibilityKey = @"Control Panel\Accessibility\StickyKeys";
+                const string accessibilityKey2 = @"Control Panel\Accessibility\Keyboard Response";
+                
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("Flags", "506", RegistryValueKind.String); // Deshabilita
+                        Debug.WriteLine("? Sticky Keys deshabilitado");
+                    }
+                }
+
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey2))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("Flags", "122", RegistryValueKind.String); // Deshabilita repetición
+                        Debug.WriteLine("? Filter Keys deshabilitado");
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? Error deshabilitando Sticky Keys: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita Sticky Keys (restaura valores por defecto)
+        /// </summary>
+        public static bool EnableStickyKeys()
+        {
+            try
+            {
+                const string accessibilityKey = @"Control Panel\Accessibility\StickyKeys";
+                const string accessibilityKey2 = @"Control Panel\Accessibility\Keyboard Response";
+                
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("Flags", "510", RegistryValueKind.String); // Habilita
+                        Debug.WriteLine("? Sticky Keys habilitado");
+                    }
+                }
+
+                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey2))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("Flags", "126", RegistryValueKind.String); // Habilita
+                        Debug.WriteLine("? Filter Keys habilitado");
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? Error habilitando Sticky Keys: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

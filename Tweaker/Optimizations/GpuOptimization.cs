@@ -224,5 +224,36 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
+
+        /// <summary>
+        /// MÉTODOS DE COMPATIBILIDAD PARA PRESETS
+        /// </summary>
+
+        /// <summary>
+        /// Optimiza GPU Scheduling (alias para EnableHardwareAcceleratedGPUScheduling)
+        /// </summary>
+        public static bool OptimizeGpuScheduling()
+        {
+            return EnableHardwareAcceleratedGPUScheduling();
+        }
+
+        /// <summary>
+        /// Verifica si GPU Scheduling está habilitado
+        /// </summary>
+        public static bool IsGpuSchedulingEnabled()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", false))
+                {
+                    object value = key?.GetValue("HwSchMode");
+                    return value != null && value.ToString() == "2";
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

@@ -3,6 +3,12 @@ using System.Configuration;
 using System.Data;
 using System.Diagnostics;
 using System.Windows;
+using System.Threading.Tasks;
+using System.Net.NetworkInformation;
+using Microsoft.Win32;
+using System;
+using System.IO;
+using System.Text;
 using Tweaker.Utilities;
 
 namespace Tweaker
@@ -17,8 +23,11 @@ namespace Tweaker
             base.OnStartup(e);
 
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
-            Debug.WriteLine("🚀 GHOST OPTIMIZER TWEAKER - INICIANDO");
+            Debug.WriteLine("🚀 GHOST OPTIMIZER v2.3.0 - CON FIX AUTOMÁTICO DE NAVEGADORES");
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
+
+            // 🌐 DIAGNÓSTICO Y FIX AUTOMÁTICO DE NAVEGADORES AL INICIO
+            Task.Run(async () => await CheckAndFixBrowserIssues());
 
             // ═══════════════════════════════════════════════════════════════
             // SISTEMA DE SEGURIDAD: Inicialización
@@ -128,7 +137,82 @@ namespace Tweaker
             Debug.WriteLine("  📸 System Restore: Punto de restauración creado");
             Debug.WriteLine("  🆘 Rescue Script: RESCATE_TWEAKER.bat en Escritorio");
             Debug.WriteLine("  🔍 Critical Services Validator: Monitoreo activo");
+            Debug.WriteLine("  🌐 Network Diagnostics: Detección de problemas de navegación");
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
+        }
+
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            // Este evento se ejecuta después de OnStartup
+            // Aquí podemos hacer diagnósticos adicionales que requieran la UI cargada
+        }
+
+        /// <summary>
+        /// Verifica y aplica fix automático para problemas de navegadores
+        /// </summary>
+        private async Task CheckAndFixBrowserIssues()
+        {
+            try
+            {
+                Debug.WriteLine("🔍 Verificando problemas de navegadores...");
+                
+                bool hasBrowserIssues = await BrowserSpeedFix.HasBrowserIssues();
+                
+                if (hasBrowserIssues)
+                {
+                    Debug.WriteLine("🚨 PROBLEMAS DE NAVEGADORES DETECTADOS");
+                    
+                    // Mostrar prompt al usuario
+                    bool shouldFix = false;
+                    Dispatcher.Invoke(() =>
+                    {
+                        var result = MessageBox.Show(
+                            "🌐 PROBLEMAS DE NAVEGACIÓN DETECTADOS\n\n" +
+                            "Ghost Optimizer ha detectado configuraciones extremas\n" +
+                            "que están causando lentitud en navegadores web.\n\n" +
+                            "💡 SOLUCIÓN AUTOMÁTICA DISPONIBLE:\n" +
+                            "• Mantiene 90% del rendimiento gaming\n" +
+                            "• Mejora SIGNIFICATIVAMENTE la velocidad de navegadores\n" +
+                            "• Fix se aplica inmediatamente\n\n" +
+                            "¿Aplicar fix automático ahora?",
+                            "Fix Navegadores Disponible",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question);
+                        
+                        shouldFix = (result == MessageBoxResult.Yes);
+                    });
+
+                    if (shouldFix)
+                    {
+                        Debug.WriteLine("🔧 Usuario autorizó fix automático, aplicando...");
+                        await BrowserSpeedFix.ApplyQuickBrowserFix();
+                    }
+                    else
+                    {
+                        Debug.WriteLine("ℹ️ Usuario decidió no aplicar fix automático");
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageBox.Show(
+                                "ℹ️ Fix no aplicado\n\n" +
+                                "Si experimentas navegadores lentos, puedes:\n\n" +
+                                "1. Ejecutar FIX_NAVEGADORES_ULTRA_RAPIDO_v2.3.0.bat\n" +
+                                "2. Ir a Red & Ping → Optimización Balanceada\n" +
+                                "3. Usar el botón 'REVERTIR TODOS' si el problema persiste",
+                                "Fix Manual Disponible",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Information);
+                        });
+                    }
+                }
+                else
+                {
+                    Debug.WriteLine("✅ No se detectaron problemas de navegadores");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error verificando navegadores: {ex.Message}");
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)

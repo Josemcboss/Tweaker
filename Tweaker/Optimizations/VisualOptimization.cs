@@ -275,6 +275,19 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
+        /// Métodos de compatibilidad para presets
+        /// </summary>
+        public static bool DisableVisualEffects()
+        {
+            return OptimizeVisuals();
+        }
+
+        public static bool EnableVisualEffects()
+        {
+            return RestoreVisuals();
+        }
+
+        /// <summary>
         /// DESHABILITA EFECTOS DE TRANSPARENCIA DE WINDOWS
         /// 
         /// ¿Qué es la Transparencia de Windows?
@@ -434,6 +447,11 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine($"❌ Error al restaurar transparencia: {ex.Message}");
                 return false;
             }
+        }
+
+        public static bool EnableTransparency()
+        {
+            return RestoreTransparency();
         }
 
         /// <summary>

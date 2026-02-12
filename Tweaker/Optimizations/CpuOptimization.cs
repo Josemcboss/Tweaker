@@ -302,5 +302,72 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
+
+        /// <summary>
+        /// Verifica si Core Parking está habilitado
+        /// </summary>
+        public static bool IsCoreParking()
+        {
+            try
+            {
+                // Verificar si el GUID de Core Parking está configurado
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583", false))
+                {
+                    if (key != null)
+                    {
+                        // Verificar el valor ValueMax
+                        object valueMax = key.GetValue("ValueMax");
+                        if (valueMax != null && valueMax.ToString() == "0")
+                        {
+                            return false; // Core Parking deshabilitado
+                        }
+                        else
+                        {
+                            return true; // Core Parking habilitado (default)
+                        }
+                    }
+                }
+
+                // Si no se puede determinar, asumir que está habilitado (default de Windows)
+                return true;
+            }
+            catch
+            {
+                // Error accediendo al registro, asumir habilitado
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Verifica si el plan de energía de alto rendimiento está activo
+        /// </summary>
+        public static bool IsHighPerformanceActive()
+        {
+            try
+            {
+                using (var process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "powercfg",
+                        Arguments = "/getactivescheme",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    };
+
+                    process.Start();
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit();
+
+                    // GUID del plan de alto rendimiento: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+                    return output.Contains("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
