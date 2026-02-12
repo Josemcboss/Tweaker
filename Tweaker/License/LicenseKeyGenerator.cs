@@ -63,11 +63,11 @@ namespace Tweaker.License
                 Array.Copy(keyBytes, key, Math.Min(keyBytes.Length, key.Length));
                 aes.Key = key;
                 
-                // Generar IV determinista basado en el contenido
+                // Generar IV determinista basado en la clave secreta
                 var iv = new byte[16];
                 using (var sha = SHA256.Create())
                 {
-                    var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(plainText + SECRET_KEY));
+                    var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY + "IV_SALT"));
                     Array.Copy(hash, iv, 16);
                 }
                 aes.IV = iv;

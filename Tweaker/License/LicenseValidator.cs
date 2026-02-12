@@ -149,22 +149,11 @@ namespace Tweaker.License
 
                     var encryptedBytes = Convert.FromBase64String(base64);
 
-                    // Generar IV determinista
+                    // Generar IV determinista (mismo que en el generador)
                     var iv = new byte[16];
                     using (var sha = SHA256.Create())
                     {
-                        // Necesitamos el texto plano para generar el IV, pero no lo tenemos
-                        // Usamos un enfoque diferente: derivar IV del texto encriptado
-                        var hash = sha.ComputeHash(encryptedBytes);
-                        Array.Copy(hash, iv, 16);
-                    }
-
-                    // Intentar desencriptar con diferentes IVs
-                    // (Ya que no podemos derivar el IV del plaintext que no conocemos)
-                    // Usamos un IV fijo derivado de la clave secreta
-                    using (var sha = SHA256.Create())
-                    {
-                        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY));
+                        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY + "IV_SALT"));
                         Array.Copy(hash, iv, 16);
                     }
                     aes.IV = iv;
