@@ -40,7 +40,14 @@ namespace Tweaker.License
                 using (var sha256 = SHA256.Create())
                 {
                     var hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(components.ToString()));
-                    return Convert.ToBase64String(hash).Replace("+", "").Replace("/", "").Replace("=", "").Substring(0, 32);
+                    var base64 = Convert.ToBase64String(hash).Replace("+", "").Replace("/", "").Replace("=", "");
+                    // Asegurar que tenemos al menos 32 caracteres
+                    if (base64.Length < 32)
+                    {
+                        // Pad con hash adicional si es necesario
+                        base64 = base64.PadRight(32, '0');
+                    }
+                    return base64.Substring(0, 32);
                 }
             }
             catch (Exception ex)

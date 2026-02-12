@@ -9,7 +9,12 @@ namespace Tweaker.License
     /// </summary>
     public static class LicenseKeyGenerator
     {
-        // Clave secreta para encriptación AES (EN PRODUCCIÓN, USAR OFUSCACIÓN O KEY DERIVATION)
+        // NOTA DE SEGURIDAD: Esta clave debe coincidir con LicenseValidator.cs
+        // En producción, considerar:
+        // 1. Usar key derivation (PBKDF2, Argon2)
+        // 2. Ofuscar el código con herramientas especializadas
+        // 3. Almacenar en configuración segura o usar key management service
+        // 4. Implementar rotación periódica de claves
         private const string SECRET_KEY = "TweakerLic2024SecretKey9876543";
         
         /// <summary>

@@ -56,9 +56,12 @@ namespace Tweaker.License
 
             if (formatted != TxtLicenseKey.Text)
             {
+                var oldLength = TxtLicenseKey.Text.Length;
                 var cursorPos = TxtLicenseKey.SelectionStart;
                 TxtLicenseKey.Text = formatted;
-                TxtLicenseKey.SelectionStart = Math.Min(cursorPos + (formatted.Length - TxtLicenseKey.Text.Length + formatted.Length), formatted.Length);
+                // Ajustar posición del cursor correctamente
+                var newCursorPos = cursorPos + (formatted.Length - oldLength);
+                TxtLicenseKey.SelectionStart = Math.Max(0, Math.Min(newCursorPos, formatted.Length));
             }
 
             // Habilitar botón de activar si el formato es válido
