@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.Text;
 using Tweaker.Utilities;
+using Tweaker.License;
 
 namespace Tweaker
 {
@@ -25,6 +26,13 @@ namespace Tweaker
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
             Debug.WriteLine("🚀 GHOST OPTIMIZER v2.3.0 - CON FIX AUTOMÁTICO DE NAVEGADORES");
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
+
+            // PRIMERO: Validar licencia al iniciar
+            if (!LicenseManager.ValidateLicenseOnStartup())
+            {
+                // No hay licencia válida, mostrar ventana de activación
+                LicenseManager.ShowActivationWindow(showCancelOption: false);
+            }
 
             // 🌐 DIAGNÓSTICO Y FIX AUTOMÁTICO DE NAVEGADORES AL INICIO
             Task.Run(async () => await CheckAndFixBrowserIssues());
@@ -227,6 +235,5 @@ namespace Tweaker
             base.OnExit(e);
         }
     }
-
 }
 
