@@ -34,6 +34,7 @@ namespace Tweaker.KeyGenerator
             {
                 Console.WriteLine();
                 Console.WriteLine("Opciones:");
+                Console.WriteLine("0. 🎯 Generar MI clave (autodetectar hardware)");
                 Console.WriteLine("1. Generar llave perpetua");
                 Console.WriteLine("2. Generar llave con fecha de expiración");
                 Console.WriteLine("3. Salir");
@@ -46,11 +47,54 @@ namespace Tweaker.KeyGenerator
                     break;
                 }
 
+                // OPCIÓN 0: Autodetectar hardware y generar clave
+                if (option == "0")
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("🔍 Detectando tu hardware...");
+                    try
+                    {
+                        var fingerprint = HardwareFingerprint.GetFingerprint();
+                        var displayFingerprint = HardwareFingerprint.GetDisplayFingerprint();
+                        
+                        Console.WriteLine($"✅ Fingerprint detectado: {displayFingerprint}");
+                        Console.WriteLine();
+                        Console.WriteLine("🔑 Generando tu clave personalizada...");
+                        
+                        var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, null);
+                        
+                        PrintLicenseKey(fingerprint, licenseKey, null);
+                        
+                        // Validar
+                        var result = LicenseValidator.ValidateLicenseKey(licenseKey, fingerprint);
+                        if (result != null && result.IsValid)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("✅ CLAVE VÁLIDA - Lista para usar en Ghost Optimizer");
+                            Console.ResetColor();
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("❌ ADVERTENCIA: Error al validar la clave");
+                            Console.ResetColor();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"❌ Error al detectar hardware: {ex.Message}");
+                        Console.ResetColor();
+                    }
+                    
+                    continue;
+                }
+
                 Console.WriteLine();
                 Console.Write("Ingrese el Hardware Fingerprint del cliente: ");
-                var fingerprint = Console.ReadLine()?.Trim();
+                var manualFingerprint = Console.ReadLine()?.Trim();
 
-                if (string.IsNullOrEmpty(fingerprint))
+                if (string.IsNullOrEmpty(manualFingerprint))
                 {
                     Console.WriteLine("❌ Fingerprint inválido.");
                     continue;
@@ -76,36 +120,40 @@ namespace Tweaker.KeyGenerator
 
                 try
                 {
-                    var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, expirationDate);
-
-                    Console.WriteLine();
-                    Console.WriteLine("════════════════════════════════════════════════════════");
-                    Console.WriteLine("✅ LLAVE GENERADA EXITOSAMENTE");
-                    Console.WriteLine("════════════════════════════════════════════════════════");
-                    Console.WriteLine();
-                    Console.WriteLine($"Hardware Fingerprint: {fingerprint}");
-                    
-                    if (expirationDate.HasValue)
-                    {
-                        Console.WriteLine($"Fecha de Expiración:  {expirationDate.Value:yyyy-MM-dd}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Tipo:                 Licencia Perpetua ♾️");
-                    }
-                    
-                    Console.WriteLine();
-                    Console.WriteLine($"LLAVE DE LICENCIA:");
-                    Console.WriteLine($"╔══════════════════════════════╗");
-                    Console.WriteLine($"║  {licenseKey}  ║");
-                    Console.WriteLine($"╚══════════════════════════════╝");
-                    Console.WriteLine();
+                    var licenseKey = LicenseKeyGenerator.GenerateKey(manualFingerprint, expirationDate);
+                    PrintLicenseKey(manualFingerprint, licenseKey, expirationDate);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"❌ Error: {ex.Message}");
                 }
             }
+        }
+
+        static void PrintLicenseKey(string fingerprint, string licenseKey, DateTime? expirationDate)
+        {
+            Console.WriteLine();
+            Console.WriteLine("════════════════════════════════════════════════════════");
+            Console.WriteLine("✅ LLAVE GENERADA EXITOSAMENTE");
+            Console.WriteLine("════════════════════════════════════════════════════════");
+            Console.WriteLine();
+            Console.WriteLine($"Hardware Fingerprint: {fingerprint}");
+            
+            if (expirationDate.HasValue)
+            {
+                Console.WriteLine($"Fecha de Expiración:  {expirationDate.Value:yyyy-MM-dd}");
+            }
+            else
+            {
+                Console.WriteLine($"Tipo:                 Licencia Perpetua ♾️");
+            }
+            
+            Console.WriteLine();
+            Console.WriteLine($"LLAVE DE LICENCIA:");
+            Console.WriteLine($"╔══════════════════════════════════╗");
+            Console.WriteLine($"║  {licenseKey}  ║");
+            Console.WriteLine($"╚══════════════════════════════════╝");
+            Console.WriteLine();
         }
 
         static void BatchMode(string[] args)

@@ -301,42 +301,82 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine($"   ? Core objetivo: {targetCore}");
                 Debug.WriteLine($"   ? Máscara de afinidad: 0x{affinityMask:X}");
                 
-                // Configurar afinidad via PowerShell (método más confiable)
-                string psCommand = $@"
-                    try {{
-                        $irq = {gpu.IRQ}
-                        $core = {targetCore}
-                        
-                        # Configurar afinidad usando Set-ProcessorAffinity si está disponible
-                        # O usar registry para configuración persistente
-                        
-                        # Configurar en registro para persistencia
-                        $regPath = ""HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl""
-                        if (-not (Test-Path $regPath)) {{
-                            New-Item -Path $regPath -Force | Out-Null
-                        }}
-                        
-                        Set-ItemProperty -Path $regPath -Name ""IRQToCoreMapping"" -Value $core -Type DWord
-                        
-                        Write-Output ""SUCCESS: IRQ $irq asignada al core $core""
-                        return $true
-                    }}
-                    catch {{
-                        Write-Output ""ERROR: $_""
-                        return $false
-                    }}
-                ";
+                bool success = false;
                 
-                var result = ExecutePowerShellCommand(psCommand);
-                bool success = result.Contains("SUCCESS");
-                
-                if (success)
+                // MÉTODO 1: Configurar MSI (Message Signaled Interrupts) en el registro
+                // Este es el método más efectivo y persistente
+                string devicePath = FindGpuDeviceRegistryPath(gpu.PciId);
+                if (!string.IsNullOrEmpty(devicePath))
                 {
-                    Debug.WriteLine($"? IRQ {gpu.IRQ} asignada al core {targetCore}");
+                    Debug.WriteLine($"   ? Ruta del dispositivo: {devicePath}");
+                    
+                    try
+                    {
+                        // Configurar MSI Affinity Policy
+                        string msiPath = $"{devicePath}\\Device Parameters\\Interrupt Management\\Affinity Policy";
+                        using (var key = Registry.LocalMachine.CreateSubKey(msiPath))
+                        {
+                            if (key != null)
+                            {
+                                // DevicePolicy = 4: IRQ en core específico (IrqPolicySpecifiedProcessors)
+                                key.SetValue("DevicePolicy", 4, RegistryValueKind.DWord);
+                                // AssignmentSetOverride: máscara de bits del core
+                                key.SetValue("AssignmentSetOverride", affinityMask, RegistryValueKind.QWord);
+                                Debug.WriteLine($"   ? MSI Affinity Policy configurada (GPU -> Core {targetCore})");
+                                success = true;
+                            }
+                        }
+                        
+                        // Configurar MSI message support
+                        string messageNumberLimit = $"{devicePath}\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties";
+                        using (var key = Registry.LocalMachine.CreateSubKey(messageNumberLimit))
+                        {
+                            if (key != null)
+                            {
+                                // MSISupported = 1: Habilitar MSI
+                                key.SetValue("MSISupported", 1, RegistryValueKind.DWord);
+                                Debug.WriteLine($"   ? MSI habilitado para la GPU");
+                            }
+                        }
+                    }
+                    catch (Exception regEx)
+                    {
+                        Debug.WriteLine($"   ?? Error configurando MSI: {regEx.Message}");
+                    }
                 }
                 else
                 {
-                    Debug.WriteLine($"?? Configuración parcial de IRQ: {result}");
+                    Debug.WriteLine("   ?? No se pudo encontrar la ruta del dispositivo GPU");
+                }
+                
+                // MÉTODO 2: Configurar prioridades globales de interrupciones
+                try
+                {
+                    string priorityControl = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
+                    using (var key = Registry.LocalMachine.CreateSubKey(priorityControl))
+                    {
+                        if (key != null)
+                        {
+                            // IRQ8Priority = 1: Alta prioridad para IRQs de dispositivos (GPU, audio, etc.)
+                            key.SetValue("IRQ8Priority", 1, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ? Prioridad de IRQ optimizada globalmente");
+                            success = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"   ?? Error configurando prioridades: {ex.Message}");
+                }
+                
+                if (success)
+                {
+                    Debug.WriteLine($"? IRQ {gpu.IRQ} configurada exitosamente");
+                    Debug.WriteLine($"   ?? REINICIAR el sistema para aplicar cambios completamente");
+                }
+                else
+                {
+                    Debug.WriteLine("?? Configuración parcial aplicada");
                 }
                 
                 return success;
@@ -357,29 +397,56 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine($"?? Restaurando distribución automática de IRQ...");
                 
-                string psCommand = $@"
-                    try {{
-                        # Eliminar configuraciones personalizadas de IRQ
-                        $regPath = ""HKLM:\SYSTEM\CurrentControlSet\Control\PriorityControl""
-                        if (Test-Path $regPath) {{
-                            Remove-ItemProperty -Path $regPath -Name ""IRQToCoreMapping"" -ErrorAction SilentlyContinue
-                        }}
-                        
-                        Write-Output ""SUCCESS: Distribución automática restaurada""
-                        return $true
-                    }}
-                    catch {{
-                        Write-Output ""ERROR: $_""
-                        return $false
-                    }}
-                ";
+                bool success = false;
                 
-                var result = ExecutePowerShellCommand(psCommand);
-                bool success = result.Contains("SUCCESS");
+                // MÉTODO 1: Restaurar configuración MSI del dispositivo
+                string devicePath = FindGpuDeviceRegistryPath(gpu.PciId);
+                if (!string.IsNullOrEmpty(devicePath))
+                {
+                    try
+                    {
+                        // Eliminar Affinity Policy personalizada
+                        string msiPath = $"{devicePath}\\Device Parameters\\Interrupt Management\\Affinity Policy";
+                        using (var key = Registry.LocalMachine.OpenSubKey(msiPath, true))
+                        {
+                            if (key != null)
+                            {
+                                key.DeleteValue("DevicePolicy", false);
+                                key.DeleteValue("AssignmentSetOverride", false);
+                                Debug.WriteLine("   ? MSI Affinity Policy eliminada");
+                                success = true;
+                            }
+                        }
+                    }
+                    catch (Exception regEx)
+                    {
+                        Debug.WriteLine($"   ?? Error eliminando MSI policy: {regEx.Message}");
+                    }
+                }
+                
+                // MÉTODO 2: Restaurar prioridades predeterminadas
+                try
+                {
+                    string priorityControl = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
+                    using (var key = Registry.LocalMachine.OpenSubKey(priorityControl, true))
+                    {
+                        if (key != null)
+                        {
+                            key.DeleteValue("IRQ8Priority", false);
+                            Debug.WriteLine("   ? Prioridades predeterminadas restauradas");
+                            success = true;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"   ?? Error restaurando prioridades: {ex.Message}");
+                }
                 
                 if (success)
                 {
                     Debug.WriteLine("? Distribución automática restaurada");
+                    Debug.WriteLine("   ?? REINICIAR el sistema para aplicar cambios completamente");
                 }
                 
                 return success;
@@ -492,6 +559,46 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
         // HELPER METHODS
         // ???????????????????????????????????????????????????????????????????
+
+        /// <summary>
+        /// Busca la ruta del registro del dispositivo GPU basado en su PCI ID
+        /// </summary>
+        private static string FindGpuDeviceRegistryPath(string pciId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pciId))
+                    return null;
+                
+                // El PCI ID viene en formato: PCI\VEN_10DE&DEV_2206&...
+                // Necesitamos buscar en: SYSTEM\CurrentControlSet\Enum\PCI\...
+                
+                string enumPath = @"SYSTEM\CurrentControlSet\Enum\" + pciId;
+                
+                using (var key = Registry.LocalMachine.OpenSubKey(enumPath, false))
+                {
+                    if (key != null)
+                    {
+                        // Encontrar la primera subkey (suele haber solo una)
+                        string[] subKeys = key.GetSubKeyNames();
+                        if (subKeys.Length > 0)
+                        {
+                            string fullPath = enumPath + "\\" + subKeys[0];
+                            Debug.WriteLine($"   ? Dispositivo encontrado: {fullPath}");
+                            return fullPath;
+                        }
+                    }
+                }
+                
+                Debug.WriteLine($"   ?? No se encontró el dispositivo en: {enumPath}");
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"   ? Error buscando dispositivo: {ex.Message}");
+                return null;
+            }
+        }
 
         /// <summary>
         /// Ejecuta comando PowerShell y retorna resultado

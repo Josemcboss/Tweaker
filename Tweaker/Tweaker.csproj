@@ -16,13 +16,15 @@
     <Company>DaddyGhost</Company>
     <Description>Advanced Gaming Performance Tweaker</Description>
     <Copyright>Copyright © 2024 DaddyGhost</Copyright>
-    <AssemblyVersion>2.1.0.0</AssemblyVersion>
-    <FileVersion>2.1.0.0</FileVersion>
-    <Version>2.1.0</Version>
+    <AssemblyVersion>2.3.0.0</AssemblyVersion>
+    <FileVersion>2.3.0.0</FileVersion>
+    <Version>2.3.0</Version>
     
     <!-- Configuración de publicación optimizada -->
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
+    <!-- Self-contained solo para publicación, no para desarrollo -->
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <SelfContained Condition="'$(Configuration)' != 'Release'">false</SelfContained>
     <PublishTrimmed>false</PublishTrimmed>
     <TrimMode>link</TrimMode>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
@@ -30,8 +32,8 @@
     <DebugType>embedded</DebugType>
     <DebugSymbols>false</DebugSymbols>
     
-    <!-- Configuración de Runtime -->
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!-- Configuración de Runtime (solo para Release) -->
+    <RuntimeIdentifier Condition="'$(Configuration)' == 'Release'">win-x64</RuntimeIdentifier>
     <UseAppHost>true</UseAppHost>
     
     <!-- Optimizaciones adicionales -->

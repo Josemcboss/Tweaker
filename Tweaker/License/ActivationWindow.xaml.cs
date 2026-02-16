@@ -22,7 +22,8 @@ namespace Tweaker.License
             try
             {
                 currentHardwareFingerprint = HardwareFingerprint.GetFingerprint();
-                TxtHardwareId.Text = HardwareFingerprint.GetDisplayFingerprint();
+                // MOSTRAR FINGERPRINT COMPLETO (no solo los primeros 16 caracteres)
+                TxtHardwareId.Text = currentHardwareFingerprint;
             }
             catch (Exception ex)
             {
@@ -135,6 +136,43 @@ namespace Tweaker.License
         {
             DialogResult = false;
             Close();
+        }
+
+        /// <summary>
+        /// Copia el fingerprint completo al portapapeles
+        /// </summary>
+        private void BtnCopyFingerprint_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(currentHardwareFingerprint))
+                {
+                    Clipboard.SetText(currentHardwareFingerprint);
+                    ShowStatus("✅ Fingerprint copiado al portapapeles", true);
+                    
+                    // Cambiar temporalmente el texto del botón
+                    var button = sender as System.Windows.Controls.Button;
+                    if (button != null)
+                    {
+                        var originalContent = button.Content;
+                        button.Content = "✅ Copiado";
+                        
+                        // Restaurar después de 2 segundos
+                        var timer = new System.Windows.Threading.DispatcherTimer();
+                        timer.Interval = TimeSpan.FromSeconds(2);
+                        timer.Tick += (s, args) =>
+                        {
+                            button.Content = originalContent;
+                            timer.Stop();
+                        };
+                        timer.Start();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowStatus($"❌ Error al copiar: {ex.Message}", false);
+            }
         }
 
         /// <summary>

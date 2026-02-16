@@ -10,6 +10,13 @@ namespace Tweaker.LicenseTest
     {
         static void Main(string[] args)
         {
+            // Modo de exportación de fingerprint
+            if (args.Length > 0 && args[0] == "--export-fingerprint")
+            {
+                ExportFingerprint();
+                return;
+            }
+            
             Console.WriteLine("════════════════════════════════════════════════════════");
             Console.WriteLine("   TWEAKER - TEST DEL SISTEMA DE LICENCIAS");
             Console.WriteLine("════════════════════════════════════════════════════════");
@@ -124,6 +131,63 @@ namespace Tweaker.LicenseTest
                 Console.WriteLine("════════════════════════════════════════════════════════");
                 Console.WriteLine($"Error: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                Environment.Exit(1);
+            }
+        }
+
+        /// <summary>
+        /// Exporta el fingerprint del hardware actual
+        /// </summary>
+        static void ExportFingerprint()
+        {
+            try
+            {
+                Console.WriteLine("════════════════════════════════════════════════════════");
+                Console.WriteLine("   EXPORTAR FINGERPRINT PARA ACTIVACIÓN");
+                Console.WriteLine("   Ghost Optimizer v2.3.0");
+                Console.WriteLine("════════════════════════════════════════════════════════");
+                Console.WriteLine();
+
+                Console.WriteLine("🔍 Detectando hardware de tu computadora...");
+                Console.WriteLine();
+
+                var fingerprint = HardwareFingerprint.GetFingerprint();
+                
+                Console.WriteLine("✅ FINGERPRINT DETECTADO:");
+                Console.WriteLine("════════════════════════════════════════════════════════");
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine(fingerprint);
+                Console.ResetColor();
+                Console.WriteLine("════════════════════════════════════════════════════════");
+                Console.WriteLine();
+
+                Console.WriteLine("📋 Este es tu Hardware Fingerprint COMPLETO");
+                Console.WriteLine("   Envía EXACTAMENTE este texto a tu proveedor de licencias");
+                Console.WriteLine();
+
+                // Información adicional del sistema
+                Console.WriteLine("ℹ️  Información del Sistema:");
+                Console.WriteLine($"   • Computadora: {Environment.MachineName}");
+                Console.WriteLine($"   • Usuario: {Environment.UserName}");
+                Console.WriteLine($"   • OS: {Environment.OSVersion}");
+                Console.WriteLine($"   • .NET: {Environment.Version}");
+                Console.WriteLine($"   • Arquitectura: {(Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")}");
+                Console.WriteLine();
+
+                Console.WriteLine("💡 SIGUIENTE PASO:");
+                Console.WriteLine("   1. Copia el FINGERPRINT mostrado arriba");
+                Console.WriteLine("   2. Envíalo a tu proveedor de licencias");
+                Console.WriteLine("   3. Recibirás una clave de activación única");
+                Console.WriteLine("   4. Ingresa la clave en Ghost Optimizer");
+                Console.WriteLine();
+
+                Environment.Exit(0);
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"❌ Error al detectar hardware: {ex.Message}");
+                Console.ResetColor();
                 Environment.Exit(1);
             }
         }

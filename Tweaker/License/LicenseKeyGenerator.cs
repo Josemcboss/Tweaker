@@ -22,27 +22,27 @@ namespace Tweaker.License
         {
             try
             {
+                // NUEVO ENFOQUE SIMPLE: Usar hash directo sin encriptación compleja
+                
                 // Crear datos de la licencia
                 var licenseData = new StringBuilder();
                 licenseData.Append(hardwareFingerprint);
                 licenseData.Append("|");
                 licenseData.Append(expirationDate?.ToString("yyyy-MM-dd") ?? "PERPETUAL");
                 licenseData.Append("|");
+                licenseData.Append(SECRET_KEY); // Incluir clave secreta en el hash
                 
-                // Agregar fecha de creación
-                licenseData.Append(DateTime.Now.ToString("yyyy-MM-dd"));
-
-                // Encriptar con AES
-                var encrypted = EncryptString(licenseData.ToString());
-                
-                // Calcular checksum
-                var checksum = CalculateChecksum(encrypted);
-                
-                // Combinar encrypted + checksum
-                var combined = encrypted + checksum.ToString("X4");
-                
-                // Formatear como XXXXX-XXXXX-XXXXX-XXXXX
-                return FormatLicenseKey(combined);
+                // Calcular hash SHA256
+                using (var sha256 = SHA256.Create())
+                {
+                    var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(licenseData.ToString()));
+                    
+                    // Tomar los primeros 10 bytes (20 caracteres hex)
+                    var hashHex = BitConverter.ToString(hashBytes, 0, 10).Replace("-", "");
+                    
+                    // Formatear como XXXXX-XXXXX-XXXXX-XXXXX
+                    return FormatLicenseKey(hashHex);
+                }
             }
             catch (Exception ex)
             {
@@ -76,7 +76,8 @@ namespace Tweaker.License
                 {
                     var plainBytes = Encoding.UTF8.GetBytes(plainText);
                     var encryptedBytes = encryptor.TransformFinalBlock(plainBytes, 0, plainBytes.Length);
-                    return Convert.ToBase64String(encryptedBytes).Replace("+", "").Replace("/", "").Replace("=", "");
+                    // Convertir a HEX en lugar de Base64 para evitar problemas con caracteres especiales
+                    return BitConverter.ToString(encryptedBytes).Replace("-", "");
                 }
             }
         }
@@ -99,32 +100,22 @@ namespace Tweaker.License
         /// </summary>
         private static string FormatLicenseKey(string rawKey)
         {
-            // Asegurar que tenemos suficientes caracteres
-            if (rawKey.Length < 20)
+            // Asegurar que tenemos exactamente 20 caracteres
+            if (rawKey.Length > 20)
+            {
+                rawKey = rawKey.Substring(0, 20);
+            }
+            else if (rawKey.Length < 20)
             {
                 rawKey = rawKey.PadRight(20, '0');
             }
             
-            // Tomar solo los primeros 20 caracteres válidos
-            var cleaned = new StringBuilder();
-            foreach (char c in rawKey.ToUpper())
-            {
-                if (char.IsLetterOrDigit(c))
-                {
-                    cleaned.Append(c);
-                    if (cleaned.Length >= 20)
-                        break;
-                }
-            }
+            // Convertir a mayúsculas
+            rawKey = rawKey.ToUpper();
 
-            if (cleaned.Length < 20)
-            {
-                cleaned.Append('0', 20 - cleaned.Length);
-            }
-
-            // Formatear con guiones
-            return $"{cleaned.ToString().Substring(0, 5)}-{cleaned.ToString().Substring(5, 5)}-" +
-                   $"{cleaned.ToString().Substring(10, 5)}-{cleaned.ToString().Substring(15, 5)}";
+            // Formatear con guiones: XXXXX-XXXXX-XXXXX-XXXXX
+            return $"{rawKey.Substring(0, 5)}-{rawKey.Substring(5, 5)}-" +
+                   $"{rawKey.Substring(10, 5)}-{rawKey.Substring(15, 5)}";
         }
     }
 }

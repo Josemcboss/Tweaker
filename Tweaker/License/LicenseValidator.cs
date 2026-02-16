@@ -29,85 +29,65 @@ namespace Tweaker.License
                     return null;
                 }
 
-                // Limpiar formato
-                var cleanKey = licenseKey.Replace("-", "");
-
-                // Extraer checksum (últimos 4 caracteres)
-                if (cleanKey.Length < 4)
-                    return null;
-
-                var checksumStr = cleanKey.Substring(cleanKey.Length - 4);
-                var encrypted = cleanKey.Substring(0, cleanKey.Length - 4);
-
-                // Verificar checksum
-                var expectedChecksum = CalculateChecksum(encrypted);
-                var actualChecksum = Convert.ToUInt16(checksumStr, 16);
-
-                if (expectedChecksum != actualChecksum)
+                // NUEVO ENFOQUE: Generar hashes para perpetua y con fechas, y comparar
+                
+                // 1. Probar licencia perpetua
+                var perpetualHash = GenerateLicenseHash(currentHardwareFingerprint, null);
+                if (licenseKey.Replace("-", "").ToUpper() == perpetualHash.ToUpper())
                 {
-                    return null;
-                }
-
-                // Desencriptar
-                var decrypted = DecryptString(encrypted);
-                if (string.IsNullOrEmpty(decrypted))
-                {
-                    return null;
-                }
-
-                // Parsear datos
-                var parts = decrypted.Split('|');
-                if (parts.Length < 3)
-                {
-                    return null;
-                }
-
-                var fingerprint = parts[0];
-                var expirationStr = parts[1];
-                var createdStr = parts[2];
-
-                // Verificar que el fingerprint coincida
-                if (fingerprint != currentHardwareFingerprint)
-                {
-                    return null;
-                }
-
-                // Parsear fecha de expiración
-                DateTime? expirationDate = null;
-                if (expirationStr != "PERPETUAL")
-                {
-                    if (DateTime.TryParse(expirationStr, out var expDate))
+                    return new LicenseData
                     {
-                        expirationDate = expDate;
+                        HardwareFingerprint = currentHardwareFingerprint,
+                        ExpirationDate = null,
+                        CreatedDate = DateTime.Now
+                    };
+                }
+
+                // 2. Probar con fechas de expiración (próximos 10 años)
+                for (int years = 0; years <= 10; years++)
+                {
+                    for (int months = 0; months < 12; months++)
+                    {
+                        var testDate = DateTime.Now.AddYears(years).AddMonths(months);
+                        var dateHash = GenerateLicenseHash(currentHardwareFingerprint, testDate);
+                        
+                        if (licenseKey.Replace("-", "").ToUpper() == dateHash.ToUpper())
+                        {
+                            return new LicenseData
+                            {
+                                HardwareFingerprint = currentHardwareFingerprint,
+                                ExpirationDate = testDate,
+                                CreatedDate = DateTime.Now
+                            };
+                        }
                     }
                 }
 
-                // Parsear fecha de creación
-                DateTime createdDate = DateTime.Now;
-                if (DateTime.TryParse(createdStr, out var createDate))
-                {
-                    createdDate = createDate;
-                }
-
-                // Crear objeto de licencia
-                var licenseData = new LicenseData
-                {
-                    HardwareFingerprint = fingerprint,
-                    ExpirationDate = expirationDate,
-                    CreatedDate = createdDate
-                };
-
-                // Verificar si está expirada
-                if (licenseData.IsExpired)
-                {
-                    return null;
-                }
-
-                return licenseData;
+                // No se encontró coincidencia
+                return null;
             }
             catch
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Genera el hash de una licencia (debe coincidir con el generador)
+        /// </summary>
+        private static string GenerateLicenseHash(string hardwareFingerprint, DateTime? expirationDate)
+        {
+            var licenseData = new StringBuilder();
+            licenseData.Append(hardwareFingerprint);
+            licenseData.Append("|");
+            licenseData.Append(expirationDate?.ToString("yyyy-MM-dd") ?? "PERPETUAL");
+            licenseData.Append("|");
+            licenseData.Append(SECRET_KEY);
+            
+            using (var sha256 = SHA256.Create())
+            {
+                var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(licenseData.ToString()));
+                return BitConverter.ToString(hashBytes, 0, 10).Replace("-", "");
             }
         }
 
@@ -139,15 +119,12 @@ namespace Tweaker.License
                     Array.Copy(keyBytes, key, Math.Min(keyBytes.Length, key.Length));
                     aes.Key = key;
 
-                    // Convertir base64 modificado de vuelta
-                    var base64 = encryptedText;
-                    // Agregar padding si es necesario
-                    while (base64.Length % 4 != 0)
+                    // Convertir HEX a bytes
+                    var encryptedBytes = new byte[encryptedText.Length / 2];
+                    for (int i = 0; i < encryptedBytes.Length; i++)
                     {
-                        base64 += "=";
+                        encryptedBytes[i] = Convert.ToByte(encryptedText.Substring(i * 2, 2), 16);
                     }
-
-                    var encryptedBytes = Convert.FromBase64String(base64);
 
                     // Generar IV determinista (mismo que en el generador)
                     var iv = new byte[16];

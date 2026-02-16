@@ -43,6 +43,6 @@
         </ItemsControl>
         
         <!-- Additional Content Area -->
-        <ContentPresenter x:Name="AdditionalContent" Content="{Binding AdditionalContent, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+        <ContentPresenter Content="{Binding AdditionalContent, RelativeSource={RelativeSource AncestorType=UserControl}}"/>
     </StackPanel>
 </UserControl>

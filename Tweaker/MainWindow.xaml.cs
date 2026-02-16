@@ -4237,9 +4237,8 @@ namespace Tweaker
                             "🌐 NAVEGADORES LENTOS DETECTADOS\n\n" +
                             "Ghost Optimizer detectó configuraciones que están\n" +
                             "causando lentitud en navegadores web.\n\n" +
-                            "💡 Fix automático disponible - ¡Haz clic aquí!",
-                            "Fix Navegadores Disponible",
-                            async () => await ShowBrowserFixDialog()
+                            "💡 Usa el menú Red & Ping para aplicar el fix.",
+                            "Fix Navegadores Disponible"
                         );
                     });
                 }

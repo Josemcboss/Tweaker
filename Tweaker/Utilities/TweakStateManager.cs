@@ -186,6 +186,11 @@ namespace Tweaker.Utilities
             TotalTweaksCount > 0 ? (ActiveTweaksCount * 100) / TotalTweaksCount : 0;
 
         /// <summary>
+        /// Obtiene el conteo de tweaks activos (método auxiliar para compatibilidad)
+        /// </summary>
+        public int GetActiveTweaksCount() => ActiveTweaksCount;
+
+        /// <summary>
         /// Tweaks agrupados por categoría
         /// </summary>
         public Dictionary<string, int> TweaksByCategory
