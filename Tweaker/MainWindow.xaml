@@ -288,6 +288,154 @@ Icon="{StaticResource GhostOptimizerIcon}">
             </Style.Triggers>
         </Style>
 
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- GLASS & NEON STYLES (MODERNOS) -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+        <!-- GlassCard Style - Efecto Glass Morphism -->
+        <Style x:Key="GlassCard" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <!-- Gradiente radial sutil desde el centro -->
+                    <RadialGradientBrush>
+                        <GradientStop Color="#CC1E1E1E" Offset="0"/>
+                        <GradientStop Color="#CC151515" Offset="1"/>
+                    </RadialGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <!-- Gradiente vertical: luz cenital -->
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#404040" Offset="0"/>
+                        <GradientStop Color="#101010" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" 
+                                    BlurRadius="20" 
+                                    ShadowDepth="0" 
+                                    Opacity="0.4"/>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- NeonBorder Style - Efecto Neon Glow en Hover -->
+        <Style x:Key="NeonBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="#2A2A2A"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" 
+                                    BlurRadius="8" 
+                                    ShadowDepth="0" 
+                                    Opacity="0.3"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#00D9FF"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <!-- Neon Glow Effect -->
+                            <DropShadowEffect Color="#00D9FF" 
+                                            BlurRadius="20" 
+                                            ShadowDepth="0" 
+                                            Opacity="0.8"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- GlassCardWithHover Style - Combina Glass + Neon -->
+        <Style x:Key="GlassCardWithHover" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#CC1E1E1E" Offset="0"/>
+                        <GradientStop Color="#CC151515" Offset="1"/>
+                    </RadialGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderBrush">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Color="#404040" Offset="0"/>
+                        <GradientStop Color="#101010" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#000000" 
+                                    BlurRadius="20" 
+                                    ShadowDepth="0" 
+                                    Opacity="0.4"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#00D9FF"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <!-- Neon Glow cuando hover -->
+                            <DropShadowEffect Color="#00D9FF" 
+                                            BlurRadius="25" 
+                                            ShadowDepth="0" 
+                                            Opacity="0.7"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- PurpleNeonBorder Style - Variante morada para GHOST Pack -->
+        <Style x:Key="PurpleNeonBorder" TargetType="Border" BasedOn="{StaticResource NeonBorder}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#A970FF"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#A970FF" 
+                                            BlurRadius="20" 
+                                            ShadowDepth="0" 
+                                            Opacity="0.8"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- RedNeonBorder Style - Variante roja para tweaks peligrosos -->
+        <Style x:Key="RedNeonBorder" TargetType="Border" BasedOn="{StaticResource NeonBorder}">
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="#E81123"/>
+                    <Setter Property="BorderThickness" Value="2"/>
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect Color="#E81123" 
+                                            BlurRadius="20" 
+                                            ShadowDepth="0" 
+                                            Opacity="0.8"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
     </Window.Resources>
 
     <!-- ROOT GRID -->
@@ -601,8 +749,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                             <!-- Card 1: Tweaks Activos (DINÁMICO) -->
                             <Border Grid.Column="0" 
-                                Background="#1E1E1E" 
-                                CornerRadius="8" 
+                                Style="{StaticResource GlassCardWithHover}"
                                 Padding="20"
                                 Margin="0,0,10,0">
                                 <StackPanel>
@@ -639,8 +786,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                             <!-- Card 2: Beneficios Estimados (DINÁMICO) -->
                             <Border Grid.Column="1" 
-                                Background="#1E1E1E" 
-                                CornerRadius="8" 
+                                Style="{StaticResource GlassCardWithHover}"
                                 Padding="20"
                                 Margin="5,0">
                                 <StackPanel>
@@ -660,10 +806,10 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 </StackPanel>
                             </Border>
 
+
                             <!-- Card 3: RAM Liberada (DINÁMICO) -->
                             <Border Grid.Column="2" 
-                                Background="#1E1E1E" 
-                                CornerRadius="8" 
+                                Style="{StaticResource GlassCardWithHover}"
                                 Padding="20"
                                 Margin="10,0,0,0">
                                 <StackPanel>
@@ -691,8 +837,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Grid>
 
                         <!-- Info Section -->
-                        <Border Background="#1E1E1E" 
-                            CornerRadius="8" 
+                        <Border Style="{StaticResource GlassCard}"
                             Padding="25"
                             Margin="0,20,0,0">
                             <StackPanel>

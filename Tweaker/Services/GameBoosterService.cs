@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -12,8 +12,8 @@ using Tweaker.Utilities;
 namespace Tweaker.Services
 {
     /// <summary>
-    /// Servicio de optimizaci�n autom�tica de juegos
-    /// Detecta cuando se est� jugando y aplica optimizaciones din�micamente
+    /// Servicio de optimización automática de juegos
+    /// Detecta cuando se está jugando y aplica optimizaciones dinámicamente
     /// </summary>
     public class GameBoosterService
     {
@@ -44,7 +44,7 @@ namespace Tweaker.Services
 
         #endregion
 
-        #region P/Invoke para detecci�n de ventana activa
+        #region P/Invoke para detección de ventana activa
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();
@@ -65,7 +65,7 @@ namespace Tweaker.Services
         private Guid? _previousPowerPlan;
 
         /// <summary>
-        /// Lista de juegos conocidos para detecci�n autom�tica
+        /// Lista de juegos conocidos para detección automática
         /// </summary>
         private readonly List<string> _knownGames = new List<string>
         {
@@ -107,6 +107,7 @@ namespace Tweaker.Services
             "minecraft",
             "javaw",
             "rocketleague",
+            "robloxplayerbeta",
             
             // Competitivos
             "dota2",
@@ -153,12 +154,12 @@ namespace Tweaker.Services
         };
 
         /// <summary>
-        /// Indica si el servicio est� monitoreando activamente
+        /// Indica si el servicio está monitoreando activamente
         /// </summary>
         public bool IsMonitoring => _isMonitoring;
 
         /// <summary>
-        /// Indica si el modo juego est� activo
+        /// Indica si el modo juego está activo
         /// </summary>
         public bool IsGameModeActive => _isGameModeActive;
 
@@ -174,7 +175,7 @@ namespace Tweaker.Services
 
         #endregion
 
-        #region Inicializaci�n
+        #region Inicialización
 
         private void InitializeTimer()
         {
@@ -190,37 +191,37 @@ namespace Tweaker.Services
         #region Control del Servicio
 
         /// <summary>
-        /// Inicia el monitoreo autom�tico de juegos
+        /// Inicia el monitoreo automático de juegos
         /// </summary>
         public void StartMonitoring()
         {
             if (_isMonitoring)
             {
-                Debug.WriteLine("?? Game Booster ya est� monitoreando");
+                Debug.WriteLine("⚠️ Game Booster ya está monitoreando");
                 return;
             }
 
-            Debug.WriteLine("?? GAME BOOSTER - Iniciando monitoreo...");
+            Debug.WriteLine("🎮 GAME BOOSTER - Iniciando monitoreo...");
             _isMonitoring = true;
             _monitoringTimer?.Start();
             
-            OnGameModeChanged(false, "Monitoreando...", "Esperando detecci�n de juego");
+            OnGameModeChanged(false, "Monitoreando...", "Esperando detección de juego");
         }
 
         /// <summary>
-        /// Detiene el monitoreo autom�tico
+        /// Detiene el monitoreo automático
         /// </summary>
         public void StopMonitoring()
         {
             if (!_isMonitoring)
                 return;
 
-            Debug.WriteLine("?? GAME BOOSTER - Deteniendo monitoreo...");
+            Debug.WriteLine("🛑 GAME BOOSTER - Deteniendo monitoreo...");
             
             _monitoringTimer?.Stop();
             _isMonitoring = false;
 
-            // Si hab�a un juego activo, desactivar optimizaciones
+            // Si había un juego activo, desactivar optimizaciones
             if (_isGameModeActive)
             {
                 DisableGameMode();
@@ -249,13 +250,13 @@ namespace Tweaker.Services
                     if (isGame && !_isGameModeActive)
                     {
                         // Juego detectado y modo no activo - activar
-                        Debug.WriteLine($"?? JUEGO DETECTADO: {foregroundProcess.ProcessName}");
+                        Debug.WriteLine($"🎮 JUEGO DETECTADO: {foregroundProcess.ProcessName}");
                         EnableGameMode(foregroundProcess);
                     }
                     else if (!isGame && _isGameModeActive)
                     {
                         // Ya no hay juego activo - desactivar
-                        Debug.WriteLine($"?? Cambio a aplicaci�n normal: {foregroundProcess.ProcessName}");
+                        Debug.WriteLine($"📋 Cambio a aplicación normal: {foregroundProcess.ProcessName}");
                         DisableGameMode();
                     }
                     else if (isGame && _isGameModeActive)
@@ -263,8 +264,8 @@ namespace Tweaker.Services
                         // Verificar si es el mismo juego
                         if (_currentGameProcess?.Id != foregroundProcess.Id)
                         {
-                            // Cambi� de juego - desactivar y reactivar
-                            Debug.WriteLine($"?? Cambio de juego detectado");
+                            // Cambió de juego - desactivar y reactivar
+                            Debug.WriteLine($"🔄 Cambio de juego detectado");
                             DisableGameMode();
                             EnableGameMode(foregroundProcess);
                         }
@@ -281,7 +282,7 @@ namespace Tweaker.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error en monitoreo: {ex.Message}");
+                Debug.WriteLine($"❌ Error en monitoreo: {ex.Message}");
             }
         }
 
@@ -331,7 +332,7 @@ namespace Tweaker.Services
 
             try
             {
-                Debug.WriteLine($"? ACTIVANDO GAME MODE para {gameProcess.ProcessName}");
+                Debug.WriteLine($"⚡ ACTIVANDO GAME MODE para {gameProcess.ProcessName}");
                 
                 _currentGameProcess = gameProcess;
                 _currentGameName = gameProcess.ProcessName;
@@ -346,7 +347,7 @@ namespace Tweaker.Services
                 // 3. Limpiar memoria RAM
                 Task.Run(() => CleanSystemMemory());
 
-                // 4. Cambiar plan de energ�a a Alto Rendimiento
+                // 4. Cambiar plan de energía a Alto Rendimiento
                 SetHighPerformancePowerPlan();
 
                 // 5. Deshabilitar Game Bar temporalmente (opcional)
@@ -354,11 +355,11 @@ namespace Tweaker.Services
 
                 OnGameModeChanged(true, _currentGameName, "Optimizaciones activas");
 
-                Debug.WriteLine("? GAME MODE ACTIVADO");
+                Debug.WriteLine("✅ GAME MODE ACTIVADO");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error activando Game Mode: {ex.Message}");
+                Debug.WriteLine($"❌ Error activando Game Mode: {ex.Message}");
                 _isGameModeActive = false;
             }
         }
@@ -373,12 +374,12 @@ namespace Tweaker.Services
 
             try
             {
-                Debug.WriteLine($"?? DESACTIVANDO GAME MODE");
+                Debug.WriteLine($"🔻 DESACTIVANDO GAME MODE");
 
                 // 1. Restaurar Windows Update
                 RestoreWindowsUpdate();
 
-                // 2. Restaurar plan de energ�a
+                // 2. Restaurar plan de energía
                 RestorePowerPlan();
 
                 // 3. Restaurar Game Bar
@@ -390,28 +391,28 @@ namespace Tweaker.Services
 
                 OnGameModeChanged(false, null, "Modo escritorio");
 
-                Debug.WriteLine("? GAME MODE DESACTIVADO");
+                Debug.WriteLine("✅ GAME MODE DESACTIVADO");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error desactivando Game Mode: {ex.Message}");
+                Debug.WriteLine($"❌ Error desactivando Game Mode: {ex.Message}");
             }
         }
 
         #endregion
 
-        #region Optimizaciones Espec�ficas
+        #region Optimizaciones Específicas
 
         private void SetGamePriority(Process gameProcess)
         {
             try
             {
                 gameProcess.PriorityClass = ProcessPriorityClass.High;
-                Debug.WriteLine($"   ? Prioridad del juego establecida en HIGH");
+                Debug.WriteLine($"   ✓ Prioridad del juego establecida en HIGH");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? No se pudo cambiar prioridad: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ No se pudo cambiar prioridad: {ex.Message}");
             }
         }
 
@@ -425,12 +426,12 @@ namespace Tweaker.Services
                 {
                     _windowsUpdateService.Stop();
                     _windowsUpdateService.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                    Debug.WriteLine($"   ? Windows Update detenido temporalmente");
+                    Debug.WriteLine($"   ✓ Windows Update detenido temporalmente");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? No se pudo detener Windows Update: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ No se pudo detener Windows Update: {ex.Message}");
             }
         }
 
@@ -444,7 +445,7 @@ namespace Tweaker.Services
                     if (_windowsUpdateService.Status == ServiceControllerStatus.Stopped)
                     {
                         _windowsUpdateService.Start();
-                        Debug.WriteLine($"   ? Windows Update restaurado");
+                        Debug.WriteLine($"   ✓ Windows Update restaurado");
                     }
                     _windowsUpdateService.Dispose();
                     _windowsUpdateService = null;
@@ -452,7 +453,7 @@ namespace Tweaker.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? No se pudo restaurar Windows Update: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ No se pudo restaurar Windows Update: {ex.Message}");
             }
         }
 
@@ -463,12 +464,12 @@ namespace Tweaker.Services
                 var result = MemoryCleaner.FlushMemory();
                 if (result.success)
                 {
-                    Debug.WriteLine($"   ? Memoria limpiada: ~{result.mbCleaned}MB liberados ({result.processesProcessed} procesos)");
+                    Debug.WriteLine($"   ✓ Memoria limpiada: ~{result.mbCleaned}MB liberados ({result.processesProcessed} procesos)");
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? Error limpiando memoria: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ Error limpiando memoria: {ex.Message}");
             }
         }
 
@@ -484,11 +485,11 @@ namespace Tweaker.Services
                 var highPerformanceGuid = new Guid("8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
                 SetActivePowerPlan(highPerformanceGuid);
 
-                Debug.WriteLine($"   ? Plan de energ�a cambiado a Alto Rendimiento");
+                Debug.WriteLine($"   ✓ Plan de energía cambiado a Alto Rendimiento");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? No se pudo cambiar plan de energ�a: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ No se pudo cambiar plan de energía: {ex.Message}");
             }
         }
 
@@ -499,13 +500,13 @@ namespace Tweaker.Services
                 if (_previousPowerPlan.HasValue)
                 {
                     SetActivePowerPlan(_previousPowerPlan.Value);
-                    Debug.WriteLine($"   ? Plan de energ�a restaurado");
+                    Debug.WriteLine($"   ✓ Plan de energía restaurado");
                     _previousPowerPlan = null;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ?? No se pudo restaurar plan de energ�a: {ex.Message}");
+                Debug.WriteLine($"   ⚠️ No se pudo restaurar plan de energía: {ex.Message}");
             }
         }
 
