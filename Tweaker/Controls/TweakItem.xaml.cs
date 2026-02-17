@@ -14,6 +14,7 @@ namespace Tweaker.Controls
         public TweakItem()
         {
             InitializeComponent();
+            Loaded += TweakItem_Loaded;
         }
 
         #region Dependency Properties
@@ -88,7 +89,6 @@ namespace Tweaker.Controls
 
         #region Events
 
-
         public event RoutedEventHandler OnClicked;
         public event RoutedEventHandler OffClicked;
         public event RoutedEventHandler ApplyClicked;
@@ -98,13 +98,29 @@ namespace Tweaker.Controls
 
         #region Event Handlers
 
-        private void OnButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Se ejecuta cuando el control termina de cargar
+        /// </summary>
+        private void TweakItem_Loaded(object sender, RoutedEventArgs e)
         {
+            RefreshToggleState();
+        }
+
+        /// <summary>
+        /// Maneja el evento Checked del ModernToggleSwitch
+        /// </summary>
+        private void TweakToggleSwitch_Checked(object sender, RoutedEventArgs e)
+        {
+            if (!IsLoaded) return;
             OnClicked?.Invoke(this, e);
         }
 
-        private void OffButton_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Maneja el evento Unchecked del ModernToggleSwitch
+        /// </summary>
+        private void TweakToggleSwitch_Unchecked(object sender, RoutedEventArgs e)
         {
+            if (!IsLoaded) return;
             OffClicked?.Invoke(this, e);
         }
 
@@ -120,18 +136,58 @@ namespace Tweaker.Controls
 
         #endregion
 
+        #region Public Methods
+
+        /// <summary>
+        /// Refresca el estado del toggle basado en TweakHelper
+        /// </summary>
+        public void RefreshToggleState()
+        {
+            if (string.IsNullOrEmpty(TweakId)) return;
+
+            try
+            {
+                bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
+                
+                TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+
+                TweakToggleSwitch.IsChecked = isActive;
+
+                TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Establece el estado sin disparar eventos
+        /// </summary>
+        public void SetToggleState(bool isActive)
+        {
+            TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+            TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+
+            TweakToggleSwitch.IsChecked = isActive;
+
+            TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+            TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+        }
+
+        #endregion
+
         #region Private Methods
 
         private void UpdateButtonVisibility()
         {
             if (UseApplyMode)
             {
-                OnOffButtons.Visibility = Visibility.Collapsed;
+                TweakToggleSwitch.Visibility = Visibility.Collapsed;
                 ApplyButton.Visibility = Visibility.Visible;
             }
             else
             {
-                OnOffButtons.Visibility = Visibility.Visible;
+                TweakToggleSwitch.Visibility = Visibility.Visible;
                 ApplyButton.Visibility = Visibility.Collapsed;
             }
         }
@@ -143,6 +199,10 @@ namespace Tweaker.Controls
             if (e.Property == UseApplyModeProperty)
             {
                 UpdateButtonVisibility();
+            }
+            else if (e.Property == TweakIdProperty && IsLoaded)
+            {
+                RefreshToggleState();
             }
         }
 

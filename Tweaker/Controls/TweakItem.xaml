@@ -14,7 +14,7 @@
     <converters:RiskLevelToIconConverter x:Key="RiskToIconConverter"/>
 </UserControl.Resources>
     
-<Border Background="#1E1E1E" CornerRadius="8" Padding="25" Margin="0,0,0,15">
+<Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -105,32 +105,24 @@
                 Click="InfoButton_Click"
                 Visibility="{Binding ShowInfoButton, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             
-        <!-- Control Buttons -->
+        <!-- Control: Modern Toggle Switch -->
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-            <!-- ON/OFF Buttons (Default) -->
-            <StackPanel x:Name="OnOffButtons" Orientation="Horizontal">
-                <Button x:Name="OnButton"
-                        Content="ON" 
-                        Style="{StaticResource OnButton}" 
-                        Width="70" 
-                        Margin="0,0,8,0" 
-                        Click="OnButton_Click"/>
-                <Button x:Name="OffButton"
-                        Content="OFF" 
-                            Style="{StaticResource OffButton}" 
-                            Width="70" 
-                            Click="OffButton_Click"/>
-                </StackPanel>
+            <!-- Modern Toggle Switch (Replaces ON/OFF buttons) -->
+            <CheckBox x:Name="TweakToggleSwitch"
+                     Style="{StaticResource ModernToggleSwitch}"
+                     Checked="TweakToggleSwitch_Checked"
+                     Unchecked="TweakToggleSwitch_Unchecked"
+                     ToolTip="Click para activar/desactivar tweak"/>
                 
-                <!-- Single Apply Button (Alternative) -->
-                <Button x:Name="ApplyButton"
-                        Content="APLICAR" 
-                        Style="{StaticResource OnButton}"
-                        Background="#5865F2"
-                        Width="90" 
-                        Click="ApplyButton_Click"
-                        Visibility="Collapsed"/>
-            </StackPanel>
-        </Grid>
-    </Border>
+            <!-- Single Apply Button (Alternative - Hidden by default) -->
+            <Button x:Name="ApplyButton"
+                    Content="APLICAR" 
+                    Style="{StaticResource OnButton}"
+                    Background="#5865F2"
+                    Width="90" 
+                    Click="ApplyButton_Click"
+                    Visibility="Collapsed"/>
+        </StackPanel>
+    </Grid>
+</Border>
 </UserControl>

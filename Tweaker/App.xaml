@@ -14,6 +14,191 @@ Startup="Application_Startup">
             
             <!-- Converters globales -->
             <converters:BoolToRecommendationIconConverter x:Key="BoolToRecommendationIconConverter"/>
+
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+            <!-- CYBERPUNK GLASSMORPHISM STYLES -->
+            <!-- ═══════════════════════════════════════════════════════════════════ -->
+
+            <!-- GlassCard Style - Base para todas las tarjetas -->
+            <Style x:Key="GlassCard" TargetType="Border">
+                <Setter Property="Background">
+                    <Setter.Value>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#CC1E1E1E" Offset="0"/>
+                            <GradientStop Color="#CC151515" Offset="1"/>
+                        </RadialGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderBrush">
+                    <Setter.Value>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                            <GradientStop Color="#404040" Offset="0"/>
+                            <GradientStop Color="#101010" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#000000" 
+                                        BlurRadius="15" 
+                                        ShadowDepth="0" 
+                                        Opacity="0.4"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- NeonGlowCard Style - GlassCard con efecto Neon en Hover -->
+            <Style x:Key="NeonGlowCard" TargetType="Border" BasedOn="{StaticResource GlassCard}">
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#000000" 
+                                        BlurRadius="15" 
+                                        ShadowDepth="0" 
+                                        Opacity="0.4"/>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush">
+                            <Setter.Value>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#00D9FF" Offset="0"/>
+                                    <GradientStop Color="#5865F2" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="BorderThickness" Value="2"/>
+                        <Setter Property="Effect">
+                            <Setter.Value>
+                                <!-- Neon Glow Effect Cyan -->
+                                <DropShadowEffect Color="#00D9FF" 
+                                                BlurRadius="20" 
+                                                ShadowDepth="0" 
+                                                Opacity="0.8"/>
+                            </Setter.Value>
+                        </Setter>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <!-- ModernToggleSwitch - Switch deslizante para CheckBox -->
+            <Style x:Key="ModernToggleSwitch" TargetType="CheckBox">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="CheckBox">
+                            <Grid>
+                                <!-- Background Pill (Switch Track) -->
+                                <Border x:Name="SwitchTrack" 
+                                        Width="60" 
+                                        Height="30" 
+                                        CornerRadius="15"
+                                        Background="#2C2F33"
+                                        BorderBrush="#404040"
+                                        BorderThickness="1">
+                                    <!-- Thumb (Círculo deslizante) -->
+                                    <Grid>
+                                        <Ellipse x:Name="SwitchThumb"
+                                                Width="24" 
+                                                Height="24"
+                                                Fill="White"
+                                                HorizontalAlignment="Left"
+                                                Margin="3,0,0,0">
+                                            <Ellipse.Effect>
+                                                <DropShadowEffect Color="#000000" 
+                                                                BlurRadius="5" 
+                                                                ShadowDepth="0" 
+                                                                Opacity="0.3"/>
+                                            </Ellipse.Effect>
+                                            <Ellipse.RenderTransform>
+                                                <TranslateTransform x:Name="ThumbTransform" X="0"/>
+                                            </Ellipse.RenderTransform>
+                                        </Ellipse>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+
+                            <ControlTemplate.Triggers>
+                                <!-- Estado: Checked (ON) -->
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="SwitchTrack" Property="Background">
+                                        <Setter.Value>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#00D9FF" Offset="0"/>
+                                                <GradientStop Color="#5865F2" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Trigger.EnterActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ThumbTransform"
+                                                               Storyboard.TargetProperty="X"
+                                                               To="30"
+                                                               Duration="0:0:0.2">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.EnterActions>
+                                    <Trigger.ExitActions>
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ThumbTransform"
+                                                               Storyboard.TargetProperty="X"
+                                                               To="0"
+                                                               Duration="0:0:0.2">
+                                                    <DoubleAnimation.EasingFunction>
+                                                        <CubicEase EasingMode="EaseOut"/>
+                                                    </DoubleAnimation.EasingFunction>
+                                                </DoubleAnimation>
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </Trigger.ExitActions>
+                                </Trigger>
+
+                                <!-- Hover Effect -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#00D9FF"/>
+                                    <Setter TargetName="SwitchTrack" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#00D9FF" 
+                                                            BlurRadius="10" 
+                                                            ShadowDepth="0" 
+                                                            Opacity="0.6"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- FadeInAnimation - Animación de entrada suave -->
+            <Storyboard x:Key="FadeInAnimation">
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                               From="0"
+                               To="1"
+                               Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                               From="20"
+                               To="0"
+                               Duration="0:0:0.3">
+                    <DoubleAnimation.EasingFunction>
+                        <CubicEase EasingMode="EaseOut"/>
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>
