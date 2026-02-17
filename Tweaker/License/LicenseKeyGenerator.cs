@@ -9,20 +9,43 @@ namespace Tweaker.License
     /// </summary>
     public static class LicenseKeyGenerator
     {
-        // Clave secreta para encriptación AES (EN PRODUCCIÓN, USAR OFUSCACIÓN O KEY DERIVATION)
-        private const string SECRET_KEY = "TweakerLic2024SecretKey9876543";
+        // SEGURIDAD: La clave secreta se obtiene dinámicamente desde KeyVault
+        // Esto dificulta la ingeniería inversa al no tener la clave completa en el código
         
         /// <summary>
         /// Genera una llave de licencia válida
         /// </summary>
         /// <param name="hardwareFingerprint">Fingerprint del hardware del cliente</param>
         /// <param name="expirationDate">Fecha de expiración (null = perpetua)</param>
+        /// <param name="maxTweaks">Límite máximo de tweaks activos (-1 = ilimitado)</param>
         /// <returns>Llave de licencia en formato XXXXX-XXXXX-XXXXX-XXXXX</returns>
-        public static string GenerateKey(string hardwareFingerprint, DateTime? expirationDate = null)
+        public static string GenerateKey(string hardwareFingerprint, DateTime? expirationDate = null, int maxTweaks = -1)
         {
             try
             {
+                // SEGURIDAD NIVEL 1: Verificar anti-debugging (solo en Release)
+#if !DEBUG
+                if (!AntiDebugger.IsDevelopmentEnvironment() && AntiDebugger.CheckDebuggerThrottled())
+                {
+                    System.Diagnostics.Debug.WriteLine("🚨 SEGURIDAD: Debugger detectado en KeyGenerator");
+                    throw new InvalidOperationException("Security violation detected");
+                }
+#endif
+
+                // SEGURIDAD NIVEL 2: Verificar herramientas de análisis (solo en Release)
+#if !DEBUG
+                if (!AnalysisToolDetector.IsDevelopmentEnvironment() && AnalysisToolDetector.PerformFullCheck())
+                {
+                    System.Diagnostics.Debug.WriteLine("🚨 SEGURIDAD: Herramienta de análisis detectada en KeyGenerator");
+                    throw new InvalidOperationException("Security violation detected");
+                }
+#endif
+
+                // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
+                string secretKey = KeyVault.GetMasterSecret();
+                
                 // NUEVO ENFOQUE SIMPLE: Usar hash directo sin encriptación compleja
+                
                 
                 // Crear datos de la licencia
                 var licenseData = new StringBuilder();
@@ -30,7 +53,11 @@ namespace Tweaker.License
                 licenseData.Append("|");
                 licenseData.Append(expirationDate?.ToString("yyyy-MM-dd") ?? "PERPETUAL");
                 licenseData.Append("|");
-                licenseData.Append(SECRET_KEY); // Incluir clave secreta en el hash
+                licenseData.Append(DateTime.Now.ToString("yyyy-MM-dd")); // Fecha de creación
+                licenseData.Append("|");
+                licenseData.Append(maxTweaks); // Límite de tweaks
+                licenseData.Append("|");
+                licenseData.Append(secretKey); // Incluir clave secreta en el hash
                 
                 // Calcular hash SHA256
                 using (var sha256 = SHA256.Create())
@@ -55,11 +82,14 @@ namespace Tweaker.License
         /// </summary>
         private static string EncryptString(string plainText)
         {
+            // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
+            string secretKey = KeyVault.GetMasterSecret();
+            
             using (var aes = Aes.Create())
             {
                 // Derivar clave de 32 bytes (256 bits)
                 var key = new byte[32];
-                var keyBytes = Encoding.UTF8.GetBytes(SECRET_KEY);
+                var keyBytes = Encoding.UTF8.GetBytes(secretKey);
                 Array.Copy(keyBytes, key, Math.Min(keyBytes.Length, key.Length));
                 aes.Key = key;
                 
@@ -67,7 +97,7 @@ namespace Tweaker.License
                 var iv = new byte[16];
                 using (var sha = SHA256.Create())
                 {
-                    var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY + "IV_SALT"));
+                    var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(secretKey + "IV_SALT"));
                     Array.Copy(hash, iv, 16);
                 }
                 aes.IV = iv;

@@ -5,6 +5,27 @@ using System.Runtime.CompilerServices;
 namespace Tweaker.Models
 {
     /// <summary>
+    /// Nivel de riesgo de un tweak
+    /// </summary>
+    public enum RiskLevel
+    {
+        /// <summary>
+        /// Seguro - No afecta funcionalidad crítica del sistema
+        /// </summary>
+        Safe = 0,
+        
+        /// <summary>
+        /// Moderado - Puede afectar algunas funcionalidades no críticas
+        /// </summary>
+        Moderate = 1,
+        
+        /// <summary>
+        /// Avanzado - Puede afectar funcionalidad crítica, solo para usuarios experimentados
+        /// </summary>
+        Advanced = 2
+    }
+
+    /// <summary>
     /// Modelo de datos para representar un Tweak individual
     /// Elimina hardcoding de información en XAML
     /// </summary>
@@ -15,6 +36,7 @@ namespace Tweaker.Models
         private bool _isRecommended;
         private bool _isEnabled;
         private string _tweakId;
+        private RiskLevel _risk;
 
         public string Title
         {
@@ -46,8 +68,18 @@ namespace Tweaker.Models
             set => SetProperty(ref _tweakId, value);
         }
 
+        /// <summary>
+        /// Nivel de riesgo del tweak
+        /// </summary>
+        public RiskLevel Risk
+        {
+            get => _risk;
+            set => SetProperty(ref _risk, value);
+        }
+
         public bool ShowInfoButton { get; set; }
         public bool UseApplyMode { get; set; }
+
         public string Category { get; set; }
 
         // Event handlers como Action para mejor performance

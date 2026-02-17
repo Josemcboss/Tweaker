@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Tweaker.Models;
+using Tweaker.Data;
 
 namespace Tweaker.Factories
 {
@@ -9,6 +10,24 @@ namespace Tweaker.Factories
     /// </summary>
     public static class TweakFactory
     {
+        /// <summary>
+        /// Helper para crear un TweakModel obteniendo Risk de TweaksDatabase
+        /// </summary>
+        private static TweakModel CreateTweakModel(string tweakId, string title, string description, bool useApplyMode = false)
+        {
+            var tweakInfo = TweaksDatabase.GetTweakInfo(tweakId);
+            
+            return new TweakModel
+            {
+                Title = title,
+                Description = description,
+                IsRecommended = tweakInfo.Recommended,
+                ShowInfoButton = true,
+                TweakId = tweakId,
+                UseApplyMode = useApplyMode,
+                Risk = tweakInfo.Risk  // ? OBTENER RISK DESDE LA BASE DE DATOS
+            };
+        }
         /// <summary>
         /// Crea todos los tweaks para Input & Visuals
         /// </summary>
@@ -22,65 +41,41 @@ namespace Tweaker.Factories
                 Category = "Input"
             };
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Desactivar Aceleración del Mouse",
-                Description = "MouseSpeed = 0, Thresholds = 0\nAim 1:1 pixel perfect, muscle memory consistente",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "mouse_acceleration",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "mouse_acceleration",
+                "Desactivar Aceleración del Mouse",
+                "MouseSpeed = 0, Thresholds = 0\nAim 1:1 pixel perfect, muscle memory consistente"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Optimizar Teclado",
-                Description = "KeyboardDelay = 0, Input lag -50ms",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "keyboard_optimization",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "keyboard_optimization",
+                "Optimizar Teclado",
+                "KeyboardDelay = 0, Input lag -50ms"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Efectos Visuales OFF",
-                Description = "FPS +3-8%, GPU +5-10%",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "visual_effects",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "visual_effects",
+                "Efectos Visuales OFF",
+                "FPS +3-8%, GPU +5-10%"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Optimizar RAM",
-                Description = "DisablePagingExecutive = 1, Requiere 16GB+",
-                IsRecommended = false,
-                ShowInfoButton = true,
-                TweakId = "memory_optimization",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "memory_optimization",
+                "Optimizar RAM",
+                "DisablePagingExecutive = 1, Requiere 16GB+"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Disable Transparency Effects",
-                Description = "Deshabilita efectos de transparencia de Windows\nGPU usage -3-8%, VRAM +50-200MB liberada",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "transparency_effects",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "transparency_effects",
+                "Disable Transparency Effects",
+                "Deshabilita efectos de transparencia de Windows\nGPU usage -3-8%, VRAM +50-200MB liberada"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Deshabilitar Sticky Keys",
-                Description = "Elimina popups molestos (Shift x5, Num Lock hold)\nGaming sin interrupciones",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "sticky_keys",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "sticky_keys",
+                "Deshabilitar Sticky Keys",
+                "Elimina popups molestos (Shift x5, Num Lock hold)\nGaming sin interrupciones"
+            ));
 
             return section;
         }
@@ -98,25 +93,18 @@ namespace Tweaker.Factories
                 Category = "Network"
             };
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Optimización TCP/IP Completa",
-                Description = "TcpAckFrequency = 1, TCPNoDelay = 1, NetworkThrottling OFF\nReduce ping 5-30ms, mejora hitreg, elimina packet loss",
-                IsRecommended = false, // Marcado como avanzado
-                ShowInfoButton = true,
-                TweakId = "network_optimization",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "network_optimization",
+                "Optimización TCP/IP Completa",
+                "TcpAckFrequency = 1, TCPNoDelay = 1, NetworkThrottling OFF\nReduce ping 5-30ms, mejora hitreg, elimina packet loss"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "DNS Cloudflare (1.1.1.1)",
-                Description = "DNS más rápido del mundo, latencia <10ms\nPrimario: 1.1.1.1 | Secundario: 1.0.0.1\nReduce ping 10-50ms, mejor resolución de dominios",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "dns_cloudflare",
-                UseApplyMode = true // Usa botón APLICAR en lugar de ON/OFF
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "dns_cloudflare",
+                "DNS Cloudflare (1.1.1.1)",
+                "DNS más rápido del mundo, latencia <10ms\nPrimario: 1.1.1.1 | Secundario: 1.0.0.1\nReduce ping 10-50ms, mejor resolución de dominios",
+                useApplyMode: true
+            ));
 
             section.Tweaks.Add(new TweakModel
             {
@@ -128,15 +116,11 @@ namespace Tweaker.Factories
                 UseApplyMode = true
             });
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Optimizar Caché DNS",
-                Description = "MaxCacheTtl = 86400, NegativeCacheTime = 0\nMejora velocidad de resolución, reduce consultas",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "dns_cache",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "dns_cache",
+                "Optimizar Caché DNS",
+                "MaxCacheTtl = 86400, NegativeCacheTime = 0\nMejora velocidad de resolución, reduce consultas"
+            ));
 
             return section;
         }
@@ -154,45 +138,29 @@ namespace Tweaker.Factories
                 Category = "System"
             };
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "System Profile Games Priority",
-                Description = "GPU Priority: 8, CPU Priority: 6, Scheduling: High",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "system_profile",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "system_profile",
+                "System Profile Games Priority",
+                "GPU Priority: 8, CPU Priority: 6, Scheduling: High"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Deshabilitar GameDVR (Xbox Game Bar)",
-                Description = "Elimina overlay, reduce input lag 5-15ms",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "gamedvr_disable",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "gamedvr_disable",
+                "Deshabilitar GameDVR (Xbox Game Bar)",
+                "Elimina overlay, reduce input lag 5-15ms"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Hardware GPU Scheduling",
-                Description = "Puede mejorar o empeorar latencia (probar ambos)",
-                IsRecommended = false, // Efecto impredecible
-                ShowInfoButton = true,
-                TweakId = "gpu_scheduling",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_scheduling",
+                "Hardware GPU Scheduling",
+                "Puede mejorar o empeorar latencia (probar ambos)"
+            ));
 
-            section.Tweaks.Add(new TweakModel
-            {
-                Title = "Plan de Energía: Alto Rendimiento",
-                Description = "CPU siempre a máxima frecuencia",
-                IsRecommended = true,
-                ShowInfoButton = true,
-                TweakId = "high_performance",
-                UseApplyMode = false
-            });
+            section.Tweaks.Add(CreateTweakModel(
+                "high_performance",
+                "Plan de Energía: Alto Rendimiento",
+                "CPU siempre a máxima frecuencia"
+            ));
 
             return section;
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Tweaker.Models;
 
 namespace Tweaker.Controls
 {
@@ -34,6 +35,9 @@ namespace Tweaker.Controls
 
         public static readonly DependencyProperty UseApplyModeProperty =
             DependencyProperty.Register("UseApplyMode", typeof(bool), typeof(TweakItem), new PropertyMetadata(false));
+
+        public static readonly DependencyProperty RiskProperty =
+            DependencyProperty.Register("Risk", typeof(RiskLevel), typeof(TweakItem), new PropertyMetadata(RiskLevel.Safe));
 
         public string Title
         {
@@ -74,9 +78,16 @@ namespace Tweaker.Controls
             }
         }
 
+        public RiskLevel Risk
+        {
+            get { return (RiskLevel)GetValue(RiskProperty); }
+            set { SetValue(RiskProperty, value); }
+        }
+
         #endregion
 
         #region Events
+
 
         public event RoutedEventHandler OnClicked;
         public event RoutedEventHandler OffClicked;

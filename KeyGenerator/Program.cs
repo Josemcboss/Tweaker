@@ -59,11 +59,31 @@ namespace Tweaker.KeyGenerator
                         
                         Console.WriteLine($"✅ Fingerprint detectado: {displayFingerprint}");
                         Console.WriteLine();
+                        
+                        // Preguntar por el límite de tweaks
+                        Console.Write("Límite de Tweaks (-1 para ilimitado, o número específico): ");
+                        var maxTweaksInput = Console.ReadLine()?.Trim();
+                        int maxTweaksValue = -1; // Por defecto ilimitado
+                        
+                        if (!string.IsNullOrEmpty(maxTweaksInput) && int.TryParse(maxTweaksInput, out var parsedValue))
+                        {
+                            if (parsedValue < -1)
+                            {
+                                Console.WriteLine("⚠️ Valor inválido. Usando ilimitado (-1).");
+                                maxTweaksValue = -1;
+                            }
+                            else
+                            {
+                                maxTweaksValue = parsedValue;
+                            }
+                        }
+                        
+                        Console.WriteLine();
                         Console.WriteLine("🔑 Generando tu clave personalizada...");
                         
-                        var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, null);
+                        var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, null, maxTweaksValue);
                         
-                        PrintLicenseKey(fingerprint, licenseKey, null);
+                        PrintLicenseKey(fingerprint, licenseKey, null, maxTweaksValue);
                         
                         // Validar
                         var result = LicenseValidator.ValidateLicenseKey(licenseKey, fingerprint);
@@ -101,6 +121,7 @@ namespace Tweaker.KeyGenerator
                 }
 
                 DateTime? expirationDate = null;
+                int maxTweaks = -1; // Por defecto ilimitado
 
                 if (option == "2")
                 {
@@ -118,10 +139,27 @@ namespace Tweaker.KeyGenerator
                     }
                 }
 
+                // Preguntar por el límite de tweaks
+                Console.Write("Límite de Tweaks (-1 para ilimitado, o número específico): ");
+                var maxTweaksStr = Console.ReadLine()?.Trim();
+                
+                if (!string.IsNullOrEmpty(maxTweaksStr) && int.TryParse(maxTweaksStr, out var parsedMaxTweaks))
+                {
+                    if (parsedMaxTweaks < -1)
+                    {
+                        Console.WriteLine("⚠️ Valor inválido. Usando ilimitado (-1).");
+                        maxTweaks = -1;
+                    }
+                    else
+                    {
+                        maxTweaks = parsedMaxTweaks;
+                    }
+                }
+
                 try
                 {
-                    var licenseKey = LicenseKeyGenerator.GenerateKey(manualFingerprint, expirationDate);
-                    PrintLicenseKey(manualFingerprint, licenseKey, expirationDate);
+                    var licenseKey = LicenseKeyGenerator.GenerateKey(manualFingerprint, expirationDate, maxTweaks);
+                    PrintLicenseKey(manualFingerprint, licenseKey, expirationDate, maxTweaks);
                 }
                 catch (Exception ex)
                 {
@@ -130,7 +168,7 @@ namespace Tweaker.KeyGenerator
             }
         }
 
-        static void PrintLicenseKey(string fingerprint, string licenseKey, DateTime? expirationDate)
+        static void PrintLicenseKey(string fingerprint, string licenseKey, DateTime? expirationDate, int maxTweaks = -1)
         {
             Console.WriteLine();
             Console.WriteLine("════════════════════════════════════════════════════════");
@@ -148,12 +186,16 @@ namespace Tweaker.KeyGenerator
                 Console.WriteLine($"Tipo:                 Licencia Perpetua ♾️");
             }
             
-            Console.WriteLine();
-            Console.WriteLine($"LLAVE DE LICENCIA:");
-            Console.WriteLine($"╔══════════════════════════════════╗");
-            Console.WriteLine($"║  {licenseKey}  ║");
-            Console.WriteLine($"╚══════════════════════════════════╝");
-            Console.WriteLine();
+            // Mostrar límite de tweaks
+            if (maxTweaks == -1)
+            {
+                Console.WriteLine($"Límite de Tweaks:     ∞ Ilimitado");
+            }
+            else
+            {
+                Console.WriteLine($"Límite de Tweaks:     {maxTweaks} optimizaciones");
+            }
+            
         }
 
         static void BatchMode(string[] args)

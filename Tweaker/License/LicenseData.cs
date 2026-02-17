@@ -23,6 +23,11 @@ namespace Tweaker.License
         public DateTime CreatedDate { get; set; }
 
         /// <summary>
+        /// Límite máximo de tweaks activos (-1 = ilimitado)
+        /// </summary>
+        public int MaxTweaks { get; set; } = -1;
+
+        /// <summary>
         /// Indica si la licencia es perpetua
         /// </summary>
         public bool IsPerpetual => ExpirationDate == null;
@@ -36,5 +41,10 @@ namespace Tweaker.License
         /// Indica si la licencia es válida (no expirada)
         /// </summary>
         public bool IsValid => !IsExpired;
+
+        /// <summary>
+        /// Indica si la licencia tiene tweaks ilimitados
+        /// </summary>
+        public bool IsUnlimitedTweaks => MaxTweaks == -1;
     }
 }

@@ -23,6 +23,9 @@ namespace Tweaker.Utilities
             _stateManager = stateManager;
             _telemetry = telemetry;
             _notifications = notifications;
+            
+            // Inicializar servicio de backup de registro
+            RegistryBackupService.Initialize();
         }
 
         /// <summary>
@@ -40,6 +43,37 @@ namespace Tweaker.Utilities
         {
             try
             {
+                // VALIDAR LÍMITE DE TWEAKS ACTIVOS
+                var currentLicense = License.LicenseManager.CurrentLicense;
+                if (currentLicense != null && currentLicense.MaxTweaks != -1)
+                {
+                    int activeTweaksCount = _stateManager.ActiveTweaksCount;
+                    
+                    // Verificar si ya está activado (no cuenta para el límite si es una reactivación)
+                    bool isAlreadyActive = _stateManager.IsTweakEnabled(tweakId);
+                    
+                    if (!isAlreadyActive && activeTweaksCount >= currentLicense.MaxTweaks)
+                    {
+                        // Se alcanzó el límite
+                        string limitMessage = $"?? LÍMITE DE TWEAKS ALCANZADO\n\n" +
+                                            $"Tu licencia permite un máximo de {currentLicense.MaxTweaks} optimizaciones activas.\n\n" +
+                                            $"Tweaks activos actualmente: {activeTweaksCount}/{currentLicense.MaxTweaks}\n\n" +
+                                            $"Para activar más tweaks:\n" +
+                                            $"• Desactiva algún tweak existente\n" +
+                                            $"• O actualiza tu licencia para obtener más optimizaciones\n\n" +
+                                            $"?? Tip: Desactiva los tweaks que no uses para liberar espacio.";
+                        
+                        MessageBox.Show(
+                            limitMessage,
+                            "Límite de Tweaks Alcanzado",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Warning);
+                        
+                        Debug.WriteLine($"?? Límite de tweaks alcanzado: {activeTweaksCount}/{currentLicense.MaxTweaks}");
+                        return; // No continuar con la activación
+                    }
+                }
+                
                 // Crear punto de restauración si es necesario y no se ha creado uno recientemente
                 if (createRestorePoint && ShouldCreateRestorePoint())
                 {
@@ -47,6 +81,11 @@ namespace Tweaker.Utilities
                     SystemRestore.CreateRestorePoint($"Tweaker - Antes de {tweakId}");
                     _lastRestorePointCreated = DateTime.Now;
                 }
+
+                // SEGURIDAD: Crear backup del estado actual del registro antes de aplicar el tweak
+                // Esto no hace backup de valores específicos aquí, sino que se hace en cada optimización
+                // que modifica el registro. Ver BaseOptimization.SetRegistryValue()
+                Debug.WriteLine($"??? Sistema de backup activo para: {tweakId}");
 
                 bool success = action();
 
@@ -201,3 +240,4 @@ namespace Tweaker.Utilities
         }
     }
 }
+

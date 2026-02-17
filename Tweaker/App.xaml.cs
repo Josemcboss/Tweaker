@@ -24,8 +24,17 @@ namespace Tweaker
             base.OnStartup(e);
 
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
-            Debug.WriteLine("🚀 GHOST OPTIMIZER v2.3.0 - CON FIX AUTOMÁTICO DE NAVEGADORES");
+            Debug.WriteLine("🚀 GHOST OPTIMIZER v2.3.1 - SEGURIDAD MEJORADA");
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
+
+            // SEGURIDAD: Iniciar verificación continua de anti-debugging (solo en Release)
+#if !DEBUG
+            if (!AntiDebugger.IsDevelopmentEnvironment())
+            {
+                Debug.WriteLine("🛡️ Iniciando protección anti-debugging...");
+                AntiDebugger.StartContinuousCheck();
+            }
+#endif
 
             // PRIMERO: Validar licencia al iniciar
             if (!LicenseManager.ValidateLicenseOnStartup())
@@ -36,6 +45,9 @@ namespace Tweaker
 
             // 🌐 DIAGNÓSTICO Y FIX AUTOMÁTICO DE NAVEGADORES AL INICIO
             Task.Run(async () => await CheckAndFixBrowserIssues());
+
+            // 🔄 VERIFICAR ACTUALIZACIONES (en background)
+            Task.Run(async () => await CheckForUpdatesAsync());
 
             // ═══════════════════════════════════════════════════════════════
             // SISTEMA DE SEGURIDAD: Inicialización
@@ -58,6 +70,7 @@ namespace Tweaker
             {
                 Debug.WriteLine("═══════════════════════════════════════════════════════════════");
                 Debug.WriteLine("⚠️ ADVERTENCIA: SERVICIOS CRÍTICOS DESHABILITADOS DETECTADOS");
+
                 Debug.WriteLine("═══════════════════════════════════════════════════════════════");
                 
                 foreach (string service in disabledServices)
@@ -220,6 +233,53 @@ namespace Tweaker
             catch (Exception ex)
             {
                 Debug.WriteLine($"❌ Error verificando navegadores: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Verifica si hay actualizaciones disponibles
+        /// </summary>
+        private async Task CheckForUpdatesAsync()
+        {
+            try
+            {
+                // Esperar 3 segundos después del inicio para no interferir con la carga
+                await Task.Delay(3000);
+
+                // Verificar si debe revisar actualizaciones (evitar verificar muy seguido)
+                if (!UpdateChecker.ShouldCheckForUpdates())
+                {
+                    Debug.WriteLine("⏭️ Saltando verificación de actualizaciones (verificado recientemente)");
+                    return;
+                }
+
+                Debug.WriteLine("🔍 Verificando actualizaciones disponibles...");
+
+                // Verificar actualizaciones
+                var updateInfo = await UpdateChecker.CheckForUpdatesSilentAsync();
+
+                // Registrar que se verificó
+                UpdateChecker.RecordUpdateCheck();
+
+                if (updateInfo != null)
+                {
+                    Debug.WriteLine($"🎉 Nueva actualización disponible: v{updateInfo.Version}");
+
+                    // Mostrar ventana de actualización en el thread de UI
+                    Dispatcher.Invoke(() =>
+                    {
+                        var updateWindow = new Windows.UpdateWindow(updateInfo);
+                        updateWindow.Show();
+                    });
+                }
+                else
+                {
+                    Debug.WriteLine("✅ No hay actualizaciones disponibles");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error verificando actualizaciones: {ex.Message}");
             }
         }
 

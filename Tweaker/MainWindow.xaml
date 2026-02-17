@@ -874,6 +874,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                        <!-- Risk Level Indicator -->
+                                        <Grid Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <Ellipse Width="18" Height="18" Fill="#4CAF50" Opacity="0.2"/>
+                                            <TextBlock Text="✓" FontFamily="Segoe UI Symbol" FontSize="11" FontWeight="Bold"
+                                                      Foreground="#4CAF50" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.ToolTip>
+                                                    <ToolTip>
+                                                        <TextBlock Text="Nivel de Riesgo: Safe" FontWeight="Bold"/>
+                                                    </ToolTip>
+                                                </TextBlock.ToolTip>
+                                            </TextBlock>
+                                        </Grid>
                                         <TextBlock Text="Desactivar Aceleración del Mouse" Style="{StaticResource SectionTitle}"/>
                                         <TextBlock Text="✅" FontFamily="Segoe UI Emoji" FontSize="14" Foreground="#0E7A0D" 
                                                  Margin="8,0,0,0" VerticalAlignment="Center" ToolTip="Recomendado para gaming"/>
@@ -907,6 +919,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0">
                                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                                        <!-- Risk Level Indicator - Safe -->
+                                        <Grid Width="20" Height="20" Margin="0,0,8,0" VerticalAlignment="Center">
+                                            <Ellipse Width="18" Height="18" Fill="#4CAF50" Opacity="0.2"/>
+                                            <TextBlock Text="✓" FontFamily="Segoe UI Symbol" FontSize="11" FontWeight="Bold"
+                                                      Foreground="#4CAF50" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock.ToolTip>
+                                                    <ToolTip>
+                                                        <TextBlock Text="Nivel de Riesgo: Safe" FontWeight="Bold"/>
+                                                    </ToolTip>
+                                                </TextBlock.ToolTip>
+                                            </TextBlock>
+                                        </Grid>
                                         <TextBlock Text="Optimizar Teclado" Style="{StaticResource SectionTitle}"/>
                                         <TextBlock Text="✅" FontFamily="Segoe UI Emoji" FontSize="14" Foreground="#0E7A0D" 
                                                  Margin="8,0,0,0" VerticalAlignment="Center" ToolTip="Recomendado para gaming"/>

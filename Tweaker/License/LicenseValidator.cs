@@ -10,8 +10,8 @@ namespace Tweaker.License
     /// </summary>
     public static class LicenseValidator
     {
-        // Misma clave secreta que en el generador
-        private const string SECRET_KEY = "TweakerLic2024SecretKey9876543";
+        // SEGURIDAD: La clave secreta se obtiene dinámicamente desde KeyVault
+        // Esto dificulta la ingeniería inversa al no tener la clave completa en el código
 
         /// <summary>
         /// Valida una llave de licencia
@@ -23,41 +23,109 @@ namespace Tweaker.License
         {
             try
             {
+                // SEGURIDAD NIVEL 1: Verificar anti-debugging (solo en Release)
+#if !DEBUG
+                if (!AntiDebugger.IsDevelopmentEnvironment() && AntiDebugger.IsDebuggerAttached())
+                {
+                    System.Diagnostics.Debug.WriteLine("🚨 SEGURIDAD: Debugger detectado durante validación de licencia");
+                    AntiDebugger.HandleDebuggerDetection();
+                    return null; // No se llegará aquí si HandleDebuggerDetection termina el proceso
+                }
+#endif
+
+                // SEGURIDAD NIVEL 2: Verificar herramientas de análisis (solo en Release)
+#if !DEBUG
+                if (!AnalysisToolDetector.IsDevelopmentEnvironment() && AnalysisToolDetector.PerformFullCheck())
+                {
+                    System.Diagnostics.Debug.WriteLine("🚨 SEGURIDAD: Herramienta de análisis detectada");
+                    AnalysisToolDetector.HandleToolDetection();
+                    return null; // No se llegará aquí si HandleToolDetection termina el proceso
+                }
+#endif
+
                 // Verificar formato
                 if (!IsValidFormat(licenseKey))
                 {
                     return null;
                 }
 
-                // NUEVO ENFOQUE: Generar hashes para perpetua y con fechas, y comparar
+
+                // NUEVO ENFOQUE CON MAXTWEAK: Probar diferentes combinaciones
                 
-                // 1. Probar licencia perpetua
-                var perpetualHash = GenerateLicenseHash(currentHardwareFingerprint, null);
-                if (licenseKey.Replace("-", "").ToUpper() == perpetualHash.ToUpper())
+                // 1. Intentar con diferentes combinaciones de maxTweaks
+                // Primero probar valores comunes: -1 (ilimitado), 10, 20, 30, 50, 100
+                int[] commonLimits = { -1, 10, 20, 30, 50, 100 };
+                
+                // Probar licencia perpetua con diferentes límites
+                foreach (var maxTweaks in commonLimits)
                 {
-                    return new LicenseData
+                    var perpetualHash = GenerateLicenseHash(currentHardwareFingerprint, null, DateTime.Now, maxTweaks);
+                    if (licenseKey.Replace("-", "").ToUpper() == perpetualHash.ToUpper())
                     {
-                        HardwareFingerprint = currentHardwareFingerprint,
-                        ExpirationDate = null,
-                        CreatedDate = DateTime.Now
-                    };
+                        return new LicenseData
+                        {
+                            HardwareFingerprint = currentHardwareFingerprint,
+                            ExpirationDate = null,
+                            CreatedDate = DateTime.Now,
+                            MaxTweaks = maxTweaks
+                        };
+                    }
                 }
 
-                // 2. Probar con fechas de expiración (próximos 10 años)
+                // 2. Probar con fechas de expiración (próximos 10 años) y diferentes límites
                 for (int years = 0; years <= 10; years++)
                 {
                     for (int months = 0; months < 12; months++)
                     {
                         var testDate = DateTime.Now.AddYears(years).AddMonths(months);
-                        var dateHash = GenerateLicenseHash(currentHardwareFingerprint, testDate);
                         
-                        if (licenseKey.Replace("-", "").ToUpper() == dateHash.ToUpper())
+                        foreach (var maxTweaks in commonLimits)
+                        {
+                            var dateHash = GenerateLicenseHash(currentHardwareFingerprint, testDate, DateTime.Now, maxTweaks);
+                            
+                            if (licenseKey.Replace("-", "").ToUpper() == dateHash.ToUpper())
+                            {
+                                return new LicenseData
+                                {
+                                    HardwareFingerprint = currentHardwareFingerprint,
+                                    ExpirationDate = testDate,
+                                    CreatedDate = DateTime.Now,
+                                    MaxTweaks = maxTweaks
+                                };
+                            }
+                        }
+                    }
+                }
+
+                // 3. RETROCOMPATIBILIDAD: Probar con el formato antiguo (sin maxTweaks)
+                var legacyHashPerpetual = GenerateLegacyHash(currentHardwareFingerprint, null);
+                if (licenseKey.Replace("-", "").ToUpper() == legacyHashPerpetual.ToUpper())
+                {
+                    return new LicenseData
+                    {
+                        HardwareFingerprint = currentHardwareFingerprint,
+                        ExpirationDate = null,
+                        CreatedDate = DateTime.Now,
+                        MaxTweaks = -1 // Licencias antiguas son ilimitadas
+                    };
+                }
+
+                // Probar fechas con formato legacy
+                for (int years = 0; years <= 10; years++)
+                {
+                    for (int months = 0; months < 12; months++)
+                    {
+                        var testDate = DateTime.Now.AddYears(years).AddMonths(months);
+                        var legacyHash = GenerateLegacyHash(currentHardwareFingerprint, testDate);
+                        
+                        if (licenseKey.Replace("-", "").ToUpper() == legacyHash.ToUpper())
                         {
                             return new LicenseData
                             {
                                 HardwareFingerprint = currentHardwareFingerprint,
                                 ExpirationDate = testDate,
-                                CreatedDate = DateTime.Now
+                                CreatedDate = DateTime.Now,
+                                MaxTweaks = -1 // Licencias antiguas son ilimitadas
                             };
                         }
                     }
@@ -75,14 +143,43 @@ namespace Tweaker.License
         /// <summary>
         /// Genera el hash de una licencia (debe coincidir con el generador)
         /// </summary>
-        private static string GenerateLicenseHash(string hardwareFingerprint, DateTime? expirationDate)
+        private static string GenerateLicenseHash(string hardwareFingerprint, DateTime? expirationDate, DateTime createdDate, int maxTweaks)
         {
+            // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
+            string secretKey = KeyVault.GetMasterSecret();
+            
             var licenseData = new StringBuilder();
             licenseData.Append(hardwareFingerprint);
             licenseData.Append("|");
             licenseData.Append(expirationDate?.ToString("yyyy-MM-dd") ?? "PERPETUAL");
             licenseData.Append("|");
-            licenseData.Append(SECRET_KEY);
+            licenseData.Append(createdDate.ToString("yyyy-MM-dd"));
+            licenseData.Append("|");
+            licenseData.Append(maxTweaks);
+            licenseData.Append("|");
+            licenseData.Append(secretKey);
+            
+            using (var sha256 = SHA256.Create())
+            {
+                var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(licenseData.ToString()));
+                return BitConverter.ToString(hashBytes, 0, 10).Replace("-", "");
+            }
+        }
+
+        /// <summary>
+        /// Genera hash con formato legacy (sin maxTweaks) para retrocompatibilidad
+        /// </summary>
+        private static string GenerateLegacyHash(string hardwareFingerprint, DateTime? expirationDate)
+        {
+            // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
+            string secretKey = KeyVault.GetMasterSecret();
+            
+            var licenseData = new StringBuilder();
+            licenseData.Append(hardwareFingerprint);
+            licenseData.Append("|");
+            licenseData.Append(expirationDate?.ToString("yyyy-MM-dd") ?? "PERPETUAL");
+            licenseData.Append("|");
+            licenseData.Append(secretKey);
             
             using (var sha256 = SHA256.Create())
             {
@@ -111,11 +208,14 @@ namespace Tweaker.License
         {
             try
             {
+                // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
+                string secretKey = KeyVault.GetMasterSecret();
+                
                 using (var aes = Aes.Create())
                 {
                     // Derivar clave de 32 bytes (256 bits)
                     var key = new byte[32];
-                    var keyBytes = Encoding.UTF8.GetBytes(SECRET_KEY);
+                    var keyBytes = Encoding.UTF8.GetBytes(secretKey);
                     Array.Copy(keyBytes, key, Math.Min(keyBytes.Length, key.Length));
                     aes.Key = key;
 
@@ -130,7 +230,7 @@ namespace Tweaker.License
                     var iv = new byte[16];
                     using (var sha = SHA256.Create())
                     {
-                        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(SECRET_KEY + "IV_SALT"));
+                        var hash = sha.ComputeHash(Encoding.UTF8.GetBytes(secretKey + "IV_SALT"));
                         Array.Copy(hash, iv, 16);
                     }
                     aes.IV = iv;
