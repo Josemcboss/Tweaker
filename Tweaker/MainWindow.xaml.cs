@@ -556,70 +556,70 @@ namespace Tweaker
         private void NavigateToDashboard(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Dashboard");
-            ShowPage(DashboardPage);
+            SwitchView(DashboardPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToInput(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Input & Visuals");
-            ShowPage(InputPage);
+            SwitchView(InputPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToNetwork(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Red & Ping");
-            ShowPage(NetworkPage);
+            SwitchView(NetworkPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToSystem(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Sistema & GPU");
-            ShowPage(SystemPage);
+            SwitchView(SystemPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToCleanup(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Limpieza");
-            ShowPage(CleanupPage);
+            SwitchView(CleanupPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToGhost(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("GHOST Pack");
-            ShowPage(GhostPage);
+            SwitchView(GhostPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToAdvanced(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Advanced");
-            ShowPage(AdvancedPage);
+            SwitchView(AdvancedPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToLaptop(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Laptop");
-            ShowPage(LaptopPage);
+            SwitchView(LaptopPage);
             SetActiveButton((Button)sender);
         }
 
         private void NavigateToCompetitive(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Competitive Gaming");
-            ShowPage(CompetitivePage);
+            SwitchView(CompetitivePage);
             SetActiveButton((Button)sender);
         }
 
         /// <summary>
-        /// Muestra una página y oculta las demás
+        /// Cambia a una nueva vista con animación FadeIn suave
         /// </summary>
-        private void ShowPage(UIElement pageToShow)
+        private void SwitchView(UIElement newView)
         {
             // Ocultar todas las páginas
             DashboardPage.Visibility = Visibility.Collapsed;
@@ -633,7 +633,24 @@ namespace Tweaker
             CompetitivePage.Visibility = Visibility.Collapsed;
 
             // Mostrar la página seleccionada
-            pageToShow.Visibility = Visibility.Visible;
+            newView.Visibility = Visibility.Visible;
+
+            // Aplicar FadeInAnimation
+            try
+            {
+                var animation = (System.Windows.Media.Animation.Storyboard)FindResource("FadeInAnimation");
+                
+                // Clonar el Storyboard para evitar conflictos si se llama múltiples veces rápidamente
+                var storyboardCopy = animation.Clone();
+                
+                // Aplicar la animación al elemento
+                storyboardCopy.Begin((FrameworkElement)newView);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"⚠️ Error al aplicar animación de navegación: {ex.Message}");
+                // Si falla la animación, al menos la vista se muestra correctamente
+            }
         }
 
         /// <summary>

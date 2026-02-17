@@ -710,6 +710,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
                 <ScrollViewer x:Name="DashboardPage" 
                           Visibility="Visible" 
                           VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <!-- Header con logo -->
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
@@ -1002,6 +1005,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
                 <!-- TODO: Las demás páginas las agrego en la siguiente parte -->
                 <!-- Input Page -->
                 <ScrollViewer x:Name="InputPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,10">
                         <Run Text="&#x2328;&#xFE0F;"/>&#x0020;<Run Text="Input &amp; Visuals"/>
@@ -1222,6 +1228,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- Network Page -->
                 <ScrollViewer x:Name="NetworkPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,10">
                         <Run Text="&#x1F4E1;"/>&#x0020;<Run Text="Red &amp; Ping"/>
@@ -1683,6 +1692,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- System Page -->
                 <ScrollViewer x:Name="SystemPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,30">
                         <Run Text="&#x1F3AE;"/>&#x0020;<Run Text="Sistema &amp; GPU"/>
@@ -2084,6 +2096,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- Cleanup Page -->
                 <ScrollViewer x:Name="CleanupPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,30">
                         <Run Text="&#x1F9F9;"/>&#x0020;<Run Text="Limpieza"/>
@@ -2339,6 +2354,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- GHOST Page -->
                 <ScrollViewer x:Name="GhostPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#9B59B6" Margin="0,0,0,30">
                         <Run Text="&#x1F47B;"/>&#x0020;<Run Text="GHOST PACK"/>
@@ -2518,6 +2536,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- Advanced Page -->
                 <ScrollViewer x:Name="AdvancedPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,10">
                         <Run Text="&#x26A0;&#xFE0F;"/>&#x0020;<Run Text="Advanced Tweaks"/>
@@ -2901,6 +2922,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- Laptop Preset Page -->
                 <ScrollViewer x:Name="LaptopPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,10">
                         <Run Text="💻"/>&#x0020;<Run Text="PRESET LAPTOP"/>
@@ -3154,6 +3178,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                 <!-- Competitive Gaming Preset Page -->
                 <ScrollViewer x:Name="CompetitivePage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
                     <StackPanel Margin="40">
                         <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,10">
                         <Run Text="🏆"/>&#x0020;<Run Text="COMPETITIVE GAMING PRESET"/>
