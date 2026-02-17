@@ -237,7 +237,7 @@ namespace Tweaker.License
         /// <summary>
         /// Maneja la detección de debugger
         /// </summary>
-        private static void HandleDebuggerDetection()
+        internal static void HandleDebuggerDetection()
         {
             try
             {
