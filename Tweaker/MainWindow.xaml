@@ -4,6 +4,7 @@ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:resources="clr-namespace:Tweaker.Resources"
+xmlns:controls="clr-namespace:Tweaker.Controls"
 mc:Ignorable="d"
 Title="Ghost Optimizer - Gaming Tweaker" 
 Height="938" 
@@ -3354,6 +3355,19 @@ Icon="{StaticResource GhostOptimizerIcon}">
             <!-- Cierre <Grid Grid.Column="1"> (Área de contenido) -->
         </Grid>
         <!-- Cierre Grid Columnas (Sidebar + Content) -->
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- GAME BOOSTER WIDGET - FLOTANTE ESQUINA SUPERIOR DERECHA -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <controls:GameBoosterWidget 
+            x:Name="GameBoosterWidget"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Right"
+            Margin="0,45,20,0"
+            Panel.ZIndex="9999"
+            Grid.Row="1"
+            Grid.ColumnSpan="3"/>
+        
     </Grid>
     <!-- Cierre Grid Rows (TitleBar + Content) -->
 </Window>
