@@ -318,13 +318,19 @@ namespace Tweaker.License
             try
             {
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                var location = assembly.Location;
+                
+                // Usar AppContext.BaseDirectory en lugar de Assembly.Location
+                // para compatibilidad con single-file apps
+                var appDirectory = AppContext.BaseDirectory;
+                var assemblyName = assembly.GetName().Name ?? "Tweaker";
+                var assemblyPath = System.IO.Path.Combine(appDirectory, assemblyName + ".dll");
 
                 // Verificar si el archivo existe donde debería
-                if (!System.IO.File.Exists(location))
+                if (!System.IO.File.Exists(assemblyPath))
                 {
-                    Debug.WriteLine("?? Ensamblado no encontrado en ubicación esperada");
-                    return true;
+                    // En single-file apps, el ensamblado puede estar embebido
+                    Debug.WriteLine("?? Aplicación en modo single-file o ensamblado embebido");
+                    return false; // No considerar como modificado en single-file
                 }
 
                 // Verificar firma digital (si existe)
@@ -334,7 +340,7 @@ namespace Tweaker.License
             }
             catch
             {
-                return true; // Asumir modificado si hay error
+                return false; // No asumir modificado por error de verificación
             }
         }
 
