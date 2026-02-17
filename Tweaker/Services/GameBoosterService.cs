@@ -121,7 +121,35 @@ namespace Tweaker.Services
             "cyberpunk2077",
             "witcher3",
             "rdr2",
-            "sekiro"
+            "sekiro",
+            
+            // Gacha / RPG
+            "genshinimpact",
+            "yuanshen",
+            "honkaistarrail",
+            "starrail",
+            
+            // Sports
+            "fifa",
+            "fifa23",
+            "fifa24",
+            "fc24",
+            "eafc",
+            
+            // Survival / Sandbox
+            "rust",
+            "valheim",
+            "7daystodie",
+            "ark",
+            "arksurvivalevolved",
+            
+            // MMO
+            "newworld",
+            "lostark",
+            "ffxiv_dx11",
+            "worldofwarcraft",
+            "wow",
+            "guildwars2"
         };
 
         /// <summary>
