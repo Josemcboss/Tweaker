@@ -181,7 +181,7 @@ namespace Tweaker.Services
         {
             _monitoringTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromSeconds(5) // Verificar cada 5 segundos
+                Interval = TimeSpan.FromSeconds(2) // Verificar cada 2 segundos para detección más rápida
             };
             _monitoringTimer.Tick += MonitoringTimer_Tick;
         }
@@ -243,9 +243,17 @@ namespace Tweaker.Services
                 if (foregroundProcess != null)
                 {
                     var processName = foregroundProcess.ProcessName.ToLower();
+                    
+                    // DEBUG: Log del proceso actual
+                    Debug.WriteLine($"🔍 Proceso en foreground: {processName}");
 
                     // Verificar si es un juego conocido
                     bool isGame = IsKnownGame(processName);
+                    
+                    if (isGame)
+                    {
+                        Debug.WriteLine($"✅ Es un juego conocido: {processName}");
+                    }
 
                     if (isGame && !_isGameModeActive)
                     {
@@ -283,6 +291,7 @@ namespace Tweaker.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"❌ Error en monitoreo: {ex.Message}");
+                Debug.WriteLine($"❌ StackTrace: {ex.StackTrace}");
             }
         }
 
@@ -310,10 +319,21 @@ namespace Tweaker.Services
 
         private bool IsKnownGame(string processName)
         {
+            // Normalizar el nombre del proceso (quitar guiones, puntos, etc.)
+            var normalizedProcess = processName.Replace("-", "").Replace("_", "").Replace(".", "").ToLower();
+            
             foreach (var game in _knownGames)
             {
-                if (processName.Contains(game))
+                var normalizedGame = game.Replace("-", "").Replace("_", "").Replace(" ", "").ToLower();
+                
+                // Verificar si el proceso contiene el juego O si el juego contiene el proceso
+                if (processName.Contains(game.ToLower()) || 
+                    normalizedProcess.Contains(normalizedGame) ||
+                    game.ToLower().Contains(processName))
+                {
+                    Debug.WriteLine($"✅ Match encontrado: proceso '{processName}' con juego '{game}'");
                     return true;
+                }
             }
             return false;
         }
