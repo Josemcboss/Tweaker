@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <!-- Referencia para ServiceController (gestión de servicios de Windows) -->
+    <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     
     <!-- Referencia para WMI (obtener info del sistema) -->

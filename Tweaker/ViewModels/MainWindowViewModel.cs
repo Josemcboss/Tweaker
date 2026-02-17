@@ -9,6 +9,7 @@ using Tweaker.Data;
 using Tweaker.Factories;
 using Tweaker.Models;
 using Tweaker.Utilities;
+using Tweaker.Services;
 
 namespace Tweaker.ViewModels
 {
@@ -23,6 +24,9 @@ namespace Tweaker.ViewModels
         private TweakSectionModel _currentSection;
         private string _currentPageName = "Dashboard";
         private readonly TweakStateManager _stateManager;
+        private readonly GameBoosterService _gameBooster;
+        private bool _isAutoBoosterEnabled = false;
+        private string _currentStatus = "Modo: Escritorio";
 
         #endregion
 
@@ -50,6 +54,28 @@ namespace Tweaker.ViewModels
         public int EstimatedFpsGain => CalculateEstimatedFpsGain();
         public double RamFreedGB => CalculateRamFreed();
 
+        // Game Booster Properties
+        public bool IsAutoBoosterEnabled
+        {
+            get => _isAutoBoosterEnabled;
+            set
+            {
+                if (SetProperty(ref _isAutoBoosterEnabled, value))
+                {
+                    if (value)
+                        _gameBooster.StartMonitoring();
+                    else
+                        _gameBooster.StopMonitoring();
+                }
+            }
+        }
+
+        public string CurrentStatus
+        {
+            get => _currentStatus;
+            set => SetProperty(ref _currentStatus, value);
+        }
+
         #endregion
 
         #region Constructor
@@ -58,6 +84,10 @@ namespace Tweaker.ViewModels
         {
             _stateManager = TweakStateManager.Instance;
             _stateManager.PropertyChanged += StateManager_PropertyChanged;
+
+            // Inicializar Game Booster
+            _gameBooster = GameBoosterService.Instance;
+            _gameBooster.GameModeChanged += GameBooster_GameModeChanged;
 
             // Inicializar colecciones
             NavigationItems = new ObservableCollection<NavigationItem>();
@@ -200,6 +230,19 @@ namespace Tweaker.ViewModels
         {
             // Actualizar estadísticas cuando cambie el estado
             UpdateDashboardStats();
+        }
+
+        private void GameBooster_GameModeChanged(object sender, GameModeChangedEventArgs e)
+        {
+            // Actualizar estado en el UI
+            if (e.IsActive)
+            {
+                CurrentStatus = $"Modo: JUEGO DETECTADO ({e.GameName?.ToUpper()})";
+            }
+            else
+            {
+                CurrentStatus = e.Status == "Monitoreando..." ? "Modo: Monitoreando..." : "Modo: Escritorio";
+            }
         }
 
         #endregion
