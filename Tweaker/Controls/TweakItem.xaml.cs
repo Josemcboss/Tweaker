@@ -147,15 +147,17 @@ namespace Tweaker.Controls
 
             try
             {
-                bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
+                // TODO: Implementar verificación de estado real del tweak
+                // Por ahora, asume que el toggle ya tiene el estado correcto
+                // bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
                 
-                TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
-                TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+                // TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+                // TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
 
-                TweakToggleSwitch.IsChecked = isActive;
+                // TweakToggleSwitch.IsChecked = isActive;
 
-                TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
-                TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+                // TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+                // TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
             }
             catch { }
         }
@@ -165,13 +167,13 @@ namespace Tweaker.Controls
         /// </summary>
         public void SetToggleState(bool isActive)
         {
-            TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
-            TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+            // TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+            // TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
 
-            TweakToggleSwitch.IsChecked = isActive;
+            // TweakToggleSwitch.IsChecked = isActive;
 
-            TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
-            TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+            // TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+            // TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
         }
 
         #endregion
@@ -180,16 +182,16 @@ namespace Tweaker.Controls
 
         private void UpdateButtonVisibility()
         {
-            if (UseApplyMode)
-            {
-                TweakToggleSwitch.Visibility = Visibility.Collapsed;
-                ApplyButton.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                TweakToggleSwitch.Visibility = Visibility.Visible;
-                ApplyButton.Visibility = Visibility.Collapsed;
-            }
+            // if (UseApplyMode)
+            // {
+            //     TweakToggleSwitch.Visibility = Visibility.Collapsed;
+            //     ApplyButton.Visibility = Visibility.Visible;
+            // }
+            // else
+            // {
+            //     TweakToggleSwitch.Visibility = Visibility.Visible;
+            //     ApplyButton.Visibility = Visibility.Collapsed;
+            // }
         }
 
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)

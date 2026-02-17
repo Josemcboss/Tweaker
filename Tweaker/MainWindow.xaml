@@ -749,7 +749,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                             <!-- Card 1: Tweaks Activos (DINÁMICO) -->
                             <Border Grid.Column="0" 
-                                Style="{StaticResource GlassCardWithHover}"
+                                Style="{DynamicResource NeonGlowCard}"
                                 Padding="20"
                                 Margin="0,0,10,0">
                                 <StackPanel>
@@ -786,7 +786,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                             <!-- Card 2: Beneficios Estimados (DINÁMICO) -->
                             <Border Grid.Column="1" 
-                                Style="{StaticResource GlassCardWithHover}"
+                                Style="{DynamicResource NeonGlowCard}"
                                 Padding="20"
                                 Margin="5,0">
                                 <StackPanel>
@@ -809,7 +809,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                             <!-- Card 3: RAM Liberada (DINÁMICO) -->
                             <Border Grid.Column="2" 
-                                Style="{StaticResource GlassCardWithHover}"
+                                Style="{DynamicResource NeonGlowCard}"
                                 Padding="20"
                                 Margin="10,0,0,0">
                                 <StackPanel>
@@ -837,7 +837,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Grid>
 
                         <!-- Info Section -->
-                        <Border Style="{StaticResource GlassCard}"
+                        <Border Style="{DynamicResource NeonGlowCard}"
                             Padding="25"
                             Margin="0,20,0,0">
                             <StackPanel>
@@ -866,8 +866,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
 
                         <!-- Active Tweaks Section (NUEVO - DINÁMICO) -->
                         <Border x:Name="ActiveTweaksSection"
-                            Background="#1E1E1E" 
-                            CornerRadius="8" 
+                            Style="{DynamicResource NeonGlowCard}"
                             Padding="25"
                             Margin="0,20,0,0"
                             Visibility="Collapsed">
@@ -892,8 +891,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Border>
 
                         <!-- Quick Actions -->
-                        <Border Background="#1E1E1E" 
-                            CornerRadius="8" 
+                        <Border Style="{DynamicResource NeonGlowCard}"
                             Padding="25"
                             Margin="0,20,0,0">
                             <StackPanel>
