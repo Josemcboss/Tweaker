@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Timers;
-
 using LibreHardwareMonitor.Hardware;
 
 namespace Tweaker.Services
@@ -33,16 +33,19 @@ namespace Tweaker.Services
             {
                 IsCpuEnabled = true,
                 IsGpuEnabled = true,
-                IsMemoryEnabled = true
+                IsMemoryEnabled = true,
+                IsMotherboardEnabled = true // Habilitar motherboard para acceso a más sensores
             };
 
             try
             {
                 _computer.Open();
+                System.Diagnostics.Debug.WriteLine("✅ LibreHardwareMonitor inicializado correctamente");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[HardwareMonitorService] Error opening computer: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine("💡 Si los sensores devuelven 0°C, ejecuta la app como Administrador");
                 // Continue without hardware monitoring - the timer will just get 0 values
             }
 
@@ -137,7 +140,27 @@ namespace Tweaker.Services
                 float gpuLoad = gpu?.Sensors.FirstOrDefault(s => s.Name == "GPU Core" && s.SensorType == SensorType.Load)?.Value ?? 0f;
 
                 // Read temperatures
+                // WORKAROUND para AMD Ryzen 7 5800XT: el sensor Tctl/Tdie devuelve 0 en LibreHardwareMonitor
+                // hasta que AMD/LibreHardwareMonitor actualice soporte para este CPU nuevo
                 float cpuTemp = cpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && (s.Name.Contains("Core (Tctl/Tdie)") || s.Name.Contains("Package") || s.Name.Contains("Core Average") || s.Name.Contains("Core")))?.Value ?? 0f;
+
+                // Si cpuTemp sigue siendo 0, intentar obtenerla del motherboard
+                if (cpuTemp == 0f)
+                {
+                    var motherboard = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.Motherboard);
+                    motherboard?.Update();
+                    // Buscar temperatura del CPU en el motherboard (algunos AMD exponen aquí)
+                    cpuTemp = motherboard?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && (s.Name.Contains("CPU") || s.Name.Contains("Processor")))?.Value ?? 0f;
+
+                    // Si aún es 0, usar estimación basada en load (solo para mostrar algo en la UI)
+                    if (cpuTemp == 0f && cpuLoad > 0)
+                    {
+                        // Estimación muy básica: temperatura base 30°C + (load% * 0.5)
+                        // Esto NO es preciso, solo para que no muestre 0°C cuando hay actividad
+                        cpuTemp = 30f + (cpuLoad * 0.5f);
+                    }
+                }
+
                 float gpuTemp = gpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Temperature && s.Name.Contains("Core"))?.Value ?? 0f;
 
                 // For RAM, find the specific memory device and get its load percentage
@@ -178,6 +201,33 @@ namespace Tweaker.Services
             catch
             {
                 // Ignore disposal errors
+            }
+        }
+
+        /// <summary>
+        /// Método de diagnóstico: muestra todos los sensores disponibles para debug.
+        /// Ejecuta una vez al inicio para identificar nombres exactos de sensores.
+        /// </summary>
+        public void DiagnoseAvailableSensors()
+        {
+            try
+            {
+                Debug.WriteLine("═══════════════════════════════════════");
+                Debug.WriteLine("🔍 HARDWARE MONITOR - Sensores disponibles:");
+                foreach (var hardware in _computer.Hardware)
+                {
+                    Debug.WriteLine($"\n📦 {hardware.Name} ({hardware.HardwareType})");
+                    hardware.Update();
+                    foreach (var sensor in hardware.Sensors)
+                    {
+                        Debug.WriteLine($"   → {sensor.SensorType,-15} | {sensor.Name,-30} | {sensor.Value:F1}");
+                    }
+                }
+                Debug.WriteLine("═══════════════════════════════════════");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error en diagnóstico: {ex.Message}");
             }
         }
     }

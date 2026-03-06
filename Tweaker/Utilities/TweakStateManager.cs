@@ -53,6 +53,11 @@ namespace Tweaker.Utilities
 
             LoadState();
             _hardwareMonitor = new Services.HardwareMonitorService();
+
+            // Diagnóstico una sola vez al inicio para ver qué sensores están disponibles
+            #if DEBUG
+            _hardwareMonitor.DiagnoseAvailableSensors();
+            #endif
         }
 
         public Services.HardwareMonitorService HardwareMonitor => _hardwareMonitor;

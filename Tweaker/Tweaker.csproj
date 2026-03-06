@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -47,11 +47,11 @@
   <ItemGroup>
     <!-- Referencia para ServiceController (gestión de servicios de Windows) -->
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
-    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.7-pre641" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.7-pre649" />
     <!-- LiveCharts2 removed due to restore conflicts; using custom WPF rendering for TemperatureGraph -->
     
     <!-- Referencia para WMI (obtener info del sistema) -->
-    <PackageReference Include="System.Management" Version="10.0.2" />
+    <PackageReference Include="System.Management" Version="10.0.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.103" PrivateAssets="all" />
   </ItemGroup>
 
