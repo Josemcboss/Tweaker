@@ -1,4 +1,4 @@
-﻿<Window x:Class="Tweaker.MainWindow"
+<Window x:Class="Tweaker.MainWindow"
 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -3519,15 +3519,123 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                             Style="{StaticResource OnButton}"
                                             Width="120"
                                             Margin="0,0,10,0"/>
-                                    <Button Content="REVERTIR"
-                                            Click="BtnPro_Off_Click"
-                                            Style="{StaticResource OffButton}"
-                                            Width="120"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
+                                                         <Button Content="REVERTIR"
+                                                                Click="BtnPro_Off_Click"
+                                                                Style="{StaticResource OffButton}"
+                                                                Width="120"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+
+                                            <!-- ═══════════════════════════════════════════════════════════════════ -->
+                                            <!-- SYSTEM PRO OPTIMIZATIONS (NEW) -->
+                                            <!-- ═══════════════════════════════════════════════════════════════════ -->
+                                            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                                                <StackPanel>
+                                                    <TextBlock Text="🎯 System Pro Optimizations" Style="{StaticResource SectionTitle}" Foreground="#00D9FF"/>
+                                                    <TextBlock Style="{StaticResource Description}" Margin="0,0,0,20">
+                                                        <Run Text="Advanced system-level optimizations for maximum performance"/>
+                                                        <LineBreak/>
+                                                        <Run Text="⚠️ Requiere reinicio para aplicar completamente" Foreground="#FFA500"/>
+                                                    </TextBlock>
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- LEFT COLUMN -->
+                                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                                            <!-- Audio Latency -->
+                                                            <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="🎧 Audio Latency" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="Reduce audio latency -5-20ms" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Button Content="ON" Click="BtnAudioLatency_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                        <Button Content="OFF" Click="BtnAudioLatency_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+
+                                                            <!-- Boot Optimization -->
+                                                            <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="⚡ Fast Boot" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="Optimiza arranque de Windows" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Button Content="ON" Click="BtnBootOpt_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                        <Button Content="OFF" Click="BtnBootOpt_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+
+                                                            <!-- Processor Optimization -->
+                                                            <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="💻 Processor Boost" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="Optimiza scheduling y core parking" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Button Content="ON" Click="BtnProcessorOpt_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                        <Button Content="OFF" Click="BtnProcessorOpt_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </StackPanel>
+
+                                                        <!-- RIGHT COLUMN -->
+                                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                                            <!-- AMD Radeon Tweaks -->
+                                                                <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="🔴 AMD Radeon Tweaks" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                        <TextBlock Text="Optimizaciones específicas AMD GPU" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Button Content="ON" Click="BtnRadeonOpt_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                            <Button Content="OFF" Click="BtnRadeonOpt_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                        </StackPanel>
+                                                                    </StackPanel>
+                                                                </Border>
+
+                                                                <!-- NVIDIA GeForce Tweaks -->
+                                                                <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="🟢 NVIDIA GeForce Tweaks" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                        <TextBlock Text="P-States, PowerMizer, RMA OFF" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                        <StackPanel Orientation="Horizontal">
+                                                                            <Button Content="ON" Click="BtnNvidiaOpt_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                            <Button Content="OFF" Click="BtnNvidiaOpt_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                        </StackPanel>
+                                                                    </StackPanel>
+                                                                </Border>
+
+                                                            <!-- Interrupt Steering -->
+                                                            <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="🎯 Interrupt Steering" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="Optimiza distribución de IRQs" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Button Content="ON" Click="BtnInterruptOpt_On_Click" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0"/>
+                                                                        <Button Content="OFF" Click="BtnInterruptOpt_Off_Click" Style="{StaticResource OffButton}" Width="60"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+
+                                                            <!-- System Repair Tools -->
+                                                            <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="🛠️ System Repair" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                                                    <TextBlock Text="SFC + DISM + Health Check" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10"/>
+                                                                    <Button Content="RUN REPAIR" Click="BtnSystemRepair_Click" Style="{StaticResource OnButton}" Width="120"/>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </StackPanel>
+                                            </Border>
+                                        </StackPanel>
+                                    </ScrollViewer>
 
                 <!-- Laptop Preset Page -->
                 <ScrollViewer x:Name="LaptopPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">

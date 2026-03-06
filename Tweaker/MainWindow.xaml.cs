@@ -4295,6 +4295,272 @@ namespace Tweaker
 
         #endregion
 
+        #region System Pro Optimizations (NEW)
+
+        // ═══════════════════════════════════════════════════════════════════
+        // AUDIO LATENCY
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnAudioLatency_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "AudioLatency",
+                "Advanced - Audio",
+                () => AudioOptimization.OptimizeAudioLatency(),
+                "✅ Audio Latency Optimizado.\n\n" +
+                "• Spatial Audio deshabilitado\n" +
+                "• Protected Audio DG deshabilitado\n" +
+                "• Latencia reducida -5-20ms"
+            );
+        }
+
+        private void BtnAudioLatency_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "AudioLatency",
+                "Advanced - Audio",
+                () => AudioOptimization.RestoreAudioSettings(),
+                "Audio settings restaurados a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // BOOT OPTIMIZATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnBootOpt_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "BootOptimization",
+                "Advanced - Boot",
+                () => BootOptimization.OptimizeBootConfiguration(),
+                "✅ Boot Optimizado.\n\n" +
+                "• Timeout = 0\n" +
+                "• Boot UX deshabilitado\n" +
+                "• Arranque más rápido\n\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+        }
+
+        private void BtnBootOpt_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "BootOptimization",
+                "Advanced - Boot",
+                () => BootOptimization.RestoreBootConfiguration(),
+                "Boot configuration restaurada a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // PROCESSOR OPTIMIZATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnProcessorOpt_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "ProcessorOptimization",
+                "Advanced - CPU",
+                () => ProcessorOptimization.OptimizeAMDProcessor() && ProcessorOptimization.OptimizeIntelProcessor(),
+                "✅ Processor Optimizado.\n\n" +
+                "• Core Parking deshabilitado\n" +
+                "• CPU Scheduling mejorado\n" +
+                "• Boost habilitado\n\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+        }
+
+        private void BtnProcessorOpt_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "ProcessorOptimization",
+                "Advanced - CPU",
+                () => ProcessorOptimization.RestoreAMDProcessor() && ProcessorOptimization.RestoreIntelProcessor(),
+                "Processor settings restaurados a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // AMD RADEON OPTIMIZATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnRadeonOpt_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "RadeonOptimization",
+                "Advanced - GPU AMD",
+                () => RadeonOptimization.OptimizeRadeonGPU(),
+                "✅ AMD Radeon Optimizado.\n\n" +
+                "• ULPS deshabilitado\n" +
+                "• Thermal throttling OFF\n" +
+                "• Compute Preemption OFF\n\n" +
+                "⚠️ Solo para GPUs AMD Radeon.\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+        }
+
+        private void BtnRadeonOpt_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "RadeonOptimization",
+                "Advanced - GPU AMD",
+                () => RadeonOptimization.RestoreRadeonGPU(),
+                "AMD Radeon settings restaurados a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // NVIDIA GEFORCE OPTIMIZATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnNvidiaOpt_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "NvidiaOptimization",
+                "Advanced - GPU NVIDIA",
+                () => NvidiaOptimization.OptimizeNvidiaGPU(),
+                "✅ NVIDIA GeForce Optimizado.\n\n" +
+                "• RMA deshabilitado\n" +
+                "• P-States forzados a High Performance\n" +
+                "• Dynamic P-States OFF (sin downclocking)\n" +
+                "• PowerMizer en máximo rendimiento\n\n" +
+                "⚠️ Solo para GPUs NVIDIA GeForce.\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+        }
+
+        private void BtnNvidiaOpt_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "NvidiaOptimization",
+                "Advanced - GPU NVIDIA",
+                () => NvidiaOptimization.RestoreNvidiaGPU(),
+                "NVIDIA GeForce settings restaurados a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // INTERRUPT STEERING
+        // ═══════════════════════════════════════════════════════════════════
+
+        private void BtnInterruptOpt_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "InterruptSteering",
+                "Advanced - IRQ",
+                () => InterruptSteeringTweaks.EnableInterruptSteering(),
+                "✅ Interrupt Steering Optimizado.\n\n" +
+                "• IRQ distribution mejorada\n" +
+                "• DPC latency reducida\n" +
+                "• ISR handling optimizado\n\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+        }
+
+        private void BtnInterruptOpt_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "InterruptSteering",
+                "Advanced - IRQ",
+                () => InterruptSteeringTweaks.RestoreInterruptSteering(),
+                "Interrupt steering restaurado a valores default.",
+                null,
+                true,
+                showNotification: false
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SYSTEM REPAIR
+        // ═══════════════════════════════════════════════════════════════════
+
+        private async void BtnSystemRepair_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+
+            var result = MessageBox.Show(
+                "⚠️ System Repair ejecutará:\n\n" +
+                "• SFC /scannow (System File Checker)\n" +
+                "• DISM /RestoreHealth\n" +
+                "• Health Check completo\n\n" +
+                "Esto puede tardar 10-30 minutos.\n\n" +
+                "¿Continuar?",
+                "System Repair",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                // Mostrar progress indicator
+                var btn = sender as Button;
+                if (btn != null)
+                {
+                    btn.Content = "REPARANDO...";
+                    btn.IsEnabled = false;
+                }
+
+                try
+                {
+                    bool sfcResult = await SystemRepairTools.RunSFCScanAsync();
+                    bool dismResult = await SystemRepairTools.RunDISMRestoreHealthAsync();
+                    if (!sfcResult || !dismResult) throw new Exception("Repair failed");
+
+                    MessageBox.Show(
+                        "✅ System Repair Completado.\n\n" +
+                        "Revisa el log en:\n" +
+                        "%LocalAppData%\\GhostOptimizer\\repair.log",
+                        "Repair Complete",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        $"❌ Error durante repair:\n\n{ex.Message}",
+                        "Repair Error",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                }
+                finally
+                {
+                    if (btn != null)
+                    {
+                        btn.Content = "RUN REPAIR";
+                        btn.IsEnabled = true;
+                    }
+                }
+            }
+        }
+
+        #endregion
+
         #region Sticky Keys (Input & Visuals)
 
         private void BtnStickyKeys_On_Click(object sender, RoutedEventArgs e)
