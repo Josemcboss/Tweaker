@@ -1063,5 +1063,190 @@ namespace Tweaker.Optimizations
                 return error;
             }
         }
+
+        /// <summary>
+        /// Deshabilita AHCI Link Power Management (Storage Idle States)
+        /// 
+        /// ¿Qué es AHCI LPM?
+        /// - El controlador AHCI puede poner el enlace SATA en modo de bajo consumo (HIPM/DIPM)
+        /// - Esto añade latencia cuando el disco necesita "despertar"
+        /// - Para SSDs NVMe/SATA en sistemas de gaming, esta latencia es indeseable
+        /// 
+        /// IMPACTO EN GAMING:
+        /// - Elimina micro-stutters causados por el disco "despertando"
+        /// - Tiempos de acceso consistentes
+        /// - Especialmente notable en HDDs y SSDs SATA
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool DisableStorageIdleStates()
+        {
+            try
+            {
+                Debug.WriteLine("→ Deshabilitando AHCI Link Power Management...");
+
+                bool success = true;
+
+                // Deshabilitar AHCI Link Power Management via registro
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\storahci\Parameters\Device"))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("IdlePowerManagement", 0, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ storahci IdlePowerManagement = 0");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("   ⚠ No se pudo crear storahci Parameters\\Device");
+                        success = false;
+                    }
+                }
+
+                // Deshabilitar disk idle timeout via powercfg (0 = nunca apagar)
+                RunPowercfgDisk("-setacvalueindex scheme_current SUB_DISK DISKIDLE 0",
+                    "DISKIDLE=0 (sin timeout de disco)");
+
+                RunPowercfgDisk("-setactive scheme_current", "Aplicar configuración activa");
+
+                if (success)
+                {
+                    Debug.WriteLine("   ✓ Storage Idle States deshabilitados");
+                    Debug.WriteLine("   ⚠ REQUIERE REINICIO para efecto completo");
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error deshabilitando Storage Idle States: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita AHCI Link Power Management (restaura estado predeterminado)
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool EnableStorageIdleStates()
+        {
+            try
+            {
+                Debug.WriteLine("→ Habilitando AHCI Link Power Management...");
+
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\storahci\Parameters\Device", true))
+                {
+                    if (key != null)
+                    {
+                        key.DeleteValue("IdlePowerManagement", false);
+                        Debug.WriteLine("   ✓ storahci IdlePowerManagement eliminado (predeterminado)");
+                    }
+                }
+
+                RunPowercfgDisk("-setacvalueindex scheme_current SUB_DISK DISKIDLE 1200",
+                    "DISKIDLE=1200 (20 minutos, predeterminado)");
+
+                RunPowercfgDisk("-setactive scheme_current", "Aplicar configuración activa");
+
+                Debug.WriteLine("   ✓ Storage Idle States restaurados");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error habilitando Storage Idle States: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deshabilita el modo idle de StorPort para prevenir que el controlador de almacenamiento
+        /// entre en modo de bajo consumo
+        /// 
+        /// StorPort es el miniport driver de almacenamiento de Windows.
+        /// El idle timeout hace que el driver deje de procesar I/O durante períodos de baja actividad,
+        /// causando picos de latencia cuando se reanuda la actividad.
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool DisableStorPortIdle()
+        {
+            try
+            {
+                Debug.WriteLine("→ Deshabilitando StorPort Idle Timeout...");
+
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\Storage\StorPort"))
+                {
+                    if (key != null)
+                    {
+                        // 0 = sin timeout (nunca idle)
+                        key.SetValue("IdleTimeout", 0, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ StorPort IdleTimeout = 0 (sin timeout)");
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("   ⚠ No se pudo crear la clave StorPort");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error deshabilitando StorPort Idle: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita el modo idle de StorPort (restaura estado predeterminado)
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool EnableStorPortIdle()
+        {
+            try
+            {
+                Debug.WriteLine("→ Habilitando StorPort Idle Timeout...");
+
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\Storage\StorPort", true))
+                {
+                    if (key != null)
+                    {
+                        key.DeleteValue("IdleTimeout", false);
+                        Debug.WriteLine("   ✓ StorPort IdleTimeout eliminado (predeterminado)");
+                    }
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error habilitando StorPort Idle: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static void RunPowercfgDisk(string args, string description)
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                using (Process p = Process.Start(psi))
+                {
+                    p?.WaitForExit(3000);
+                    Debug.WriteLine($"   → powercfg: {description}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"   ⚠ powercfg error: {ex.Message}");
+            }
+        }
     }
 }

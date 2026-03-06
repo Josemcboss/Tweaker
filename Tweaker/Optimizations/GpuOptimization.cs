@@ -272,6 +272,57 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
+        /// DESHABILITA VSync Idle Timeout
+        /// 
+        /// ¿Qué es VSync Idle Timeout?
+        /// - Windows espera un tiempo antes de considerar que el monitor no necesita
+        ///   sincronización vertical, causando pequeños delays en la presentación de frames.
+        /// - Deshabilitar este timeout elimina esa espera.
+        /// 
+        /// IMPACTO EN GAMING:
+        /// - Reduce micro-stutters relacionados con VSync
+        /// - Mejora la consistencia de la presentación de frames
+        /// </summary>
+        public static bool DisableVsyncIdleTimeout()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers"))
+                {
+                    key?.SetValue("VsyncIdleTimeout", 0, RegistryValueKind.DWord);
+                }
+                System.Diagnostics.Debug.WriteLine("✓ VSync Idle Timeout deshabilitado");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al deshabilitar VSync Idle Timeout: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// HABILITA VSync Idle Timeout (restaura el comportamiento predeterminado)
+        /// </summary>
+        public static bool EnableVsyncIdleTimeout()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", true))
+                {
+                    key?.DeleteValue("VsyncIdleTimeout", false);
+                }
+                System.Diagnostics.Debug.WriteLine("✓ VSync Idle Timeout restaurado a valores predeterminados");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al habilitar VSync Idle Timeout: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// MÉTODOS DE COMPATIBILIDAD PARA PRESETS
         /// </summary>
 
