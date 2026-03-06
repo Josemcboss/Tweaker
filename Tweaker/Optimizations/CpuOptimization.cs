@@ -427,5 +427,198 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
+
+        /// <summary>
+        /// Deshabilita las actualizaciones de microcode del procesador
+        /// 
+        /// ¿Qué es el microcode?
+        /// - El microcode es firmware interno del CPU que implementa el set de instrucciones
+        /// - Windows puede aplicar actualizaciones de microcode al arranque para parchear vulnerabilidades
+        ///   (Spectre, Meltdown, etc.) a través de los archivos mcupdate_GenuineIntel.dll / mcupdate_AuthenticAMD.dll
+        /// - Estas actualizaciones pueden reducir el rendimiento del procesador
+        /// 
+        /// ADVERTENCIA: Deshabilitar el microcode puede exponer vulnerabilidades de seguridad.
+        /// Solo recomendado para sistemas de gaming dedicados y aislados.
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool DisableMicrocodeUpdates()
+        {
+            try
+            {
+                Debug.WriteLine("→ Deshabilitando actualizaciones de microcode...");
+                Debug.WriteLine("   ⚠ ADVERTENCIA: Reduce protección ante vulnerabilidades de CPU");
+
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\Session Manager"))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableMicrocodeLoad", 1, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ DisableMicrocodeLoad = 1");
+                        Debug.WriteLine("   ⚠ REQUIERE REINICIO para aplicar");
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error deshabilitando microcode updates: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita las actualizaciones de microcode del procesador (restaura valores predeterminados)
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool EnableMicrocodeUpdates()
+        {
+            try
+            {
+                Debug.WriteLine("→ Habilitando actualizaciones de microcode...");
+
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(
+                    @"SYSTEM\CurrentControlSet\Control\Session Manager", true))
+                {
+                    if (key != null)
+                    {
+                        key.DeleteValue("DisableMicrocodeLoad", false);
+                        Debug.WriteLine("   ✓ DisableMicrocodeLoad eliminado (predeterminado: habilitado)");
+                        Debug.WriteLine("   ⚠ REQUIERE REINICIO para aplicar");
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error habilitando microcode updates: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deshabilita el Package Idle State del procesador
+        /// 
+        /// ¿Qué es Package Idle?
+        /// - Cuando todos los cores del paquete de CPU están en C-state profundo,
+        ///   todo el paquete entra en un estado de muy bajo consumo (PC-state)
+        /// - Salir de este estado tiene latencia adicional
+        /// 
+        /// IMPACTO EN GAMING:
+        /// - Elimina la latencia de "despertar" del paquete de CPU completo
+        /// - Más relevante en CPUs multi-die (AMD Ryzen con varios CCDs)
+        /// - Mejora la consistencia de frame times
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool DisablePerfPackageIdle()
+        {
+            try
+            {
+                Debug.WriteLine("→ Deshabilitando Package Idle State...");
+
+                bool success = true;
+
+                string[] schemes = { "scheme_current" };
+                foreach (string scheme in schemes)
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "powercfg.exe",
+                        Arguments = $"-setacvalueindex {scheme} SUB_PROCESSOR IDLEDISABLE 1",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    };
+
+                    using (Process process = Process.Start(psi))
+                    {
+                        process?.WaitForExit(3000);
+                        success &= process?.ExitCode == 0;
+                    }
+                }
+
+                ProcessStartInfo activePsi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = "-setactive scheme_current",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (Process process = Process.Start(activePsi))
+                {
+                    process?.WaitForExit(3000);
+                }
+
+                if (success)
+                {
+                    Debug.WriteLine("   ✓ Package Idle State deshabilitado");
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error deshabilitando Package Idle: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita el Package Idle State del procesador (restaura valores predeterminados)
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool EnablePerfPackageIdle()
+        {
+            try
+            {
+                Debug.WriteLine("→ Habilitando Package Idle State...");
+
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = "-setacvalueindex scheme_current SUB_PROCESSOR IDLEDISABLE 0",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (Process process = Process.Start(psi))
+                {
+                    process?.WaitForExit(3000);
+                }
+
+                ProcessStartInfo activePsi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = "-setactive scheme_current",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+
+                using (Process process = Process.Start(activePsi))
+                {
+                    process?.WaitForExit(3000);
+                }
+
+                Debug.WriteLine("   ✓ Package Idle State habilitado (predeterminado)");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error habilitando Package Idle: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

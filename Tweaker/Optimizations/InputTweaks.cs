@@ -1464,5 +1464,129 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine($"?? powercfg error: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Deshabilita USB Coalescing en los controladores USB xHCI, usbhub y usbhub3
+        /// 
+        /// ¿Qué es USB Coalescing?
+        /// - Técnica donde el controlador USB combina múltiples paquetes de datos en uno solo
+        ///   para reducir el número de interrupciones generadas
+        /// - Si bien esto reduce el overhead de interrupciones, también añade latencia
+        ///   al paquete de datos (debe esperar a que haya suficientes datos para combinar)
+        /// 
+        /// IMPACTO EN GAMING:
+        /// - Reduce la latencia de dispositivos USB (ratón, teclado)
+        /// - Crítico para ratones gaming de 1000Hz o superior
+        /// - Cada paquete de movimiento del ratón se procesa inmediatamente
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool DisableUSBCoalescing()
+        {
+            try
+            {
+                Debug.WriteLine("→ Deshabilitando USB Coalescing...");
+
+                bool success = true;
+
+                // Deshabilitar coalescing en xHCI (USB 3.x)
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\USBXHCI\Parameters"))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableCoalescing", 1, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ USBXHCI DisableCoalescing = 1");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("   ⚠ No se pudo crear la clave USBXHCI Parameters");
+                        success = false;
+                    }
+                }
+
+                // Deshabilitar coalescing en usbhub (USB 2.0 hub)
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\usbhub\Parameters"))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableCoalescing", 1, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ usbhub DisableCoalescing = 1");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("   ⚠ No se pudo crear la clave usbhub Parameters");
+                    }
+                }
+
+                // Deshabilitar coalescing en usbhub3 (USB 3.0 hub)
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(
+                    @"SYSTEM\CurrentControlSet\Services\usbhub3\Parameters"))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DisableCoalescing", 1, RegistryValueKind.DWord);
+                        Debug.WriteLine("   ✓ usbhub3 DisableCoalescing = 1");
+                    }
+                    else
+                    {
+                        Debug.WriteLine("   ⚠ No se pudo crear la clave usbhub3 Parameters");
+                    }
+                }
+
+                if (success)
+                {
+                    Debug.WriteLine("✓ USB Coalescing deshabilitado en todos los controladores");
+                    Debug.WriteLine("   • Menor latencia para ratón y teclado USB");
+                    Debug.WriteLine("   • Cada paquete USB procesado inmediatamente");
+                    Debug.WriteLine("⚠ REQUIERE REINICIO para efecto completo");
+                }
+
+                return success;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error deshabilitando USB Coalescing: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Habilita USB Coalescing (restaura estado predeterminado)
+        /// </summary>
+        /// <returns>True si la operación fue exitosa, false en caso contrario</returns>
+        public static bool EnableUSBCoalescing()
+        {
+            try
+            {
+                Debug.WriteLine("→ Habilitando USB Coalescing...");
+
+                string[] usbKeys = {
+                    @"SYSTEM\CurrentControlSet\Services\USBXHCI\Parameters",
+                    @"SYSTEM\CurrentControlSet\Services\usbhub\Parameters",
+                    @"SYSTEM\CurrentControlSet\Services\usbhub3\Parameters"
+                };
+
+                foreach (string keyPath in usbKeys)
+                {
+                    using (RegistryKey key = Registry.LocalMachine.OpenSubKey(keyPath, true))
+                    {
+                        if (key != null)
+                        {
+                            key.DeleteValue("DisableCoalescing", false);
+                            Debug.WriteLine($"   ✓ DisableCoalescing eliminado en {keyPath.Split('\\')[^2]}");
+                        }
+                    }
+                }
+
+                Debug.WriteLine("✓ USB Coalescing habilitado (predeterminado)");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"✗ Error habilitando USB Coalescing: {ex.Message}");
+                return false;
+            }
+        }
     }
 }
