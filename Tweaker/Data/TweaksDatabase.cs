@@ -576,6 +576,70 @@ namespace Tweaker.Data
                 Warnings = "• Apps pesadas (Photoshop, etc.) pueden tardar más en abrir la primera vez",
                 Recommended = true,
                 Risk = RiskLevel.Safe
+            },
+
+            // ═══════════════════════════════════════════════════════════════════
+            // ADVANCED LATENCY TWEAKS
+            // ═══════════════════════════════════════════════════════════════════
+
+            ["interrupt_moderation"] = new TweakInfo
+            {
+                Id = "interrupt_moderation",
+                Title = "Deshabilitar Interrupt Moderation",
+                Category = "Advanced",
+                Description = "La Interrupt Moderation agrupa interrupciones de red para ahorrar CPU, pero introduce una latencia artificial de 2-10ms por cada grupo. Deshabilitarla fuerza al adaptador a procesar cada interrupción de forma inmediata.",
+                Benefits = "• Latencia de red -2-10ms por paquete\n• Jitter reducido (ping más estable)\n• Mejor hitreg en FPS competitivos\n• Procesamiento de paquetes inmediato",
+                Warnings = "• CPU usage de red puede subir +1-3%\n• Solo beneficioso con adaptadores Ethernet\n• Requiere reinicio para aplicar completamente",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["menu_show_delay"] = new TweakInfo
+            {
+                Id = "menu_show_delay",
+                Title = "MenuShow Delay 0ms",
+                Category = "Advanced",
+                Description = "Windows tiene un delay artificial de 400ms antes de mostrar menús contextuales. Reducirlo a 0ms hace que la interfaz responda de forma instantánea.",
+                Benefits = "• UI responde instantáneamente\n• Alt+Tab más rápido\n• Menús contextuales sin delay\n• Sensación general de fluidez +20%",
+                Warnings = "• Efecto principalmente cosmético/perceptual\n• No afecta directamente FPS",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["data_queue_sizes"] = new TweakInfo
+            {
+                Id = "data_queue_sizes",
+                Title = "Optimizar Data Queue Sizes",
+                Category = "Advanced",
+                Description = "Aumenta los buffers de la cola de datos para mouse (100→256) y teclado (100→200). Con polling rates de 1000Hz+, el buffer por defecto puede desbordarse causando inputs perdidos.",
+                Benefits = "• Elimina 'skipped inputs' con 1000Hz+\n• Mouse: 256 eventos en cola vs 100\n• Teclado: 200 eventos en cola vs 100\n• Esencial para mice 2000-8000Hz\n• 0 inputs perdidos en momentos críticos",
+                Warnings = "• REQUIERE REINICIO para aplicar\n• Solo notable con polling rates >800Hz",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["csrss_priority"] = new TweakInfo
+            {
+                Id = "csrss_priority",
+                Title = "CSRSS High Priority",
+                Category = "Advanced",
+                Description = "csrss.exe es el proceso crítico de Windows que maneja el rendering del subsistema Win32 (ventanas, inputs, mensajes). Elevarlo a prioridad Alta reduce stuttering en la UI durante gaming intensivo.",
+                Benefits = "• Rendering de UI más fluido\n• Alt+Tab sin stuttering\n• Input de Windows procesado con prioridad\n• Menos micro-freezes en juegos\n• Mejor responsividad general",
+                Warnings = "• Cambio de prioridad es temporal (se restaura al reiniciar)\n• Efecto más notable en sistemas con pocos cores",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["gpu_irq_affinity"] = new TweakInfo
+            {
+                Id = "gpu_irq_affinity",
+                Title = "GPU IRQ Affinity (Último Core)",
+                Category = "Advanced",
+                Description = "Asigna las interrupciones de la GPU (IRQ) a un core dedicado —el último core del procesador— separándolas del resto de workloads. Esto reduce DPC latency y hace más consistentes los frame times.",
+                Benefits = "• DPC latency reducida\n• Frame times más consistentes\n• GPU interrupciones en core dedicado\n• Mejor separación de workloads CPU/GPU\n• Detectable con LatencyMon",
+                Warnings = "• REQUIERE REINICIO OBLIGATORIO\n• Requiere mínimo 4 cores físicos\n• Puede requerir ajuste manual según tu hardware\n• Efecto varía entre sistemas",
+                Recommended = false,
+                Risk = RiskLevel.Moderate
             }
         };
 

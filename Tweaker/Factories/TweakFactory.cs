@@ -78,6 +78,18 @@ namespace Tweaker.Factories
                 "Elimina popups molestos (Shift x5, Num Lock hold)\nGaming sin interrupciones"
             ));
 
+            section.Tweaks.Add(CreateTweakModel(
+                "menu_show_delay",
+                "MenuShow Delay 0ms",
+                "Reduce delay artificial de menús de 400ms → 0ms\nUI instantánea, Alt+Tab más rápido"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "data_queue_sizes",
+                "Optimizar Data Queue Sizes",
+                "Mouse: 256 buffers | Teclado: 200 buffers\nElimina skipped inputs con polling rates 1000Hz+"
+            ));
+
             return section;
         }
 
@@ -154,6 +166,12 @@ namespace Tweaker.Factories
                 "Restringir TCP Auto-Tuning",
                 "Limita el tamaño de ventana de recepción TCP\nPreviene el bufferbloat de bajada. (Puede reducir vel. máxima de descarga)",
                 useApplyMode: true
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "interrupt_moderation",
+                "Deshabilitar Interrupt Moderation",
+                "Fuerza procesamiento inmediato de paquetes de red\nLatencia -2-10ms por paquete, jitter reducido"
             ));
 
             return section;
@@ -364,6 +382,64 @@ namespace Tweaker.Factories
                 "Prioridad absoluta al juego activo sobre servicios de fondo\nRespuesta del sistema inmediata y Alt+Tab más rápido"
             ));
 
+            section.Tweaks.Add(CreateTweakModel(
+                "csrss_priority",
+                "CSRSS High Priority",
+                "Prioriza el proceso de rendering Win32 del sistema\nMenos micro-stutters en UI durante gaming intensivo"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_irq_affinity",
+                "GPU IRQ Affinity (Último Core)",
+                "Asigna interrupciones GPU a un core dedicado\nDPC latency reducida, frame times más consistentes\n⚠️ REQUIERE REINICIO OBLIGATORIO"
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea la sección de Advanced Latency Tweaks
+        /// </summary>
+        public static TweakSectionModel CreateAdvancedLatencySection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Advanced Latency",
+                Subtitle = "Tweaks de latencia de bajo nivel del sistema",
+                Icon = "⚡",
+                Category = "AdvancedLatency"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "interrupt_moderation",
+                "Deshabilitar Interrupt Moderation",
+                "Procesamiento inmediato de paquetes de red\nLatencia -2-10ms, jitter reducido"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "menu_show_delay",
+                "MenuShow Delay 0ms",
+                "Delay de menús de 400ms → 0ms\nUI responde instantáneamente"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "data_queue_sizes",
+                "Optimizar Data Queue Sizes",
+                "Mouse: 256 buffers | Teclado: 200 buffers\nCero inputs perdidos con 1000Hz+"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "csrss_priority",
+                "CSRSS High Priority",
+                "Prioriza el proceso de rendering Win32\nMenos micro-stutters en UI durante gaming"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_irq_affinity",
+                "GPU IRQ Affinity (Último Core)",
+                "Interrupciones GPU en core dedicado\nDPC latency reducida, frame times consistentes\n⚠️ REQUIERE REINICIO"
+            ));
+
             return section;
         }
 
@@ -381,7 +457,8 @@ namespace Tweaker.Factories
                 CreateGhostPackSection(),
                 CreateAdvancedSection(),
                 CreateLaptopPowerSection(),
-                CreateCompetitiveSection()
+                CreateCompetitiveSection(),
+                CreateAdvancedLatencySection()
             };
         }
     }

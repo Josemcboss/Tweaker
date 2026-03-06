@@ -662,6 +662,15 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Button>
 
                         <Button Style="{StaticResource SidebarButton}"
+                            Click="NavigateToAdvancedLatency"
+                            x:Name="BtnNavAdvancedLatency">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="⚡" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Latency Tweaks" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SidebarButton}"
                             Click="NavigateToLaptop"
                             x:Name="BtnNavLaptop">
                             <StackPanel Orientation="Horizontal">
@@ -4234,6 +4243,157 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 <Run Text="Mantén drivers actualizados (GPU, mouse, teclado)"/>
                                 </TextBlock>
                             </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Advanced Latency Page -->
+                <ScrollViewer x:Name="AdvancedLatencyPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
+                    <StackPanel Margin="40">
+                        <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,10">
+                            <Run Text="⚡"/>&#x0020;<Run Text="Latency Tweaks"/>
+                        </TextBlock>
+                        <TextBlock Text="Optimizaciones de latencia de bajo nivel del sistema" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30"/>
+
+                        <!-- Interrupt Moderation -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="🔌 Deshabilitar Interrupt Moderation" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                        <Run Text="Fuerza procesamiento inmediato de paquetes de red"/>
+                                        <LineBreak/>
+                                        <Run Text="Latencia de red -2-10ms por paquete, jitter reducido" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                        <LineBreak/>
+                                        <Run Text="⚠️ CPU usage de red puede subir +1-3%" Foreground="#FFA500"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Click="ShowTweakInfo" Tag="interrupt_moderation"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleInterruptModeration" Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnInterruptModeration_On_Click" Unchecked="BtnInterruptModeration_Off_Click"
+                                              VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtInterruptModerationStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Menu Show Delay -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="⚡ MenuShow Delay 0ms" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                        <Run Text="Reduce delay artificial de menús de 400ms → 0ms"/>
+                                        <LineBreak/>
+                                        <Run Text="UI responde instantáneamente, Alt+Tab más rápido" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Click="ShowTweakInfo" Tag="menu_show_delay"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleMenuShowDelay" Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnMenuShowDelay_On_Click" Unchecked="BtnMenuShowDelay_Off_Click"
+                                              VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtMenuShowDelayStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Data Queue Sizes -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="🎮 Optimizar Data Queue Sizes" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                        <Run Text="Mouse: 100→256 buffers | Teclado: 100→200 buffers"/>
+                                        <LineBreak/>
+                                        <Run Text="Cero inputs perdidos con polling rates 1000Hz+" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                        <LineBreak/>
+                                        <Run Text="⚠️ REQUIERE REINICIO" Foreground="#FFA500"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Click="ShowTweakInfo" Tag="data_queue_sizes"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleDataQueueSizes" Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnDataQueueSizes_On_Click" Unchecked="BtnDataQueueSizes_Off_Click"
+                                              VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtDataQueueSizesStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- CSRSS Priority -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="🖥️ CSRSS High Priority" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                        <Run Text="Prioriza el proceso de rendering Win32 del sistema"/>
+                                        <LineBreak/>
+                                        <Run Text="Menos micro-stutters en UI durante gaming intensivo" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                        <LineBreak/>
+                                        <Run Text="⚠️ Temporal, se restaura al reiniciar" Foreground="#FFA500"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Click="ShowTweakInfo" Tag="csrss_priority"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleCsrssPriority" Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnCsrssPriority_On_Click" Unchecked="BtnCsrssPriority_Off_Click"
+                                              VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtCsrssPriorityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- GPU IRQ Affinity -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="🎯 GPU IRQ Affinity (Último Core)" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                        <Run Text="Asigna interrupciones GPU a un core dedicado"/>
+                                        <LineBreak/>
+                                        <Run Text="DPC latency reducida, frame times más consistentes" FontWeight="Bold" Foreground="#0E7A0D"/>
+                                        <LineBreak/>
+                                        <Run Text="⚠️ REQUIERE REINICIO OBLIGATORIO | Mínimo 4 cores" Foreground="#E81123" FontWeight="Bold"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Click="ShowTweakInfo" Tag="gpu_irq_affinity"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleGpuIrqAffinity" Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGpuIrqAffinity_On_Click" Unchecked="BtnGpuIrqAffinity_Off_Click"
+                                              VerticalAlignment="Center" Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGpuIrqAffinityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
                         </Border>
                     </StackPanel>
                 </ScrollViewer>

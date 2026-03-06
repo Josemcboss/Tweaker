@@ -908,6 +908,13 @@ namespace Tweaker
             SetActiveButton((Button)sender);
         }
 
+        private void NavigateToAdvancedLatency(object sender, RoutedEventArgs e)
+        {
+            _telemetry.TrackPageVisit("Advanced Latency");
+            SwitchView(AdvancedLatencyPage);
+            SetActiveButton((Button)sender);
+        }
+
         private void NavigateToLaptop(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("Laptop");
@@ -4557,6 +4564,162 @@ namespace Tweaker
                     }
                 }
             }
+        }
+
+        #endregion
+
+        #region Advanced Latency Tweaks (AdvancedLatencyPage)
+
+        private void BtnInterruptModeration_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "InterruptModeration",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.DisableInterruptModeration(),
+                "✅ Interrupt Moderation deshabilitada.\n\n" +
+                "• Paquetes de red procesados inmediatamente\n" +
+                "• Latencia de red -2-10ms\n" +
+                "• Jitter reducido"
+            );
+            TxtInterruptModerationStatus.Text = "ON";
+            TxtInterruptModerationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnInterruptModeration_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "InterruptModeration",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.RestoreInterruptModeration(),
+                "Interrupt Moderation restaurada a valores default.",
+                null, true, showNotification: false
+            );
+            TxtInterruptModerationStatus.Text = "OFF";
+            TxtInterruptModerationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnMenuShowDelay_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "MenuShowDelay",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.SetMenuShowDelayZero(),
+                "✅ MenuShow Delay = 0ms.\n\n" +
+                "• Menús contextuales instantáneos\n" +
+                "• Alt+Tab sin delay\n" +
+                "• UI responde inmediatamente"
+            );
+            TxtMenuShowDelayStatus.Text = "ON";
+            TxtMenuShowDelayStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnMenuShowDelay_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "MenuShowDelay",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.RestoreMenuShowDelay(),
+                "MenuShow Delay restaurado a 400ms (default).",
+                null, true, showNotification: false
+            );
+            TxtMenuShowDelayStatus.Text = "OFF";
+            TxtMenuShowDelayStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnDataQueueSizes_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "DataQueueSizes",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.OptimizeDataQueueSizes(),
+                "✅ Data Queue Sizes optimizados.\n\n" +
+                "• Mouse: 256 buffers (era 100)\n" +
+                "• Teclado: 200 buffers (era 100)\n" +
+                "• Cero inputs perdidos con 1000Hz+\n\n" +
+                "⚠️ Reiniciar para aplicar."
+            );
+            TxtDataQueueSizesStatus.Text = "ON";
+            TxtDataQueueSizesStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnDataQueueSizes_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "DataQueueSizes",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.RestoreDataQueueSizes(),
+                "Data Queue Sizes restaurados a valores default.",
+                null, true, showNotification: false
+            );
+            TxtDataQueueSizesStatus.Text = "OFF";
+            TxtDataQueueSizesStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnCsrssPriority_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "CsrssPriority",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.OptimizeCSRSSPriority(),
+                "✅ CSRSS Priority = High.\n\n" +
+                "• Rendering Win32 priorizado\n" +
+                "• Menos micro-stutters en UI\n\n" +
+                "⚠️ Temporal, se restaura al reiniciar."
+            );
+            TxtCsrssPriorityStatus.Text = "ON";
+            TxtCsrssPriorityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnCsrssPriority_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "CsrssPriority",
+                "Advanced Latency",
+                () => AdvancedLatencyTweaks.RestoreCSRSSPriority(),
+                "CSRSS Priority restaurada a valores default.",
+                null, true, showNotification: false
+            );
+            TxtCsrssPriorityStatus.Text = "OFF";
+            TxtCsrssPriorityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnGpuIrqAffinity_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "GpuIrqAffinity",
+                "Advanced Latency",
+                () => GpuIRQOptimization.EnableGpuIRQOptimization(),
+                "✅ GPU IRQ Affinity aplicado.\n\n" +
+                "• GPU asignada al último core\n" +
+                "• DPC latency reducida\n" +
+                "• Frame times más consistentes\n\n" +
+                "⚠️ REINICIAR para aplicar."
+            );
+            TxtGpuIrqAffinityStatus.Text = "ON";
+            TxtGpuIrqAffinityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnGpuIrqAffinity_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "GpuIrqAffinity",
+                "Advanced Latency",
+                () => GpuIRQOptimization.DisableGpuIRQOptimization(),
+                "GPU IRQ Affinity restaurada a valores default.",
+                null, true, showNotification: false
+            );
+            TxtGpuIrqAffinityStatus.Text = "OFF";
+            TxtGpuIrqAffinityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
         }
 
         #endregion
