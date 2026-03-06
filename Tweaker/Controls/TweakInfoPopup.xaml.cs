@@ -5,7 +5,7 @@ using System.Windows.Controls.Primitives;
 namespace Tweaker.Controls
 {
     /// <summary>
-    /// TweakInfoPopup - Control para mostrar información detallada de cada tweak
+    /// TweakInfoPopup - Control para mostrar informaciÃ³n detallada de cada tweak
     /// </summary>
     public partial class TweakInfoPopup : UserControl
     {

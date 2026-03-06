@@ -8,7 +8,7 @@ using System.Text.Json;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Gestor de perfiles de configuraci髇
+    /// Gestor de perfiles de configuraci贸n
     /// Permite guardar, cargar y gestionar diferentes configuraciones de tweaks
     /// </summary>
     public class ProfileManager
@@ -29,7 +29,7 @@ namespace Tweaker.Utilities
 
             Directory.CreateDirectory(_profilesDirectory);
             EnsureDefaultProfiles();
-            
+
             Debug.WriteLine($"?? Profiles directory: {_profilesDirectory}");
         }
 
@@ -51,13 +51,13 @@ namespace Tweaker.Utilities
         private void CreateDefaultProfile_MaxPerformance()
         {
             string profilePath = Path.Combine(_profilesDirectory, "MaxPerformance" + DEFAULT_EXTENSION);
-            
+
             if (File.Exists(profilePath)) return;
 
             var profile = new TweakerProfile
             {
                 Name = "Maximum Performance",
-                Description = "Configuraci髇 extrema para m醲imo rendimiento en gaming. Sacrifica eficiencia energ閠ica por FPS.",
+                Description = "Configuraci贸n extrema para m谩ximo rendimiento en gaming. Sacrifica eficiencia energ茅tica por FPS.",
                 Category = "Gaming",
                 CreatedDate = DateTime.Now,
                 Author = "Tweaker Team",
@@ -110,13 +110,13 @@ namespace Tweaker.Utilities
         private void CreateDefaultProfile_Balanced()
         {
             string profilePath = Path.Combine(_profilesDirectory, "Balanced" + DEFAULT_EXTENSION);
-            
+
             if (File.Exists(profilePath)) return;
 
             var profile = new TweakerProfile
             {
                 Name = "Balanced",
-                Description = "Configuraci髇 equilibrada. Mejoras de rendimiento sin sacrificar funcionalidad del sistema.",
+                Description = "Configuraci贸n equilibrada. Mejoras de rendimiento sin sacrificar funcionalidad del sistema.",
                 Category = "General",
                 CreatedDate = DateTime.Now,
                 Author = "Tweaker Team",
@@ -139,7 +139,7 @@ namespace Tweaker.Utilities
                     
                     // Limpieza
                     {"Hibernation", true},
-                    {"WindowsSearch", false}, // Mantener b鷖queda
+                    {"WindowsSearch", false}, // Mantener b煤squeda
                     {"SysMain", false},
                     {"Telemetry", true},
                     {"DiagTrack", true},
@@ -169,13 +169,13 @@ namespace Tweaker.Utilities
         private void CreateDefaultProfile_Streaming()
         {
             string profilePath = Path.Combine(_profilesDirectory, "Streaming" + DEFAULT_EXTENSION);
-            
+
             if (File.Exists(profilePath)) return;
 
             var profile = new TweakerProfile
             {
                 Name = "Streaming",
-                Description = "Optimizado para streaming. Balance entre rendimiento del juego y calidad de transmisi髇.",
+                Description = "Optimizado para streaming. Balance entre rendimiento del juego y calidad de transmisi贸n.",
                 Category = "Content Creation",
                 CreatedDate = DateTime.Now,
                 Author = "Tweaker Team",
@@ -228,19 +228,19 @@ namespace Tweaker.Utilities
         private void CreateDefaultProfile_CompetitiveGaming()
         {
             string profilePath = Path.Combine(_profilesDirectory, "CompetitiveGaming" + DEFAULT_EXTENSION);
-            
+
             if (File.Exists(profilePath)) return;
 
             var profile = new TweakerProfile
             {
                 Name = "Competitive Gaming",
-                Description = "Configuraci髇 para gaming competitivo. Minimiza latencia y maximiza consistencia de FPS.",
+                Description = "Configuraci贸n para gaming competitivo. Minimiza latencia y maximiza consistencia de FPS.",
                 Category = "Gaming",
                 CreatedDate = DateTime.Now,
                 Author = "Tweaker Team",
                 Tweaks = new Dictionary<string, bool>
                 {
-                    // Input & Visuals - TODO activado para m韓ima latencia
+                    // Input & Visuals - TODO activado para m铆nima latencia
                     {"MouseAcceleration", true},
                     {"Keyboard", true},
                     {"VisualEffects", true},
@@ -255,7 +255,7 @@ namespace Tweaker.Utilities
                     {"PowerThrottling", true},
                     {"CoreParking", true},
                     
-                    // Limpieza - M醲ima
+                    // Limpieza - M谩xima
                     {"Hibernation", true},
                     {"WindowsSearch", true},
                     {"SysMain", true},
@@ -270,7 +270,7 @@ namespace Tweaker.Utilities
                     {"HPET", true},
                     {"HyperV", false}, // OFF para menor latencia
                     
-                    // Network - Cr韙ico
+                    // Network - Cr铆tico
                     {"NetworkOptimization", true},
                     
                     // Advanced
@@ -287,7 +287,7 @@ namespace Tweaker.Utilities
         private void CreateDefaultProfile_WorkStation()
         {
             string profilePath = Path.Combine(_profilesDirectory, "WorkStation" + DEFAULT_EXTENSION);
-            
+
             if (File.Exists(profilePath)) return;
 
             var profile = new TweakerProfile
@@ -300,7 +300,7 @@ namespace Tweaker.Utilities
                 Tweaks = new Dictionary<string, bool>
                 {
                     // Input & Visuals
-                    {"MouseAcceleration", false}, // Mantener aceleraci髇 para trabajo
+                    {"MouseAcceleration", false}, // Mantener aceleraci贸n para trabajo
                     {"Keyboard", false},
                     {"VisualEffects", false}, // Mantener efectos
                     {"MemoryOptimization", true},
@@ -314,9 +314,9 @@ namespace Tweaker.Utilities
                     {"PowerThrottling", false},
                     {"CoreParking", false},
                     
-                    // Limpieza - M韓ima
-                    {"Hibernation", false}, // Mantener hibernaci髇
-                    {"WindowsSearch", false}, // MANTENER b鷖queda
+                    // Limpieza - M铆nima
+                    {"Hibernation", false}, // Mantener hibernaci贸n
+                    {"WindowsSearch", false}, // MANTENER b煤squeda
                     {"SysMain", false},
                     {"Telemetry", true},
                     {"DiagTrack", true},
@@ -381,7 +381,7 @@ namespace Tweaker.Utilities
                     {
                         string json = File.ReadAllText(file);
                         var profile = JsonSerializer.Deserialize<TweakerProfile>(json);
-                        
+
                         if (profile != null)
                         {
                             profiles.Add(profile);
@@ -402,7 +402,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Carga un perfil espec韋ico
+        /// Carga un perfil espec铆fico
         /// </summary>
         public TweakerProfile? LoadProfile(string profileName)
         {
@@ -428,22 +428,22 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Aplica un perfil (activa/desactiva los tweaks seg鷑 el perfil)
+        /// Aplica un perfil (activa/desactiva los tweaks seg煤n el perfil)
         /// </summary>
         public void ApplyProfile(TweakerProfile profile)
         {
             try
             {
                 Debug.WriteLine($"?? Aplicando perfil: {profile.Name}");
-                
-                // TODO: Implementar l骻ica de aplicaci髇 de tweaks
+
+                // TODO: Implementar l贸gica de aplicaci贸n de tweaks
                 // Por ahora solo logging
-                
+
                 foreach (var tweak in profile.Tweaks)
                 {
                     Debug.WriteLine($"  {tweak.Key}: {(tweak.Value ? "ON" : "OFF")}");
                 }
-                
+
                 Debug.WriteLine($"? Perfil aplicado: {profile.Name}");
             }
             catch (Exception ex)
@@ -480,7 +480,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// Clase que representa un perfil de configuraci髇
+    /// Clase que representa un perfil de configuraci贸n
     /// </summary>
     public class TweakerProfile
     {

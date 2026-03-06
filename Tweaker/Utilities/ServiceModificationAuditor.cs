@@ -1,36 +1,37 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Utilities
 {
     /// <summary>
     /// AUDITOR DE MODIFICACIONES DE SERVICIOS
     /// 
-    /// PROP覵ITO:
+    /// PROP脫SITO:
     /// ????????????????????????????????????????????????????????????????
-    /// Registrar TODAS las modificaciones de servicios para auditor韆.
+    /// Registrar TODAS las modificaciones de servicios para auditor铆a.
     /// Detectar intentos de modificar servicios protegidos.
     /// Generar reportes de seguridad.
     /// 
-    /// CU罭DO SE USA:
+    /// CU脕NDO SE USA:
     /// ????????????????????????????????????????????????????????????????
-    /// - Cada vez que se modifica un servicio (閤ito o fallo)
-    /// - Al finalizar la sesi髇 (generar reporte)
+    /// - Cada vez que se modifica un servicio (茅xito o fallo)
+    /// - Al finalizar la sesi贸n (generar reporte)
     /// - Para debugging de incidentes
     /// 
-    /// SEVERIDAD: ALTA - Sistema de auditor韆 y seguridad
+    /// SEVERIDAD: ALTA - Sistema de auditor铆a y seguridad
     /// </summary>
     public static class ServiceModificationAuditor
     {
         // Log de modificaciones
         private static readonly List<ServiceModification> _modifications = new List<ServiceModification>();
-        
+
         // Servicios que NUNCA deben modificarse (hardcoded por seguridad)
         private static readonly HashSet<string> _criticalServices = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            // CR蚑ICOS - CAUSA SIHOST.EXE ERROR
+            // CR脥TICOS - CAUSA SIHOST.EXE ERROR
             "BrokerInfrastructure",
             "DcomLaunch",
             "RpcSs",
@@ -58,12 +59,12 @@ namespace Tweaker.Utilities
         };
 
         /// <summary>
-        /// REGISTRAR INTENTO DE MODIFICACI覰
+        /// REGISTRAR INTENTO DE MODIFICACI脫N
         /// </summary>
         public static void LogModificationAttempt(
-            string serviceName, 
-            string operationType, 
-            bool wasBlocked, 
+            string serviceName,
+            string operationType,
+            bool wasBlocked,
             string reason = "")
         {
             var mod = new ServiceModification
@@ -85,29 +86,29 @@ namespace Tweaker.Utilities
             if (wasBlocked)
             {
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"?? MODIFICACI覰 BLOQUEADA: {serviceName}");
-                Debug.WriteLine($"   Operaci髇: {operationType}");
-                Debug.WriteLine($"   Raz髇: {reason}");
+                Debug.WriteLine($"?? MODIFICACI脫N BLOQUEADA: {serviceName}");
+                Debug.WriteLine($"   Operaci贸n: {operationType}");
+                Debug.WriteLine($"   Raz贸n: {reason}");
                 Debug.WriteLine($"   Timestamp: {mod.Timestamp:yyyy-MM-dd HH:mm:ss}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
             }
             else
             {
-                Debug.WriteLine($"? Modificaci髇 permitida: {serviceName} ({operationType})");
+                Debug.WriteLine($"? Modificaci贸n permitida: {serviceName} ({operationType})");
             }
 
-            // Alertar si es un servicio cr韙ico
+            // Alertar si es un servicio cr铆tico
             if (_criticalServices.Contains(serviceName))
             {
                 Debug.WriteLine("");
-                Debug.WriteLine("?????? ALERTA CR蚑ICA ??????");
-                Debug.WriteLine($"Intento de modificar servicio CR蚑ICO: {serviceName}");
+                Debug.WriteLine("?????? ALERTA CR脥TICA ??????");
+                Debug.WriteLine($"Intento de modificar servicio CR脥TICO: {serviceName}");
                 Debug.WriteLine($"Estado: {(wasBlocked ? "BLOQUEADO ?" : "PERMITIDO ? (PELIGRO)")}");
                 Debug.WriteLine("");
-                
+
                 if (!wasBlocked)
                 {
-                    Debug.WriteLine("?????? PELIGRO: SERVICIO CR蚑ICO FUE MODIFICADO ??????");
+                    Debug.WriteLine("?????? PELIGRO: SERVICIO CR脥TICO FUE MODIFICADO ??????");
                     Debug.WriteLine("Esto puede causar:");
                     Debug.WriteLine("  - Error 'Sihost.exe - Unknown Hard Error'");
                     Debug.WriteLine("  - Pantalla negra al reiniciar");
@@ -115,7 +116,7 @@ namespace Tweaker.Utilities
                     Debug.WriteLine("");
                     Debug.WriteLine("REVISA INMEDIATAMENTE:");
                     Debug.WriteLine($"  Servicio: {serviceName}");
-                    Debug.WriteLine($"  Operaci髇: {operationType}");
+                    Debug.WriteLine($"  Operaci贸n: {operationType}");
                     Debug.WriteLine($"  Stack Trace:");
                     Debug.WriteLine(mod.StackTrace);
                     Debug.WriteLine("????????????????????????????????????????");
@@ -124,14 +125,14 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// GENERAR REPORTE DE AUDITOR虯
+        /// GENERAR REPORTE DE AUDITOR脥A
         /// </summary>
         public static string GenerateAuditReport()
         {
             var report = new System.Text.StringBuilder();
-            
+
             report.AppendLine("???????????????????????????????????????????????????????????????");
-            report.AppendLine("REPORTE DE AUDITOR虯 - MODIFICACIONES DE SERVICIOS");
+            report.AppendLine("REPORTE DE AUDITOR脥A - MODIFICACIONES DE SERVICIOS");
             report.AppendLine("???????????????????????????????????????????????????????????????");
             report.AppendLine($"Generado: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             report.AppendLine("");
@@ -139,29 +140,29 @@ namespace Tweaker.Utilities
             lock (_modifications)
             {
                 report.AppendLine($"Total de operaciones: {_modifications.Count}");
-                
+
                 int blocked = _modifications.FindAll(m => m.WasBlocked).Count;
                 int allowed = _modifications.Count - blocked;
-                
+
                 report.AppendLine($"  ? Permitidas: {allowed}");
                 report.AppendLine($"  ? Bloqueadas: {blocked}");
                 report.AppendLine("");
 
-                // Modificaciones cr韙icas
-                var criticalMods = _modifications.FindAll(m => 
+                // Modificaciones cr铆ticas
+                var criticalMods = _modifications.FindAll(m =>
                     _criticalServices.Contains(m.ServiceName));
-                
+
                 if (criticalMods.Count > 0)
                 {
-                    report.AppendLine("?? INTENTOS DE MODIFICAR SERVICIOS CR蚑ICOS:");
+                    report.AppendLine("?? INTENTOS DE MODIFICAR SERVICIOS CR脥TICOS:");
                     report.AppendLine("");
-                    
+
                     foreach (var mod in criticalMods)
                     {
                         report.AppendLine($"  [{mod.Timestamp:HH:mm:ss}] {mod.ServiceName}");
-                        report.AppendLine($"    Operaci髇: {mod.OperationType}");
+                        report.AppendLine($"    Operaci贸n: {mod.OperationType}");
                         report.AppendLine($"    Estado: {(mod.WasBlocked ? "BLOQUEADO ?" : "MODIFICADO ?")}");
-                        report.AppendLine($"    Raz髇: {mod.Reason}");
+                        report.AppendLine($"    Raz贸n: {mod.Reason}");
                         report.AppendLine("");
                     }
                 }
@@ -177,17 +178,17 @@ namespace Tweaker.Utilities
                     string status = mod.WasBlocked ? "? BLOQUEADO" : "? PERMITIDO";
                     report.AppendLine($"[{mod.Timestamp:yyyy-MM-dd HH:mm:ss}] {status}");
                     report.AppendLine($"  Servicio: {mod.ServiceName}");
-                    report.AppendLine($"  Operaci髇: {mod.OperationType}");
-                    
+                    report.AppendLine($"  Operaci贸n: {mod.OperationType}");
+
                     if (!string.IsNullOrEmpty(mod.Reason))
-                        report.AppendLine($"  Raz髇: {mod.Reason}");
-                    
+                        report.AppendLine($"  Raz贸n: {mod.Reason}");
+
                     report.AppendLine("");
                 }
             }
 
             report.AppendLine("???????????????????????????????????????????????????????????????");
-            
+
             return report.ToString();
         }
 
@@ -211,7 +212,7 @@ namespace Tweaker.Utilities
             {
                 _modifications.Clear();
             }
-            Debug.WriteLine("?? Log de auditor韆 limpiado");
+            Debug.WriteLine("?? Log de auditor铆a limpiado");
         }
 
         /// <summary>
@@ -235,11 +236,11 @@ namespace Tweaker.Utilities
         public class ServiceModification
         {
             public DateTime Timestamp { get; set; }
-            public string ServiceName { get; set; }
-            public string OperationType { get; set; } // "Disable", "Enable", "Stop", "Start"
+            public string? ServiceName { get; set; }
+            public string? OperationType { get; set; } // "Disable", "Enable", "Stop", "Start"
             public bool WasBlocked { get; set; }
-            public string Reason { get; set; }
-            public string StackTrace { get; set; }
+            public string? Reason { get; set; }
+            public string? StackTrace { get; set; }
         }
     }
 }

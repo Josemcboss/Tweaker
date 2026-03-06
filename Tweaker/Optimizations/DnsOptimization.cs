@@ -1,15 +1,15 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Management;
 using System.Net.NetworkInformation;
-using System.Windows;
+
+using Microsoft.Win32;
+// Removed System.Windows to prevent direct MessageBox.Show calls
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
     /// Optimizaciones DNS para gaming - Reduce latencia y mejora velocidad
-    /// DaddyGhost Optimizer v2.0
     /// </summary>
     public static class DnsOptimization
     {
@@ -18,7 +18,8 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Configura DNS Cloudflare (1.1.1.1) en el adaptador de red principal
         /// </summary>
-        public static void SetCloudflareDns()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string SetCloudflareDns()
         {
             try
             {
@@ -26,39 +27,25 @@ namespace Tweaker.Optimizations
                 string secondaryDns = "1.0.0.1";
 
                 SetDnsServers(primaryDns, secondaryDns);
-
-                MessageBox.Show(
-                    "? DNS Cloudflare configurado correctamente\n\n" +
-                    "Primario: 1.1.1.1\n" +
-                    "Secundario: 1.0.0.1\n\n" +
-                    "Beneficios:\n" +
-                    "ï Latencia ultra baja (<10ms)\n" +
-                    "ï ResoluciÛn m·s r·pida\n" +
-                    "ï Mejor privacidad\n\n" +
-                    "?? Ejecuta 'ipconfig /flushdns' para aplicar cambios",
-                    "DNS Cloudflare",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
-
                 FlushDnsCache();
+
+                return "‚úÖ DNS Cloudflare configurado correctamente\n" +
+                       "Primario: 1.1.1.1\n" +
+                       "Secundario: 1.0.0.1\n" +
+                       "Beneficios: Latencia ultra baja, resoluci√≥n m√°s r√°pida, mejor privacidad.";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al configurar DNS Cloudflare:\n\n{ex.Message}\n\n" +
-                    "Intenta ejecutar como Administrador",
-                    "Error DNS",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al configurar DNS Cloudflare: {ex.Message}\n" +
+                       "Intenta ejecutar como Administrador.";
             }
         }
 
         /// <summary>
         /// Configura DNS Google (8.8.8.8) en el adaptador de red principal
         /// </summary>
-        public static void SetGoogleDns()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string SetGoogleDns()
         {
             try
             {
@@ -66,32 +53,17 @@ namespace Tweaker.Optimizations
                 string secondaryDns = "8.8.4.4";
 
                 SetDnsServers(primaryDns, secondaryDns);
-
-                MessageBox.Show(
-                    "? DNS Google configurado correctamente\n\n" +
-                    "Primario: 8.8.8.8\n" +
-                    "Secundario: 8.8.4.4\n\n" +
-                    "Beneficios:\n" +
-                    "ï Confiable y estable\n" +
-                    "ï Latencia ~15ms\n" +
-                    "ï Excelente para gaming\n\n" +
-                    "?? Ejecuta 'ipconfig /flushdns' para aplicar cambios",
-                    "DNS Google",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
-
                 FlushDnsCache();
+
+                return "‚úÖ DNS Google configurado correctamente\n" +
+                       "Primario: 8.8.8.8\n" +
+                       "Secundario: 8.8.4.4\n" +
+                       "Beneficios: Confiable y estable, excelente para gaming.";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al configurar DNS Google:\n\n{ex.Message}\n\n" +
-                    "Intenta ejecutar como Administrador",
-                    "Error DNS",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al configurar DNS Google: {ex.Message}\n" +
+                       "Intenta ejecutar como Administrador.";
             }
         }
 
@@ -103,7 +75,6 @@ namespace Tweaker.Optimizations
             NetworkInterface[] adapters = NetworkInterface.GetAllNetworkInterfaces();
             NetworkInterface activeAdapter = null;
 
-            // Buscar adaptador activo (Ethernet o Wi-Fi)
             foreach (NetworkInterface adapter in adapters)
             {
                 if (adapter.OperationalStatus == OperationalStatus.Up &&
@@ -117,12 +88,11 @@ namespace Tweaker.Optimizations
 
             if (activeAdapter == null)
             {
-                throw new Exception("No se encontrÛ un adaptador de red activo");
+                throw new Exception("No se encontr√≥ un adaptador de red activo");
             }
 
-            // Configurar DNS usando netsh
             string adapterName = activeAdapter.Name;
-            
+
             ProcessStartInfo psi = new ProcessStartInfo
             {
                 FileName = "netsh",
@@ -139,9 +109,10 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Activa optimizaciones de cachÈ DNS
+        /// Activa optimizaciones de cach√© DNS
         /// </summary>
-        public static void EnableDnsCacheOptimization()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string EnableDnsCacheOptimization()
         {
             try
             {
@@ -149,51 +120,27 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        // MaxCacheTtl: Tiempo m·ximo de cache (1 dÌa)
                         key.SetValue("MaxCacheTtl", 86400, RegistryValueKind.DWord);
-                        
-                        // MaxNegativeCacheTtl: No cachear errores
                         key.SetValue("MaxNegativeCacheTtl", 0, RegistryValueKind.DWord);
-                        
-                        // NetFailureCacheTime: No cachear fallos de red
                         key.SetValue("NetFailureCacheTime", 0, RegistryValueKind.DWord);
-                        
-                        // NegativeSOACacheTime: No cachear respuestas negativas SOA
                         key.SetValue("NegativeSOACacheTime", 0, RegistryValueKind.DWord);
                     }
                 }
 
-                MessageBox.Show(
-                    "? CachÈ DNS optimizado\n\n" +
-                    "Cambios aplicados:\n" +
-                    "ï MaxCacheTtl: 86400 (1 dÌa)\n" +
-                    "ï NegativeCacheTime: 0 (sin cache de errores)\n" +
-                    "ï NetFailureCacheTime: 0\n\n" +
-                    "Beneficios:\n" +
-                    "ï ResoluciÛn DNS m·s r·pida\n" +
-                    "ï Menos consultas a servidores\n" +
-                    "ï ReducciÛn de latencia\n\n" +
-                    "?? Reinicia el servicio DNS Client o el PC",
-                    "CachÈ DNS Optimizado",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                return "‚úÖ Cach√© DNS optimizado\n" +
+                       "Beneficios: Resoluci√≥n DNS m√°s r√°pida, menos consultas a servidores, reducci√≥n de latencia.";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al optimizar cachÈ DNS:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al optimizar cach√© DNS: {ex.Message}";
             }
         }
 
         /// <summary>
-        /// Desactiva optimizaciones de cachÈ DNS (restaura valores predeterminados)
+        /// Desactiva optimizaciones de cach√© DNS (restaura valores predeterminados)
         /// </summary>
-        public static void DisableDnsCacheOptimization()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string DisableDnsCacheOptimization()
         {
             try
             {
@@ -201,7 +148,6 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        // Restaurar valores predeterminados de Windows
                         key.SetValue("MaxCacheTtl", 86400, RegistryValueKind.DWord);
                         key.SetValue("MaxNegativeCacheTtl", 900, RegistryValueKind.DWord);
                         key.SetValue("NetFailureCacheTime", 30, RegistryValueKind.DWord);
@@ -209,28 +155,18 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                MessageBox.Show(
-                    "? CachÈ DNS restaurado a valores predeterminados",
-                    "CachÈ DNS",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                return "‚úÖ Cach√© DNS restaurado a valores predeterminados";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al restaurar cachÈ DNS:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al restaurar cach√© DNS: {ex.Message}";
             }
         }
 
         /// <summary>
-        /// Limpia el cachÈ DNS del sistema
+        /// Limpia el cach√© DNS del sistema
         /// </summary>
-        public static void FlushDnsCache()
+        public static bool FlushDnsCache()
         {
             try
             {
@@ -245,22 +181,20 @@ namespace Tweaker.Optimizations
 
                 Process process = Process.Start(psi);
                 process?.WaitForExit();
+                return true;
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al limpiar cachÈ DNS:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                Debug.WriteLine($"Error al limpiar cach√© DNS: {ex.Message}");
+                return false;
             }
         }
 
         /// <summary>
-        /// Desactiva ahorro de energÌa en adaptadores de red
+        /// Desactiva ahorro de energ√≠a en adaptadores de red
         /// </summary>
-        public static void DisableNetworkAdapterPowerSaving()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string DisableNetworkAdapterPowerSaving()
         {
             try
             {
@@ -274,9 +208,8 @@ namespace Tweaker.Optimizations
                     string deviceId = adapter["PNPDeviceID"]?.ToString();
                     if (string.IsNullOrEmpty(deviceId)) continue;
 
-                    // Buscar en el registro la configuraciÛn de ahorro de energÌa
                     string regPath = $@"SYSTEM\CurrentControlSet\Control\Class\{{4d36e972-e325-11ce-bfc1-08002be10318}}";
-                    
+
                     using (RegistryKey classKey = Registry.LocalMachine.OpenSubKey(regPath))
                     {
                         if (classKey == null) continue;
@@ -290,46 +223,31 @@ namespace Tweaker.Optimizations
                                 string matchingDeviceId = subKey.GetValue("MatchingDeviceId")?.ToString();
                                 if (matchingDeviceId == null) continue;
 
-                                // Desactivar ahorro de energÌa
                                 subKey.SetValue("*WakeOnMagicPacket", "0", RegistryValueKind.String);
                                 subKey.SetValue("*WakeOnPattern", "0", RegistryValueKind.String);
                                 subKey.SetValue("EnablePME", "0", RegistryValueKind.String);
                                 subKey.SetValue("PnPCapabilities", 24, RegistryValueKind.DWord);
-                                
+
                                 count++;
                             }
                         }
                     }
                 }
 
-                MessageBox.Show(
-                    $"? Ahorro de energÌa desactivado en {count} adaptador(es)\n\n" +
-                    "Beneficios:\n" +
-                    "ï Sin micro-desconexiones\n" +
-                    "ï Latencia m·s estable\n" +
-                    "ï Sin spikes de ping\n" +
-                    "ï Adaptador siempre a m·ximo rendimiento\n\n" +
-                    "?? Reinicia el PC para aplicar cambios",
-                    "Ahorro de EnergÌa de Red",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                return $"‚úÖ Ahorro de energ√≠a desactivado en {count} adaptador(es)\n" +
+                       "Beneficios: Sin micro-desconexiones, latencia m√°s estable, adaptador siempre a m√°ximo rendimiento.";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al desactivar ahorro de energÌa:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al desactivar ahorro de energ√≠a: {ex.Message}";
             }
         }
 
         /// <summary>
-        /// Reactiva ahorro de energÌa en adaptadores de red
+        /// Reactiva ahorro de energ√≠a en adaptadores de red
         /// </summary>
-        public static void EnableNetworkAdapterPowerSaving()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string EnableNetworkAdapterPowerSaving()
         {
             try
             {
@@ -337,7 +255,7 @@ namespace Tweaker.Optimizations
 
                 using (RegistryKey classKey = Registry.LocalMachine.OpenSubKey(regPath))
                 {
-                    if (classKey == null) return;
+                    if (classKey == null) return "‚ùå Error: No se encontr√≥ la clave de clase de red.";
 
                     foreach (string subKeyName in classKey.GetSubKeyNames())
                     {
@@ -345,7 +263,6 @@ namespace Tweaker.Optimizations
                         {
                             if (subKey == null) continue;
 
-                            // Restaurar valores predeterminados
                             subKey.SetValue("*WakeOnMagicPacket", "1", RegistryValueKind.String);
                             subKey.SetValue("*WakeOnPattern", "1", RegistryValueKind.String);
                             subKey.SetValue("EnablePME", "1", RegistryValueKind.String);
@@ -354,28 +271,19 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                MessageBox.Show(
-                    "? Ahorro de energÌa restaurado\n\n?? Reinicia el PC",
-                    "Ahorro de EnergÌa de Red",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                return "‚úÖ Ahorro de energ√≠a restaurado. Reinicia el PC.";
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al restaurar ahorro de energÌa:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al restaurar ahorro de energ√≠a: {ex.Message}";
             }
         }
 
         /// <summary>
         /// Deshabilita NetBIOS over TCP/IP en todos los adaptadores
         /// </summary>
-        public static void DisableNetBios()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string DisableNetBios()
         {
             try
             {
@@ -385,7 +293,7 @@ namespace Tweaker.Optimizations
                 {
                     if (interfacesKey == null)
                     {
-                        throw new Exception("No se encontrÛ la clave de NetBT");
+                        return "‚ùå Error: No se encontr√≥ la clave de NetBT.";
                     }
 
                     int count = 0;
@@ -396,42 +304,27 @@ namespace Tweaker.Optimizations
                         {
                             if (interfaceKey != null)
                             {
-                                // NetbiosOptions: 2 = Disabled
                                 interfaceKey.SetValue("NetbiosOptions", 2, RegistryValueKind.DWord);
                                 count++;
                             }
                         }
                     }
 
-                    MessageBox.Show(
-                        $"? NetBIOS deshabilitado en {count} adaptador(es)\n\n" +
-                        "Beneficios:\n" +
-                        "ï Reduce overhead de red\n" +
-                        "ï Mejora seguridad\n" +
-                        "ï Libera ancho de banda\n" +
-                        "ï Elimina broadcasts innecesarios\n\n" +
-                        "?? Reinicia el PC para aplicar cambios",
-                        "NetBIOS Deshabilitado",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
+                    return $"‚úÖ NetBIOS deshabilitado en {count} adaptador(es)\n" +
+                           "Beneficios: Reduce overhead de red, mejora seguridad, libera ancho de banda.";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al deshabilitar NetBIOS:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al deshabilitar NetBIOS: {ex.Message}";
             }
         }
 
         /// <summary>
-        /// Habilita NetBIOS over TCP/IP (restaura configuraciÛn predeterminada)
+        /// Habilita NetBIOS over TCP/IP (restaura configuraci√≥n predeterminada)
         /// </summary>
-        public static void EnableNetBios()
+        /// <returns>Mensaje de √©xito o error</returns>
+        public static string EnableNetBios()
         {
             try
             {
@@ -439,7 +332,7 @@ namespace Tweaker.Optimizations
 
                 using (RegistryKey interfacesKey = Registry.LocalMachine.OpenSubKey(regPath))
                 {
-                    if (interfacesKey == null) return;
+                    if (interfacesKey == null) return "‚ùå Error: No se encontr√≥ la clave de NetBT.";
 
                     foreach (string interfaceName in interfacesKey.GetSubKeyNames())
                     {
@@ -448,28 +341,17 @@ namespace Tweaker.Optimizations
                         {
                             if (interfaceKey != null)
                             {
-                                // NetbiosOptions: 0 = Default (habilitado)
                                 interfaceKey.SetValue("NetbiosOptions", 0, RegistryValueKind.DWord);
                             }
                         }
                     }
 
-                    MessageBox.Show(
-                        "? NetBIOS restaurado\n\n?? Reinicia el PC",
-                        "NetBIOS",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information
-                    );
+                    return "‚úÖ NetBIOS restaurado. Reinicia el PC.";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"? Error al restaurar NetBIOS:\n\n{ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                return $"‚ùå Error al restaurar NetBIOS: {ex.Message}";
             }
         }
     }

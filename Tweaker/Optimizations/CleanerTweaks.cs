@@ -7,14 +7,14 @@ namespace Tweaker.Optimizations
 {
     /// <summary>
     /// CleanerTweaks - Limpieza de Disco
-    /// Elimina archivos temporales y caché
+    /// Elimina archivos temporales y cachï¿½
     /// </summary>
     public static class CleanerTweaks
     {
         /// <summary>
         /// LIMPIEZA PROFUNDA DE ARCHIVOS TEMPORALES
         /// 
-        /// ¿Qué limpia?
+        /// ï¿½Quï¿½ limpia?
         /// ????????????????????????????????????????????????????????????????
         /// 1. C:\Windows\Temp
         ///    - Archivos temporales del sistema
@@ -24,11 +24,11 @@ namespace Tweaker.Optimizations
         /// 2. %TEMP% (C:\Users\[User]\AppData\Local\Temp)
         ///    - Archivos temporales de aplicaciones
         ///    - Instaladores descargados
-        ///    - Caché de navegadores
+        ///    - Cachï¿½ de navegadores
         /// 
         /// 3. C:\Windows\Prefetch
-        ///    - Caché de inicio de programas
-        ///    - Puede causar problemas si está corrupto
+        ///    - Cachï¿½ de inicio de programas
+        ///    - Puede causar problemas si estï¿½ corrupto
         /// 
         /// IMPACTO:
         /// ? Libera 500MB - 5GB (promedio 1-2GB)
@@ -37,14 +37,13 @@ namespace Tweaker.Optimizations
         /// 
         /// SEGURO:
         /// ? Solo borra archivos TEMPORALES
-        /// ? Si un archivo está en uso, lo salta (no crashea)
+        /// ? Si un archivo estï¿½ en uso, lo salta (no crashea)
         /// ? No toca documentos ni aplicaciones
         /// </summary>
         public static (bool success, long mbFreed, int filesDeleted) DeepClean()
         {
             long totalBytesFreed = 0;
             int totalFilesDeleted = 0;
-            bool hadErrors = false;
 
             Debug.WriteLine("????????????????????????????????????????");
             Debug.WriteLine("INICIANDO LIMPIEZA PROFUNDA");
@@ -92,7 +91,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Limpiar un directorio específico
+        /// Limpiar un directorio especï¿½fico
         /// Maneja archivos bloqueados sin crashear
         /// </summary>
         private static (long bytesFreed, int filesDeleted) CleanDirectory(string path)
@@ -115,14 +114,14 @@ namespace Tweaker.Optimizations
                 {
                     try
                     {
-                        // Obtener tamaño ANTES de borrar
+                        // Obtener tamaï¿½o ANTES de borrar
                         FileInfo fi = new FileInfo(file);
                         long fileSize = fi.Length;
 
                         // Intentar borrar
                         File.Delete(file);
 
-                        // Si llegamos aquí, el archivo se borró exitosamente
+                        // Si llegamos aquï¿½, el archivo se borrï¿½ exitosamente
                         bytesFreed += fileSize;
                         filesDeleted++;
                     }
@@ -143,11 +142,11 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                // Intentar borrar directorios vacíos
+                // Intentar borrar directorios vacï¿½os
                 try
                 {
                     string[] dirs = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
-                    foreach (string dir in dirs.OrderByDescending(d => d.Length)) // Más profundos primero
+                    foreach (string dir in dirs.OrderByDescending(d => d.Length)) // Mï¿½s profundos primero
                     {
                         try
                         {
@@ -171,22 +170,22 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// FLUSH DNS CACHE
-        /// Limpia caché de resolución de nombres
+        /// Limpia cachï¿½ de resoluciï¿½n de nombres
         /// 
-        /// ¿Qué es DNS Cache?
+        /// ï¿½Quï¿½ es DNS Cache?
         /// ????????????????????????????????????????????????????????????????
         /// Windows guarda IPs de sitios visitados para no consultarlos cada vez.
         /// 
-        /// ¿Por qué limpiarlo?
-        /// - Caché corrupto causa "DNS_PROBE_FINISHED_NXDOMAIN"
-        /// - Después de cambiar DNS (Google, Cloudflare)
-        /// - Después de problemas de red
+        /// ï¿½Por quï¿½ limpiarlo?
+        /// - Cachï¿½ corrupto causa "DNS_PROBE_FINISHED_NXDOMAIN"
+        /// - Despuï¿½s de cambiar DNS (Google, Cloudflare)
+        /// - Despuï¿½s de problemas de red
         /// 
         /// COMANDO:
         /// ipconfig /flushdns
         /// 
         /// IMPACTO:
-        /// ? Resuelve errores de conexión
+        /// ? Resuelve errores de conexiï¿½n
         /// ? Aplica nuevos servidores DNS inmediatamente
         /// ? Elimina entradas obsoletas
         /// </summary>
@@ -211,7 +210,7 @@ namespace Tweaker.Optimizations
                     if (output?.Contains("Successfully flushed") == true)
                     {
                         Debug.WriteLine("? DNS Cache FLUSHED");
-                        Debug.WriteLine("  Caché de DNS limpiado");
+                        Debug.WriteLine("  Cachï¿½ de DNS limpiado");
                         return true;
                     }
                 }
@@ -226,8 +225,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// ANÁLISIS DE ESPACIO (sin borrar)
-        /// Escanea cuánto espacio se puede liberar
+        /// ANï¿½LISIS DE ESPACIO (sin borrar)
+        /// Escanea cuï¿½nto espacio se puede liberar
         /// </summary>
         public static (long mbCanFree, int filesCount) AnalyzeSpace()
         {
@@ -267,7 +266,7 @@ namespace Tweaker.Optimizations
                 }
 
                 long mb = totalBytes / 1024 / 1024;
-                Debug.WriteLine($"?? Análisis: {totalFiles} archivos, {mb} MB se pueden liberar");
+                Debug.WriteLine($"?? Anï¿½lisis: {totalFiles} archivos, {mb} MB se pueden liberar");
                 return (mb, totalFiles);
             }
             catch

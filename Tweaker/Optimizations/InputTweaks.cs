@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -9,25 +10,25 @@ namespace Tweaker.Optimizations
     /// Tweaks avanzados para reducir latencia de input y optimizar dispositivos USB
     /// 
     /// ADVERTENCIAS:
-    /// - Win32PrioritySeparation cambia cÛmo el CPU prioriza las ventanas
+    /// - Win32PrioritySeparation cambia c√≥mo el CPU prioriza las ventanas
     /// - Estos tweaks son para gaming competitivo extremo
     /// - Algunos cambios requieren REINICIO
     /// </summary>
     public static class InputTweaks
     {
         #region Registry Keys Constants
-        
+
         private const string USB_SERVICE_KEY = @"SYSTEM\CurrentControlSet\Services\USB";
         private const string MOUSE_CLASS_KEY = @"SYSTEM\CurrentControlSet\Services\mouclass\Parameters";
         private const string KEYBOARD_CLASS_KEY = @"SYSTEM\CurrentControlSet\Services\kbdclass\Parameters";
         private const string FTH_KEY = @"SOFTWARE\Microsoft\FTH";
         private const string PRIORITY_CONTROL_KEY = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
-        
+
         #endregion
 
         /// <summary>
         /// OPTIMIZAR USB para GAMING COMPETITIVO
-        /// Deshabilita suspensiÛn selectiva USB para eliminar micro-interrupciones
+        /// Deshabilita suspensi√≥n selectiva USB para eliminar micro-interrupciones
         /// </summary>
         public static bool OptimizeUSB()
         {
@@ -47,19 +48,19 @@ namespace Tweaker.Optimizations
                         Debug.WriteLine("? USB Selective Suspend DESHABILITADO");
                         Debug.WriteLine("   ?? DisableSelectiveSuspend = 1");
                         Debug.WriteLine("   ?? Elimina micro-interrupciones USB");
-                        Debug.WriteLine("   ?? Mouse/Teclado 1000Hz sin pÈrdidas");
+                        Debug.WriteLine("   ?? Mouse/Teclado 1000Hz sin p√©rdidas");
                     }
                 }
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS USB OPTIMIZATION:");
-                Debug.WriteLine("   ï Elimina micro-interrupciones de dispositivos USB");
-                Debug.WriteLine("   ï Mouse/Teclado gaming sin pÈrdida de polling");
-                Debug.WriteLine("   ï Reduce DPC latency en controladores USB");
-                Debug.WriteLine("   ï Consistencia en devices de alta frecuencia (1000Hz+)");
-                Debug.WriteLine("   ï Elimina 'dormidas' de dispositivos durante gaming");
+                Debug.WriteLine("   ‚Ä¢ Elimina micro-interrupciones de dispositivos USB");
+                Debug.WriteLine("   ‚Ä¢ Mouse/Teclado gaming sin p√©rdida de polling");
+                Debug.WriteLine("   ‚Ä¢ Reduce DPC latency en controladores USB");
+                Debug.WriteLine("   ‚Ä¢ Consistencia en devices de alta frecuencia (1000Hz+)");
+                Debug.WriteLine("   ‚Ä¢ Elimina 'dormidas' de dispositivos durante gaming");
                 Debug.WriteLine("");
-                Debug.WriteLine("?? NOTA: PequeÒo aumento en consumo energÈtico USB");
+                Debug.WriteLine("?? NOTA: Peque√±o aumento en consumo energ√©tico USB");
                 Debug.WriteLine("?? NOTA: Para gaming competitivo vale la pena");
 
                 return true;
@@ -101,7 +102,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// OPTIMIZAR INPUT QUEUES (Mouse/Teclado Buffers)
-        /// Aumenta buffers para evitar pÈrdida de inputs en polling rates altos
+        /// Aumenta buffers para evitar p√©rdida de inputs en polling rates altos
         /// </summary>
         public static bool OptimizeInputQueues()
         {
@@ -120,7 +121,7 @@ namespace Tweaker.Optimizations
                         key.SetValue("MouseDataQueueSize", 1000, RegistryValueKind.DWord);
                         Debug.WriteLine("? Mouse Data Queue Size OPTIMIZADO");
                         Debug.WriteLine("   ?? MouseDataQueueSize = 1000 (era ~100)");
-                        Debug.WriteLine("   ?? Soporta 1000Hz+ sin pÈrdida de datos");
+                        Debug.WriteLine("   ?? Soporta 1000Hz+ sin p√©rdida de datos");
                         Debug.WriteLine("   ?? Perfecto para gaming competitivo");
                     }
                 }
@@ -134,18 +135,18 @@ namespace Tweaker.Optimizations
                         key.SetValue("KeyboardDataQueueSize", 200, RegistryValueKind.DWord);
                         Debug.WriteLine("? Keyboard Data Queue Size OPTIMIZADO");
                         Debug.WriteLine("   ?? KeyboardDataQueueSize = 200 (era ~100)");
-                        Debug.WriteLine("   ?? Evita pÈrdida de keystrokes r·pidos");
+                        Debug.WriteLine("   ?? Evita p√©rdida de keystrokes r√°pidos");
                         Debug.WriteLine("   ? Mejor para spam de teclas");
                     }
                 }
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS INPUT QUEUES:");
-                Debug.WriteLine("   ï Cero pÈrdida de inputs con devices 1000Hz+");
-                Debug.WriteLine("   ï Mejor handling de spam de teclas (WASD, etc.)");
-                Debug.WriteLine("   ï Reduce micro-stutters en movement");
-                Debug.WriteLine("   ï Elimina 'input loss' en moments intensos");
-                Debug.WriteLine("   ï CrÌtico para FPS competitivos (CS2, Valorant)");
+                Debug.WriteLine("   ‚Ä¢ Cero p√©rdida de inputs con devices 1000Hz+");
+                Debug.WriteLine("   ‚Ä¢ Mejor handling de spam de teclas (WASD, etc.)");
+                Debug.WriteLine("   ‚Ä¢ Reduce micro-stutters en movement");
+                Debug.WriteLine("   ‚Ä¢ Elimina 'input loss' en moments intensos");
+                Debug.WriteLine("   ‚Ä¢ Cr√≠tico para FPS competitivos (CS2, Valorant)");
                 Debug.WriteLine("");
                 Debug.WriteLine("?? REQUIERE REINICIO para efecto completo");
 
@@ -216,21 +217,21 @@ namespace Tweaker.Optimizations
                         key.SetValue("Enabled", 0, RegistryValueKind.DWord);
                         Debug.WriteLine("? Fault Tolerant Heap (FTH) DESHABILITADO");
                         Debug.WriteLine("   ?? Enabled = 0");
-                        Debug.WriteLine("   ?? Windows NO interceptar· memoria de juegos");
-                        Debug.WriteLine("   ?? Elimina overhead de 'protecciÛn' autom·tica");
-                        Debug.WriteLine("   ? Memory allocation m·s r·pido en games");
+                        Debug.WriteLine("   ?? Windows NO interceptar√° memoria de juegos");
+                        Debug.WriteLine("   ?? Elimina overhead de 'protecci√≥n' autom√°tica");
+                        Debug.WriteLine("   ? Memory allocation m√°s r√°pido en games");
                     }
                 }
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS DISABLE FTH:");
-                Debug.WriteLine("   ï Elimina overhead de memory protection autom·tica");
-                Debug.WriteLine("   ï Memory allocation m·s directa para juegos");
-                Debug.WriteLine("   ï Reduce micro-stutters por interceptaciÛn de memoria");
-                Debug.WriteLine("   ï Mejor frame times consistency");
-                Debug.WriteLine("   ï Windows no 'ayuda' los juegos innecesariamente");
+                Debug.WriteLine("   ‚Ä¢ Elimina overhead de memory protection autom√°tica");
+                Debug.WriteLine("   ‚Ä¢ Memory allocation m√°s directa para juegos");
+                Debug.WriteLine("   ‚Ä¢ Reduce micro-stutters por interceptaci√≥n de memoria");
+                Debug.WriteLine("   ‚Ä¢ Mejor frame times consistency");
+                Debug.WriteLine("   ‚Ä¢ Windows no 'ayuda' los juegos innecesariamente");
                 Debug.WriteLine("");
-                Debug.WriteLine("?? ADVERTENCIA: Menos protecciÛn autom·tica de crashes");
+                Debug.WriteLine("?? ADVERTENCIA: Menos protecci√≥n autom√°tica de crashes");
                 Debug.WriteLine("?? NOTA: Para juegos estables, el beneficio vale la pena");
 
                 return true;
@@ -243,7 +244,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// REVERTIR FTH a configuraciÛn por defecto
+        /// REVERTIR FTH a configuraci√≥n por defecto
         /// </summary>
         public static bool RevertFTH()
         {
@@ -272,7 +273,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// CONFIGURAR WIN32 PRIORITY SEPARATION
-        /// Optimiza cÛmo el CPU prioriza las ventanas de foreground vs background
+        /// Optimiza c√≥mo el CPU prioriza las ventanas de foreground vs background
         /// </summary>
         public static bool SetWin32Priority()
         {
@@ -298,20 +299,20 @@ namespace Tweaker.Optimizations
                 }
 
                 Debug.WriteLine("");
-                Debug.WriteLine("?? EXPLICACI”N WIN32 PRIORITY:");
-                Debug.WriteLine("   ï Controla cÛmo CPU divide tiempo entre procesos");
-                Debug.WriteLine("   ï Valor 38 = Balance gaming Ûptimo");
-                Debug.WriteLine("   ï Foreground (juego) recibe m·s CPU time");
-                Debug.WriteLine("   ï Background apps son menos intrusivas");
-                Debug.WriteLine("   ï Reduce interrupciones durante gaming");
+                Debug.WriteLine("?? EXPLICACI√ìN WIN32 PRIORITY:");
+                Debug.WriteLine("   ‚Ä¢ Controla c√≥mo CPU divide tiempo entre procesos");
+                Debug.WriteLine("   ‚Ä¢ Valor 38 = Balance gaming √≥ptimo");
+                Debug.WriteLine("   ‚Ä¢ Foreground (juego) recibe m√°s CPU time");
+                Debug.WriteLine("   ‚Ä¢ Background apps son menos intrusivas");
+                Debug.WriteLine("   ‚Ä¢ Reduce interrupciones durante gaming");
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS:");
-                Debug.WriteLine("   ï Juegos reciben prioridad CPU consistente");
-                Debug.WriteLine("   ï Menos micro-stutters por context switching");
-                Debug.WriteLine("   ï Background tasks menos disruptivas");
-                Debug.WriteLine("   ï Frame times m·s estables");
+                Debug.WriteLine("   ‚Ä¢ Juegos reciben prioridad CPU consistente");
+                Debug.WriteLine("   ‚Ä¢ Menos micro-stutters por context switching");
+                Debug.WriteLine("   ‚Ä¢ Background tasks menos disruptivas");
+                Debug.WriteLine("   ‚Ä¢ Frame times m√°s estables");
                 Debug.WriteLine("");
-                Debug.WriteLine("?? CRÕTICO: Este valor cambia scheduling de TODO el sistema");
+                Debug.WriteLine("?? CR√çTICO: Este valor cambia scheduling de TODO el sistema");
                 Debug.WriteLine("?? NOTA: 38 es balanceado, no extremo");
 
                 return true;
@@ -325,7 +326,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// CONFIGURAR WIN32 PRIORITY SEPARATION con valor personalizado
-        /// Optimiza cÛmo el CPU prioriza las ventanas de foreground vs background
+        /// Optimiza c√≥mo el CPU prioriza las ventanas de foreground vs background
         /// </summary>
         /// <param name="value">Valor DWORD para Win32PrioritySeparation</param>
         public static bool SetWin32Priority(int value)
@@ -376,34 +377,34 @@ namespace Tweaker.Optimizations
                 {
                     case "balanced":
                         priorityValue = 38; // 0x26
-                        description = "Balance Ûptimo gaming/sistema";
-                        benefits = "ï Foreground apps priorizadas moderadamente\n" +
-                                  "   ï Background apps siguen funcionando bien\n" +
-                                  "   ï Perfecto para gaming + streaming";
+                        description = "Balance √≥ptimo gaming/sistema";
+                        benefits = "‚Ä¢ Foreground apps priorizadas moderadamente\n" +
+                                  "   ‚Ä¢ Background apps siguen funcionando bien\n" +
+                                  "   ‚Ä¢ Perfecto para gaming + streaming";
                         break;
 
                     case "smooth":
                         priorityValue = 40; // 0x28
-                        description = "M·xima suavidad y frame times";
-                        benefits = "ï Time slices m·s largos = menos context switches\n" +
-                                  "   ï Frame times ultra-consistentes\n" +
-                                  "   ï Ideal para juegos single-player exigentes";
+                        description = "M√°xima suavidad y frame times";
+                        benefits = "‚Ä¢ Time slices m√°s largos = menos context switches\n" +
+                                  "   ‚Ä¢ Frame times ultra-consistentes\n" +
+                                  "   ‚Ä¢ Ideal para juegos single-player exigentes";
                         break;
 
                     case "aggressive":
                         priorityValue = 22; // 0x16
-                        description = "M·xima responsividad competitiva";
-                        benefits = "ï Foreground app recibe TODO el CPU\n" +
-                                  "   ï Time slices cortos = respuesta instant·nea\n" +
-                                  "   ï Perfecto para FPS competitivos (CS2, Valorant)";
+                        description = "M√°xima responsividad competitiva";
+                        benefits = "‚Ä¢ Foreground app recibe TODO el CPU\n" +
+                                  "   ‚Ä¢ Time slices cortos = respuesta instant√°nea\n" +
+                                  "   ‚Ä¢ Perfecto para FPS competitivos (CS2, Valorant)";
                         break;
 
                     case "default":
                         priorityValue = 2;
                         description = "Valor por defecto de Windows";
-                        benefits = "ï Comportamiento est·ndar de Windows\n" +
-                                  "   ï Sin optimizaciones especÌficas\n" +
-                                  "   ï Balance general del sistema";
+                        benefits = "‚Ä¢ Comportamiento est√°ndar de Windows\n" +
+                                  "   ‚Ä¢ Sin optimizaciones espec√≠ficas\n" +
+                                  "   ‚Ä¢ Balance general del sistema";
                         break;
 
                     default:
@@ -416,35 +417,35 @@ namespace Tweaker.Optimizations
                     if (key != null)
                     {
                         key.SetValue("Win32PrioritySeparation", priorityValue, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine($"? PERFIL APLICADO: {profile.ToUpper()}");
                         Debug.WriteLine($"   ?? Win32PrioritySeparation = {priorityValue} (0x{priorityValue:X})");
                         Debug.WriteLine($"   ?? {description}");
                         Debug.WriteLine("");
-                        Debug.WriteLine("?? CARACTERÕSTICAS:");
+                        Debug.WriteLine("?? CARACTER√çSTICAS:");
                         Debug.WriteLine($"{benefits}");
                         Debug.WriteLine("");
-                        
-                        // ExplicaciÛn tÈcnica seg˙n el perfil
+
+                        // Explicaci√≥n t√©cnica seg√∫n el perfil
                         switch (profile.ToLower())
                         {
                             case "balanced":
                                 Debug.WriteLine("?? PERFIL BALANCED (38):");
-                                Debug.WriteLine("   ï Foreground boost: MEDIO");
-                                Debug.WriteLine("   ï Time slice: VARIABLE (balanceado)");
-                                Debug.WriteLine("   ï Background penalty: MODERADO");
+                                Debug.WriteLine("   ‚Ä¢ Foreground boost: MEDIO");
+                                Debug.WriteLine("   ‚Ä¢ Time slice: VARIABLE (balanceado)");
+                                Debug.WriteLine("   ‚Ä¢ Background penalty: MODERADO");
                                 break;
                             case "smooth":
                                 Debug.WriteLine("?? PERFIL SMOOTH (40):");
-                                Debug.WriteLine("   ï Foreground boost: ALTO");
-                                Debug.WriteLine("   ï Time slice: LARGO (menos switches)");
-                                Debug.WriteLine("   ï Background penalty: ALTO");
+                                Debug.WriteLine("   ‚Ä¢ Foreground boost: ALTO");
+                                Debug.WriteLine("   ‚Ä¢ Time slice: LARGO (menos switches)");
+                                Debug.WriteLine("   ‚Ä¢ Background penalty: ALTO");
                                 break;
                             case "aggressive":
                                 Debug.WriteLine("?? PERFIL AGGRESSIVE (22):");
-                                Debug.WriteLine("   ï Foreground boost: EXTREMO");
-                                Debug.WriteLine("   ï Time slice: CORTO (respuesta r·pida)");
-                                Debug.WriteLine("   ï Background penalty: M¡XIMO");
+                                Debug.WriteLine("   ‚Ä¢ Foreground boost: EXTREMO");
+                                Debug.WriteLine("   ‚Ä¢ Time slice: CORTO (respuesta r√°pida)");
+                                Debug.WriteLine("   ‚Ä¢ Background penalty: M√ÅXIMO");
                                 break;
                         }
                     }
@@ -461,7 +462,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// OBTENER PERFIL ACTUAL DE CPU SCHEDULING
-        /// Detecta quÈ perfil est· actualmente configurado
+        /// Detecta qu√© perfil est√° actualmente configurado
         /// </summary>
         public static string GetCurrentPriorityProfile()
         {
@@ -515,10 +516,10 @@ namespace Tweaker.Optimizations
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? RESUMEN INPUT & USB OPTIMIZATIONS:");
-                Debug.WriteLine($"   USB Optimization: {(usbResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   Input Queues: {(queueResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   FTH Disabled: {(fthResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   Win32 Priority: {(priorityResult ? "? …XITO" : "? FALLO")}");
+                Debug.WriteLine($"   USB Optimization: {(usbResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   Input Queues: {(queueResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   FTH Disabled: {(fthResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   Win32 Priority: {(priorityResult ? "? √âXITO" : "? FALLO")}");
                 Debug.WriteLine("");
 
                 if (allSuccess)
@@ -535,7 +536,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? ERROR CRÕTICO en ApplyAllInputOptimizations: {ex.Message}");
+                Debug.WriteLine($"? ERROR CR√çTICO en ApplyAllInputOptimizations: {ex.Message}");
                 return false;
             }
         }
@@ -559,11 +560,11 @@ namespace Tweaker.Optimizations
                 bool allSuccess = usbResult && queueResult && fthResult && priorityResult;
 
                 Debug.WriteLine("");
-                Debug.WriteLine("?? RESUMEN REVERSI”N INPUT & USB:");
-                Debug.WriteLine($"   USB Revertido: {(usbResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   Input Queues Revertidos: {(queueResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   FTH Habilitado: {(fthResult ? "? …XITO" : "? FALLO")}");
-                Debug.WriteLine($"   Win32 Priority Revertido: {(priorityResult ? "? …XITO" : "? FALLO")}");
+                Debug.WriteLine("?? RESUMEN REVERSI√ìN INPUT & USB:");
+                Debug.WriteLine($"   USB Revertido: {(usbResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   Input Queues Revertidos: {(queueResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   FTH Habilitado: {(fthResult ? "? √âXITO" : "? FALLO")}");
+                Debug.WriteLine($"   Win32 Priority Revertido: {(priorityResult ? "? √âXITO" : "? FALLO")}");
 
                 if (allSuccess)
                 {
@@ -578,20 +579,20 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? ERROR CRÕTICO en RevertAllInputOptimizations: {ex.Message}");
+                Debug.WriteLine($"? ERROR CR√çTICO en RevertAllInputOptimizations: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// DIAGN”STICO COMPLETO - INPUT & USB STATUS
+        /// DIAGN√ìSTICO COMPLETO - INPUT & USB STATUS
         /// </summary>
         public static string DiagnoseInputOptimizations()
         {
             try
             {
                 var diagnosis = "???????????????????????????????????????????????????????????\n" +
-                               "?? DIAGN”STICO INPUT & USB OPTIMIZATIONS\n" +
+                               "?? DIAGN√ìSTICO INPUT & USB OPTIMIZATIONS\n" +
                                "???????????????????????????????????????????????????????????\n\n";
 
                 // 1. USB Selective Suspend Status
@@ -601,7 +602,7 @@ namespace Tweaker.Optimizations
                     {
                         if (key?.GetValue("DisableSelectiveSuspend") is int usbValue && usbValue == 1)
                         {
-                            diagnosis += "?? USB Selective Suspend: ? DESHABILITADO (”ptimo)\n";
+                            diagnosis += "?? USB Selective Suspend: ? DESHABILITADO (√ìptimo)\n";
                             diagnosis += "   ?? Sin interrupciones USB durante gaming\n";
                         }
                         else
@@ -613,7 +614,7 @@ namespace Tweaker.Optimizations
                 }
                 catch
                 {
-                    diagnosis += "?? USB Selective Suspend: ? ERROR al leer configuraciÛn\n";
+                    diagnosis += "?? USB Selective Suspend: ? ERROR al leer configuraci√≥n\n";
                 }
 
                 diagnosis += "\n";
@@ -627,7 +628,7 @@ namespace Tweaker.Optimizations
                         if (mouseQueue >= 1000)
                         {
                             diagnosis += $"??? Mouse Data Queue: ? OPTIMIZADO ({mouseQueue})\n";
-                            diagnosis += "   ?? Soporta 1000Hz+ sin pÈrdida de datos\n";
+                            diagnosis += "   ?? Soporta 1000Hz+ sin p√©rdida de datos\n";
                         }
                         else
                         {
@@ -638,7 +639,7 @@ namespace Tweaker.Optimizations
                 }
                 catch
                 {
-                    diagnosis += "??? Mouse Data Queue: ? ERROR al leer configuraciÛn\n";
+                    diagnosis += "??? Mouse Data Queue: ? ERROR al leer configuraci√≥n\n";
                 }
 
                 // 3. Keyboard Queue Status
@@ -650,7 +651,7 @@ namespace Tweaker.Optimizations
                         if (kbdQueue >= 200)
                         {
                             diagnosis += $"?? Keyboard Data Queue: ? OPTIMIZADO ({kbdQueue})\n";
-                            diagnosis += "   ?? Maneja spam de teclas sin pÈrdida\n";
+                            diagnosis += "   ?? Maneja spam de teclas sin p√©rdida\n";
                         }
                         else
                         {
@@ -661,7 +662,7 @@ namespace Tweaker.Optimizations
                 }
                 catch
                 {
-                    diagnosis += "?? Keyboard Data Queue: ? ERROR al leer configuraciÛn\n";
+                    diagnosis += "?? Keyboard Data Queue: ? ERROR al leer configuraci√≥n\n";
                 }
 
                 diagnosis += "\n";
@@ -674,19 +675,19 @@ namespace Tweaker.Optimizations
                         var fthEnabled = key?.GetValue("Enabled") as int? ?? 1;
                         if (fthEnabled == 0)
                         {
-                            diagnosis += "??? Fault Tolerant Heap: ? DESHABILITADO (”ptimo gaming)\n";
+                            diagnosis += "??? Fault Tolerant Heap: ? DESHABILITADO (√ìptimo gaming)\n";
                             diagnosis += "   ?? Memory allocation directa para juegos\n";
                         }
                         else
                         {
                             diagnosis += "??? Fault Tolerant Heap: ? HABILITADO (Default Windows)\n";
-                            diagnosis += "   ?? Overhead de protecciÛn autom·tica en memoria\n";
+                            diagnosis += "   ?? Overhead de protecci√≥n autom√°tica en memoria\n";
                         }
                     }
                 }
                 catch
                 {
-                    diagnosis += "??? Fault Tolerant Heap: ? ERROR al leer configuraciÛn\n";
+                    diagnosis += "??? Fault Tolerant Heap: ? ERROR al leer configuraci√≥n\n";
                 }
 
                 // 5. Win32 Priority Status
@@ -703,7 +704,7 @@ namespace Tweaker.Optimizations
                         else if (priority == 2)
                         {
                             diagnosis += "?? Win32 Priority Separation: ? DEFAULT WINDOWS (2)\n";
-                            diagnosis += "   ?? Sin priorizaciÛn especial para foreground\n";
+                            diagnosis += "   ?? Sin priorizaci√≥n especial para foreground\n";
                         }
                         else
                         {
@@ -714,17 +715,17 @@ namespace Tweaker.Optimizations
                 }
                 catch
                 {
-                    diagnosis += "?? Win32 Priority Separation: ? ERROR al leer configuraciÛn\n";
+                    diagnosis += "?? Win32 Priority Separation: ? ERROR al leer configuraci√≥n\n";
                 }
 
                 diagnosis += "\n????????????????????????????????????????????????????????????\n";
                 diagnosis += "?? RECOMENDACIONES PARA GAMING COMPETITIVO:\n";
                 diagnosis += "????????????????????????????????????????????????????????????\n";
-                diagnosis += "ï USB: DESHABILITADO = Elimina micro-lag en devices\n";
-                diagnosis += "ï Mouse Queue: 1000+ = Soporta 1000Hz sin pÈrdidas\n";
-                diagnosis += "ï Keyboard Queue: 200+ = Spam de teclas sin pÈrdida\n";
-                diagnosis += "ï FTH: DESHABILITADO = Memory allocation m·s r·pida\n";
-                diagnosis += "ï Win32 Priority: 38 = Balance Ûptimo gaming/sistema\n\n";
+                diagnosis += "‚Ä¢ USB: DESHABILITADO = Elimina micro-lag en devices\n";
+                diagnosis += "‚Ä¢ Mouse Queue: 1000+ = Soporta 1000Hz sin p√©rdidas\n";
+                diagnosis += "‚Ä¢ Keyboard Queue: 200+ = Spam de teclas sin p√©rdida\n";
+                diagnosis += "‚Ä¢ FTH: DESHABILITADO = Memory allocation m√°s r√°pida\n";
+                diagnosis += "‚Ä¢ Win32 Priority: 38 = Balance √≥ptimo gaming/sistema\n\n";
                 diagnosis += "?? GHOST OPTIMIZER - Input & USB Analysis Complete!";
 
                 Debug.WriteLine(diagnosis);
@@ -732,7 +733,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                var errorDiag = $"? ERROR durante diagnÛstico Input & USB: {ex.Message}";
+                var errorDiag = $"? ERROR durante diagn√≥stico Input & USB: {ex.Message}";
                 Debug.WriteLine(errorDiag);
                 return errorDiag;
             }
@@ -749,10 +750,10 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// DESHABILITAR MPO (MULTIPLANE OVERLAY) - FIX ANTI-FLICKER
         /// 
-        /// QU… ES MPO:
-        /// - Multiplane Overlay es una tecnologÌa de composiciÛn de Windows 10/11
+        /// QU√â ES MPO:
+        /// - Multiplane Overlay es una tecnolog√≠a de composici√≥n de Windows 10/11
         /// - Permite que diferentes capas de video se rendericen directamente en hardware
-        /// - DiseÒado para mejorar eficiencia energÈtica y rendimiento
+        /// - Dise√±ado para mejorar eficiencia energ√©tica y rendimiento
         /// 
         /// PROBLEMA EN GAMING:
         /// - Causa stuttering y pantallazos negros en muchos sistemas
@@ -760,16 +761,16 @@ namespace Tweaker.Optimizations
         /// - Frame pacing inconsistente
         /// - Incompatibilidad con G-Sync/FreeSync en algunos casos
         /// 
-        /// SOLUCI”N:
+        /// SOLUCI√ìN:
         /// - Establecer OverlayTestMode = 5 fuerza modo legacy
-        /// - Elimina problemas de composiciÛn MPO
+        /// - Elimina problemas de composici√≥n MPO
         /// - Mejora consistencia de frame times
         /// 
         /// IMPACTO:
         /// ? Elimina stuttering causado por MPO
         /// ? Sin pantallazos negros al cambiar ventanas
         /// ? Overlays funcionan sin problemas
-        /// ? Frame pacing m·s consistente
+        /// ? Frame pacing m√°s consistente
         /// </summary>
         public static bool DisableMPO()
         {
@@ -785,25 +786,25 @@ namespace Tweaker.Optimizations
                     {
                         // OverlayTestMode = 5 (Legacy mode, MPO disabled)
                         key.SetValue("OverlayTestMode", 5, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? MPO (Multiplane Overlay) DESHABILITADO");
                         Debug.WriteLine($"   ?? Ruta: HKLM\\{DWM_KEY}");
                         Debug.WriteLine("   ?? OverlayTestMode = 5 (Legacy mode)");
                         Debug.WriteLine("   ?? Modo legacy forzado para compatibilidad");
                         Debug.WriteLine("");
                         Debug.WriteLine("?? BENEFICIOS ESPERADOS:");
-                        Debug.WriteLine("   ? EliminaciÛn de stuttering por MPO");
+                        Debug.WriteLine("   ? Eliminaci√≥n de stuttering por MPO");
                         Debug.WriteLine("   ? Sin pantallazos negros al Alt+Tab");
                         Debug.WriteLine("   ? Overlays (Discord, OBS) sin problemas");
-                        Debug.WriteLine("   ? Frame pacing m·s consistente");
+                        Debug.WriteLine("   ? Frame pacing m√°s consistente");
                         Debug.WriteLine("   ? Mejor compatibilidad G-Sync/FreeSync");
                         Debug.WriteLine("");
                         Debug.WriteLine("?? REQUIERE REINICIO para efecto completo");
-                        
+
                         return true;
                     }
                 }
-                
+
                 Debug.WriteLine("? ERROR: No se pudo acceder a la clave DWM");
                 return false;
             }
@@ -817,11 +818,11 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// RESTAURAR MPO (MULTIPLANE OVERLAY) - VOLVER A DEFAULT
         /// 
-        /// Elimina la configuraciÛn OverlayTestMode para restaurar
+        /// Elimina la configuraci√≥n OverlayTestMode para restaurar
         /// el comportamiento predeterminado de Windows (MPO habilitado)
         /// 
-        /// CU¡NDO USAR:
-        /// - Si experimentas problemas despuÈs de deshabilitar MPO
+        /// CU√ÅNDO USAR:
+        /// - Si experimentas problemas despu√©s de deshabilitar MPO
         /// - Si tu sistema funciona mejor con MPO habilitado
         /// - Para volver al comportamiento original de Windows
         /// </summary>
@@ -841,30 +842,30 @@ namespace Tweaker.Optimizations
                         {
                             // Eliminar el valor OverlayTestMode (restaura default de Windows)
                             key.DeleteValue("OverlayTestMode", false);
-                            
+
                             Debug.WriteLine("? MPO (Multiplane Overlay) RESTAURADO");
                             Debug.WriteLine($"   ?? Ruta: HKLM\\{DWM_KEY}");
                             Debug.WriteLine("   ?? OverlayTestMode eliminado (Windows default)");
-                            Debug.WriteLine("   ?? Windows manejar· MPO autom·ticamente");
+                            Debug.WriteLine("   ?? Windows manejar√° MPO autom√°ticamente");
                             Debug.WriteLine("");
                             Debug.WriteLine("?? RESTAURADO A COMPORTAMIENTO ORIGINAL:");
-                            Debug.WriteLine("   ï MPO habilitado por defecto");
-                            Debug.WriteLine("   ï Windows decide cu·ndo usar MPO");
-                            Debug.WriteLine("   ï Posible retorno de stuttering si habÌa problemas");
+                            Debug.WriteLine("   ‚Ä¢ MPO habilitado por defecto");
+                            Debug.WriteLine("   ‚Ä¢ Windows decide cu√°ndo usar MPO");
+                            Debug.WriteLine("   ‚Ä¢ Posible retorno de stuttering si hab√≠a problemas");
                             Debug.WriteLine("");
                             Debug.WriteLine("?? REQUIERE REINICIO para efecto completo");
                         }
                         catch (ArgumentException)
                         {
-                            // El valor ya no existe, est· bien
-                            Debug.WriteLine("? MPO ya est· en configuraciÛn por defecto");
+                            // El valor ya no existe, est√° bien
+                            Debug.WriteLine("? MPO ya est√° en configuraci√≥n por defecto");
                             Debug.WriteLine("   OverlayTestMode no existe (comportamiento normal)");
                         }
-                        
+
                         return true;
                     }
                 }
-                
+
                 Debug.WriteLine("? ERROR: No se pudo acceder a la clave DWM");
                 return false;
             }
@@ -894,7 +895,7 @@ namespace Tweaker.Optimizations
                         else
                         {
                             int mpoValue = Convert.ToInt32(value);
-                            return mpoValue == 5 ? "Deshabilitado (Legacy Mode)" : $"ConfiguraciÛn Custom ({mpoValue})";
+                            return mpoValue == 5 ? "Deshabilitado (Legacy Mode)" : $"Configuraci√≥n Custom ({mpoValue})";
                         }
                     }
                 }
@@ -913,30 +914,30 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// CONFIGURAR PERFIL DE PRIORIDAD CPU (Win32PrioritySeparation)
         /// 
-        /// Este valor controla cÛmo Windows distribuye tiempo de CPU entre procesos:
+        /// Este valor controla c√≥mo Windows distribuye tiempo de CPU entre procesos:
         /// - Foreground vs Background processes
-        /// - Quantum length (duraciÛn de time slices)
+        /// - Quantum length (duraci√≥n de time slices)
         /// - Thread priority boost
         /// 
         /// PERFILES DISPONIBLES:
         /// 
         /// BALANCED (38/0x26):
-        /// - Balance Ûptimo para gaming
+        /// - Balance √≥ptimo para gaming
         /// - Foreground apps priorizadas moderadamente
         /// - Good responsiveness + multitasking
         /// 
         /// SMOOTH (40/0x28):
-        /// - Time slices m·s largos
+        /// - Time slices m√°s largos
         /// - Mejor para streaming/recording
         /// - Menos cambios de contexto
         /// 
         /// AGGRESSIVE (22/0x16):
-        /// - M·xima prioridad a foreground
+        /// - M√°xima prioridad a foreground
         /// - Gaming competitivo extremo
         /// - Puede afectar multitasking
         /// 
         /// DEFAULT (2):
-        /// - ConfiguraciÛn original de Windows
+        /// - Configuraci√≥n original de Windows
         /// - Balanced general del sistema
         /// </summary>
         public static bool SetCpuPriorityProfile(string profile)
@@ -956,8 +957,8 @@ namespace Tweaker.Optimizations
                 {
                     case "balanced":
                         profileValue = 38; // 0x26
-                        description = "Balance Ûptimo para gaming";
-                        benefits = 
+                        description = "Balance √≥ptimo para gaming";
+                        benefits =
                             "? Excelente para gaming en general\n" +
                             "? Buen balance rendimiento/multitasking\n" +
                             "? Foreground apps priorizadas moderadamente\n" +
@@ -967,19 +968,19 @@ namespace Tweaker.Optimizations
                     case "smooth":
                         profileValue = 40; // 0x28
                         description = "Time slices largos para suavidad";
-                        benefits = 
+                        benefits =
                             "? Ideal para streaming y recording\n" +
                             "? Menos cambios de contexto\n" +
-                            "? Frame pacing m·s suave\n" +
+                            "? Frame pacing m√°s suave\n" +
                             "? Mejor para cargas de trabajo sostenidas";
                         break;
 
                     case "aggressive":
                         profileValue = 22; // 0x16
-                        description = "M·xima prioridad a procesos foreground";
-                        benefits = 
-                            "? M·ximo rendimiento para gaming competitivo\n" +
-                            "? Latencia mÌnima para aplicaciÛn activa\n" +
+                        description = "M√°xima prioridad a procesos foreground";
+                        benefits =
+                            "? M√°ximo rendimiento para gaming competitivo\n" +
+                            "? Latencia m√≠nima para aplicaci√≥n activa\n" +
                             "? Time slices cortos y agresivos\n" +
                             "? Ideal para esports";
                         warning = "?? Puede afectar multitasking intensivo";
@@ -988,27 +989,27 @@ namespace Tweaker.Optimizations
                     case "default":
                         profileValue = 2;
                         description = "Valor por defecto de Windows";
-                        benefits = 
-                            "? Comportamiento est·ndar de Windows\n" +
-                            "? Sin optimizaciones especÌficas\n" +
+                        benefits =
+                            "? Comportamiento est√°ndar de Windows\n" +
+                            "? Sin optimizaciones espec√≠ficas\n" +
                             "? Balance general del sistema\n" +
                             "? Revierte cualquier cambio previo";
-                        warning = "?? Restaura configuraciÛn original";
+                        warning = "?? Restaura configuraci√≥n original";
                         break;
 
                     default:
-                        Debug.WriteLine($"? ERROR: Perfil '{profile}' no v·lido");
-                        Debug.WriteLine("   Perfiles v·lidos: balanced, smooth, aggressive, default");
+                        Debug.WriteLine($"? ERROR: Perfil '{profile}' no v√°lido");
+                        Debug.WriteLine("   Perfiles v√°lidos: balanced, smooth, aggressive, default");
                         return false;
                 }
 
-                // Aplicar la configuraciÛn
+                // Aplicar la configuraci√≥n
                 using (var key = Registry.LocalMachine.CreateSubKey(PRIORITY_CONTROL_KEY))
                 {
                     if (key != null)
                     {
                         key.SetValue("Win32PrioritySeparation", profileValue, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine($"? PERFIL CPU '{profile.ToUpper()}' APLICADO");
                         Debug.WriteLine($"   ?? Ruta: HKLM\\{PRIORITY_CONTROL_KEY}");
                         Debug.WriteLine($"   ?? Win32PrioritySeparation = {profileValue} (0x{profileValue:X2})");
@@ -1020,20 +1021,20 @@ namespace Tweaker.Optimizations
                             if (!string.IsNullOrWhiteSpace(line))
                                 Debug.WriteLine($"   {line}");
                         }
-                        
+
                         if (!string.IsNullOrEmpty(warning))
                         {
                             Debug.WriteLine("");
                             Debug.WriteLine($"   {warning}");
                         }
-                        
+
                         Debug.WriteLine("");
                         Debug.WriteLine("?? REQUIERE REINICIO para efecto completo");
-                        
+
                         return true;
                     }
                 }
-                
+
                 Debug.WriteLine("? ERROR: No se pudo acceder a la clave PriorityControl");
                 return false;
             }
@@ -1063,7 +1064,7 @@ namespace Tweaker.Optimizations
                             {
                                 2 => "Default",
                                 38 => "Balanced",
-                                40 => "Smooth", 
+                                40 => "Smooth",
                                 22 => "Aggressive",
                                 _ => $"Custom ({currentValue})"
                             };
@@ -1079,7 +1080,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODOS DE CONVENIENCIA PARA PERFILES ESPECÕFICOS
+        /// M√âTODOS DE CONVENIENCIA PARA PERFILES ESPEC√çFICOS
         /// </summary>
         public static bool SetBalancedCpuProfile() => SetCpuPriorityProfile("balanced");
         public static bool SetSmoothCpuProfile() => SetCpuPriorityProfile("smooth");
@@ -1089,7 +1090,7 @@ namespace Tweaker.Optimizations
         #endregion
 
         // ???????????????????????????????????????????????????????????????????
-        // M…TODOS PARA COMPATIBILIDAD CON MAINWINDOW
+        // M√âTODOS PARA COMPATIBILIDAD CON MAINWINDOW
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -1101,7 +1102,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// REVERTIR OPTIMIZACI”N USB (Alias para RevertUSB)
+        /// REVERTIR OPTIMIZACI√ìN USB (Alias para RevertUSB)
         /// </summary>
         public static bool RevertUSBOptimization()
         {
@@ -1125,7 +1126,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODOS ESPECÕFICOS PARA PRESET COMPATIBILITY
+        /// M√âTODOS ESPEC√çFICOS PARA PRESET COMPATIBILITY
         /// </summary>
 
         /// <summary>
@@ -1137,7 +1138,7 @@ namespace Tweaker.Optimizations
             {
                 const string accessibilityKey = @"Control Panel\Accessibility\StickyKeys";
                 const string accessibilityKey2 = @"Control Panel\Accessibility\Keyboard Response";
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey))
                 {
                     if (key != null)
@@ -1151,7 +1152,7 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        key.SetValue("Flags", "122", RegistryValueKind.String); // Deshabilita repeticiÛn
+                        key.SetValue("Flags", "122", RegistryValueKind.String); // Deshabilita repetici√≥n
                         Debug.WriteLine("? Filter Keys deshabilitado");
                     }
                 }
@@ -1174,7 +1175,7 @@ namespace Tweaker.Optimizations
             {
                 const string accessibilityKey = @"Control Panel\Accessibility\StickyKeys";
                 const string accessibilityKey2 = @"Control Panel\Accessibility\Keyboard Response";
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(accessibilityKey))
                 {
                     if (key != null)
@@ -1199,6 +1200,268 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine($"? Error habilitando Sticky Keys: {ex.Message}");
                 return false;
+            }
+        }
+
+        // ???????????????????????????????????????????????????????????????????
+        // ADVANCED USB & INPUT LATENCY (NEW)
+        // ???????????????????????????????????????????????????????????????????
+
+        private const string USB_HUB_KEY = @"SYSTEM\CurrentControlSet\Services\usbhub\Parameters";
+        private const string HIDUSBF_KEY = @"SYSTEM\CurrentControlSet\Services\HidUsb\Parameters";
+        private const string USB_XHCI_KEY = @"SYSTEM\CurrentControlSet\Services\USBXHCI\Parameters";
+        private const string MOUSE_ACCEL_KEY = @"Control Panel\Mouse";
+        private const string MOUSE_CURVES_KEY = @"Control Panel\Mouse";
+
+        /// <summary>
+        /// USB SELECTIVE SUSPEND ‚Äî deshabilitado a nivel de Power Plan Y registro.
+        /// M√°s completo que OptimizeUSB(): tambi√©n act√∫a sobre todos los USB hubs y XHCI.
+        /// </summary>
+        public static bool DisableUSBSelectiveSuspendAdvanced()
+        {
+            try
+            {
+                Debug.WriteLine("???????????????????????????????????????");
+                Debug.WriteLine("?? ADVANCED USB SELECTIVE SUSPEND DISABLE");
+
+                // 1. Registro principal del servicio USB
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_SERVICE_KEY, writable: true))
+                {
+                    key?.SetValue("DisableSelectiveSuspend", 1, RegistryValueKind.DWord);
+                    Debug.WriteLine("? USB\\DisableSelectiveSuspend = 1");
+                }
+
+                // 2. USB Hub
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_HUB_KEY, writable: true))
+                {
+                    key?.SetValue("DisableSelectiveSuspend", 1, RegistryValueKind.DWord);
+                    Debug.WriteLine("? usbhub\\DisableSelectiveSuspend = 1");
+                }
+
+                // 3. xHCI controller
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_XHCI_KEY, writable: true))
+                {
+                    key?.SetValue("DisableSelectiveSuspend", 1, RegistryValueKind.DWord);
+                    Debug.WriteLine("? USBXHCI\\DisableSelectiveSuspend = 1");
+                }
+
+                // 4. Deshabilitar via powercfg (AC y DC)
+                RunPowercfg("/setacvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0");
+                RunPowercfg("/setdcvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 0");
+                RunPowercfg("/setactive SCHEME_CURRENT");
+                Debug.WriteLine("? PowerCfg: USB Selective Suspend deshabilitado en Power Plan");
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR DisableUSBSelectiveSuspendAdvanced: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restaura USB Selective Suspend a valores predeterminados.
+        /// </summary>
+        public static bool RestoreUSBSelectiveSuspendAdvanced()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_SERVICE_KEY, writable: true))
+                    key?.DeleteValue("DisableSelectiveSuspend", throwOnMissingValue: false);
+
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_HUB_KEY, writable: true))
+                    key?.DeleteValue("DisableSelectiveSuspend", throwOnMissingValue: false);
+
+                using (var key = Registry.LocalMachine.CreateSubKey(USB_XHCI_KEY, writable: true))
+                    key?.DeleteValue("DisableSelectiveSuspend", throwOnMissingValue: false);
+
+                RunPowercfg("/setacvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 1");
+                RunPowercfg("/setdcvalueindex SCHEME_CURRENT 2a737441-1930-4402-8d77-b2bebba308a3 48e6b7a6-50f5-4782-a5d4-53bb8f07e226 1");
+                RunPowercfg("/setactive SCHEME_CURRENT");
+
+                Debug.WriteLine("? USB Selective Suspend restaurado");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR RestoreUSBSelectiveSuspendAdvanced: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// HIDUSBF-COMPATIBLE POLLING RATE via registro HidUsb.
+        /// Ajusta el intervalo de sondeo del driver HID USB a 1ms (1000Hz).
+        /// Nota: Solo tiene efecto en dispositivos que ya soporten alta frecuencia.
+        /// </summary>
+        public static bool SetHIDPollingRate1000Hz()
+        {
+            try
+            {
+                Debug.WriteLine("???????????????????????????????????????");
+                Debug.WriteLine("?? SETTING HID USB POLLING RATE ? 1000Hz");
+
+                using var key = Registry.LocalMachine.CreateSubKey(HIDUSBF_KEY, writable: true);
+                if (key == null)
+                {
+                    Debug.WriteLine("?? Clave HidUsb\\Parameters no disponible en este sistema");
+                    return false;
+                }
+
+                // PollInterval_Override en unidades de 100ns ? 1ms = 10000 unidades
+                key.SetValue("PollInterval_Override", 10000, RegistryValueKind.DWord);
+                Debug.WriteLine("? HidUsb\\PollInterval_Override = 10000 (1ms = 1000Hz)");
+
+                // Tambi√©n optimizar el buffer del mouse para alta frecuencia
+                using var mouseKey = Registry.LocalMachine.CreateSubKey(MOUSE_CLASS_KEY, writable: true);
+                if (mouseKey != null)
+                {
+                    mouseKey.SetValue("MouseDataQueueSize", 1000, RegistryValueKind.DWord);
+                    Debug.WriteLine("? mouclass\\MouseDataQueueSize = 1000");
+                }
+
+                Debug.WriteLine("?? Requiere reinicio para aplicar");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR SetHIDPollingRate1000Hz: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restaura el polling rate HID al valor predeterminado (125Hz / 8ms).
+        /// </summary>
+        public static bool RestoreHIDPollingRate()
+        {
+            try
+            {
+                using var key = Registry.LocalMachine.CreateSubKey(HIDUSBF_KEY, writable: true);
+                key?.DeleteValue("PollInterval_Override", throwOnMissingValue: false);
+
+                using var mouseKey = Registry.LocalMachine.CreateSubKey(MOUSE_CLASS_KEY, writable: true);
+                mouseKey?.DeleteValue("MouseDataQueueSize", throwOnMissingValue: false);
+
+                Debug.WriteLine("? HID Polling Rate restaurado a default");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR RestoreHIDPollingRate: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// KERNEL-LEVEL MOUSE ACCELERATION REMOVAL.
+        /// Elimina aceleraci√≥n a nivel de kernel limpiando SmoothMouseXCurve/YCurve
+        /// y forzando MouseSpeed=0, Threshold1=0, Threshold2=0.
+        /// </summary>
+        public static bool DisableMouseAccelerationKernelLevel()
+        {
+            try
+            {
+                Debug.WriteLine("???????????????????????????????????????");
+                Debug.WriteLine("?? KERNEL-LEVEL MOUSE ACCELERATION REMOVAL");
+
+                // 1. Valores de aceleraci√≥n cl√°sicos (Control Panel)
+                using var mouseKey = Registry.CurrentUser.CreateSubKey(MOUSE_ACCEL_KEY, writable: true);
+                if (mouseKey != null)
+                {
+                    mouseKey.SetValue("MouseSpeed", "0", RegistryValueKind.String);
+                    mouseKey.SetValue("MouseThreshold1", "0", RegistryValueKind.String);
+                    mouseKey.SetValue("MouseThreshold2", "0", RegistryValueKind.String);
+                    Debug.WriteLine("? MouseSpeed=0, Threshold1=0, Threshold2=0");
+                }
+
+                // 2. SmoothMouseXCurve y SmoothMouseYCurve ‚Äî curvas de velocidad del kernel
+                // Valores lineales: mapeo 1:1 en todas las velocidades
+                byte[] linearCurve = new byte[]
+                {
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0x0000
+                    0x15, 0x6E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0x6E15
+                    0x29, 0xDC, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0x03DC29
+                    0x00, 0x00, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0x280000
+                    0x00, 0x00, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00   // 0x500000
+                };
+
+                using var mouseKey2 = Registry.CurrentUser.OpenSubKey(MOUSE_CURVES_KEY, writable: true);
+                if (mouseKey2 != null)
+                {
+                    mouseKey2.SetValue("SmoothMouseXCurve", linearCurve, RegistryValueKind.Binary);
+                    mouseKey2.SetValue("SmoothMouseYCurve", linearCurve, RegistryValueKind.Binary);
+                    Debug.WriteLine("? SmoothMouseXCurve/YCurve ? curva lineal 1:1 (sin aceleraci√≥n)");
+                }
+
+                // 3. mouclass ‚Äî deshabilitar aceleraci√≥n a nivel de driver
+                using var mouclassKey = Registry.LocalMachine.CreateSubKey(MOUSE_CLASS_KEY, writable: true);
+                if (mouclassKey != null)
+                {
+                    mouclassKey.SetValue("MouseSensitivity", 10, RegistryValueKind.DWord);
+                    Debug.WriteLine("? mouclass\\MouseSensitivity = 10 (neutral)");
+                }
+
+                Debug.WriteLine("? Mouse acceleration eliminada a nivel kernel");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR DisableMouseAccelerationKernelLevel: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restaura la aceleraci√≥n del mouse a valores predeterminados de Windows.
+        /// </summary>
+        public static bool RestoreMouseAccelerationKernelLevel()
+        {
+            try
+            {
+                using var mouseKey = Registry.CurrentUser.CreateSubKey(MOUSE_ACCEL_KEY, writable: true);
+                if (mouseKey != null)
+                {
+                    mouseKey.SetValue("MouseSpeed", "1", RegistryValueKind.String);
+                    mouseKey.SetValue("MouseThreshold1", "6", RegistryValueKind.String);
+                    mouseKey.SetValue("MouseThreshold2", "10", RegistryValueKind.String);
+                }
+
+                // Eliminar curvas personalizadas (Windows las regenera con sus defaults)
+                using var mouseKey2 = Registry.CurrentUser.OpenSubKey(MOUSE_CURVES_KEY, writable: true);
+                if (mouseKey2 != null)
+                {
+                    mouseKey2.DeleteValue("SmoothMouseXCurve", throwOnMissingValue: false);
+                    mouseKey2.DeleteValue("SmoothMouseYCurve", throwOnMissingValue: false);
+                }
+
+                Debug.WriteLine("? Mouse acceleration restaurada a valores default");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"? ERROR RestoreMouseAccelerationKernelLevel: {ex.Message}");
+                return false;
+            }
+        }
+
+        private static void RunPowercfg(string args)
+        {
+            try
+            {
+                using var p = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = args,
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                });
+                p?.WaitForExit(3000);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"?? powercfg error: {ex.Message}");
             }
         }
     }

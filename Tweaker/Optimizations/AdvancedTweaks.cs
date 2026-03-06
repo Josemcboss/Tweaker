@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -16,8 +17,8 @@ namespace Tweaker.Optimizations
         private const string GRAPHICS_DRIVERS = @"SYSTEM\CurrentControlSet\Control\GraphicsDrivers";
 
         /// <summary>
-        /// OPTIMIZACIÓN DE TECLADO
-        /// Reduce delay de repetición a 0
+        /// OPTIMIZACIÃ“N DE TECLADO
+        /// Reduce delay de repeticiÃ³n a 0
         /// </summary>
         public static bool OptimizeKeyboard()
         {
@@ -27,14 +28,14 @@ namespace Tweaker.Optimizations
                 {
                     if (key == null) return false;
 
-                    // KeyboardDelay: 0 = Sin delay (más responsive)
-                    // KeyboardSpeed: 31 = Máxima velocidad de repetición
+                    // KeyboardDelay: 0 = Sin delay (mÃ¡s responsive)
+                    // KeyboardSpeed: 31 = MÃ¡xima velocidad de repeticiÃ³n
                     key.SetValue("KeyboardDelay", "0", RegistryValueKind.String);
                     key.SetValue("KeyboardSpeed", "31", RegistryValueKind.String);
 
                     Debug.WriteLine("? Keyboard Optimized");
                     Debug.WriteLine("  Delay: 0 (Sin delay)");
-                    Debug.WriteLine("  Speed: 31 (Máxima)");
+                    Debug.WriteLine("  Speed: 31 (MÃ¡xima)");
                     return true;
                 }
             }
@@ -47,7 +48,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// DESHABILITAR FULLSCREEN OPTIMIZATION (FSO)
-        /// Windows fuerza Borderless Fullscreen (añade latencia)
+        /// Windows fuerza Borderless Fullscreen (aÃ±ade latencia)
         /// </summary>
         public static bool DisableFSO()
         {
@@ -107,7 +108,7 @@ namespace Tweaker.Optimizations
         /// 
         /// ?? CONTROVERSIAL: Puede mejorar o empeorar latencia
         /// 
-        /// QUÉ ES:
+        /// QUÃ‰ ES:
         /// - Windows 10/11 feature que delega scheduling a la GPU
         /// - Reduce overhead de CPU
         /// 
@@ -119,7 +120,7 @@ namespace Tweaker.Optimizations
         /// ? Puede aumentar latencia en GPUs viejas (GTX 1000)
         /// ? Drivers inmaduros causan problemas
         /// 
-        /// RECOMENDACIÓN:
+        /// RECOMENDACIÃ“N:
         /// - ACTIVAR si tienes RTX 3000+ o RX 6000+
         /// - DESACTIVAR si tienes GTX 1000/RX 500
         /// - PROBAR ambos estados y medir con FrameView
@@ -163,7 +164,7 @@ namespace Tweaker.Optimizations
                     key.SetValue("HwSchMode", 1, RegistryValueKind.DWord);
 
                     Debug.WriteLine("? HAGS DISABLED");
-                    Debug.WriteLine("  CPU maneja scheduling (clásico)");
+                    Debug.WriteLine("  CPU maneja scheduling (clÃ¡sico)");
                     Debug.WriteLine("  ?? REINICIO OBLIGATORIO");
                     return true;
                 }
@@ -204,7 +205,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string sessionMgrKey = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(sessionMgrKey))
                 {
                     if (key == null) return false;
@@ -236,7 +237,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string sessionMgrKey = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(sessionMgrKey))
                 {
                     if (key == null) return false;

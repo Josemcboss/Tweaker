@@ -5,8 +5,8 @@ using System.Management;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Utilidad para crear Puntos de RestauraciÛn del Sistema
-    /// CRÕTICO antes de aplicar tweaks de registro
+    /// Utilidad para crear Puntos de Restauraci√≥n del Sistema
+    /// CR√çTICO antes de aplicar tweaks de registro
     /// </summary>
     public static class SystemRestore
     {
@@ -14,69 +14,69 @@ namespace Tweaker.Utilities
         private static readonly TimeSpan MinTimeBetweenRestorePoints = TimeSpan.FromHours(24);
 
         /// <summary>
-        /// Crea un punto de restauraciÛn del sistema usando WMI
+        /// Crea un punto de restauraci√≥n del sistema usando WMI
         /// </summary>
-        /// <param name="description">DescripciÛn del punto de restauraciÛn</param>
-        /// <returns>True si se creÛ exitosamente</returns>
+        /// <param name="description">Descripci√≥n del punto de restauraci√≥n</param>
+        /// <returns>True si se cre√≥ exitosamente</returns>
         public static bool CreateRestorePoint(string description)
         {
             try
             {
-                // Validar descripciÛn
+                // Validar descripci√≥n
                 if (string.IsNullOrWhiteSpace(description))
                 {
                     description = $"Tweaker Backup - {DateTime.Now:yyyy-MM-dd HH:mm}";
                 }
 
-                // Verificar si ya se creÛ un punto recientemente (limitaciÛn de Windows)
+                // Verificar si ya se cre√≥ un punto recientemente (limitaci√≥n de Windows)
                 if (DateTime.Now - _lastRestorePointCreated < MinTimeBetweenRestorePoints)
                 {
-                    Debug.WriteLine("?? Ya se creÛ un punto de restauraciÛn en las ˙ltimas 24 horas");
-                    Debug.WriteLine("   Windows limita a 1 punto por dÌa por defecto");
+                    Debug.WriteLine("?? Ya se cre√≥ un punto de restauraci√≥n en las √∫ltimas 24 horas");
+                    Debug.WriteLine("   Windows limita a 1 punto por d√≠a por defecto");
                     return false;
                 }
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"?? Creando punto de restauraciÛn: {description}");
+                Debug.WriteLine($"?? Creando punto de restauraci√≥n: {description}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
-                // MÈtodo 1: Usar WMI (System.Management)
+                // M√©todo 1: Usar WMI (System.Management)
                 bool success = CreateRestorePointWMI(description);
 
                 if (success)
                 {
                     _lastRestorePointCreated = DateTime.Now;
-                    Debug.WriteLine("? Punto de restauraciÛn creado exitosamente");
+                    Debug.WriteLine("? Punto de restauraci√≥n creado exitosamente");
                     Debug.WriteLine("???????????????????????????????????????????????????????????????");
                     return true;
                 }
 
-                // MÈtodo 2: Fallback a PowerShell si WMI falla
-                Debug.WriteLine("?? WMI fallÛ, intentando con PowerShell...");
+                // M√©todo 2: Fallback a PowerShell si WMI falla
+                Debug.WriteLine("?? WMI fall√≥, intentando con PowerShell...");
                 success = CreateRestorePointPowerShell(description);
 
                 if (success)
                 {
                     _lastRestorePointCreated = DateTime.Now;
-                    Debug.WriteLine("? Punto de restauraciÛn creado con PowerShell");
+                    Debug.WriteLine("? Punto de restauraci√≥n creado con PowerShell");
                     Debug.WriteLine("???????????????????????????????????????????????????????????????");
                     return true;
                 }
 
-                Debug.WriteLine("? No se pudo crear punto de restauraciÛn");
+                Debug.WriteLine("? No se pudo crear punto de restauraci√≥n");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
                 return false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error creando punto de restauraciÛn: {ex.Message}");
+                Debug.WriteLine($"? Error creando punto de restauraci√≥n: {ex.Message}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
                 return false;
             }
         }
 
         /// <summary>
-        /// Crea punto de restauraciÛn usando WMI (System.Management)
+        /// Crea punto de restauraci√≥n usando WMI (System.Management)
         /// </summary>
         private static bool CreateRestorePointWMI(string description)
         {
@@ -86,31 +86,31 @@ namespace Tweaker.Utilities
                 ManagementScope scope = new ManagementScope("\\\\localhost\\root\\default");
                 scope.Connect();
 
-                // Crear punto de restauraciÛn
+                // Crear punto de restauraci√≥n
                 ManagementClass restorePoint = new ManagementClass(scope, new ManagementPath("SystemRestore"), null);
-                
-                // Par·metros del mÈtodo CreateRestorePoint
+
+                // Par√°metros del m√©todo CreateRestorePoint
                 ManagementBaseObject inParams = restorePoint.GetMethodParameters("CreateRestorePoint");
                 inParams["Description"] = description;
                 inParams["RestorePointType"] = 12; // MODIFY_SETTINGS
                 inParams["EventType"] = 100; // BEGIN_SYSTEM_CHANGE
 
-                // Invocar mÈtodo
+                // Invocar m√©todo
                 ManagementBaseObject outParams = restorePoint.InvokeMethod("CreateRestorePoint", inParams, null);
 
                 // Verificar resultado
                 if (outParams != null)
                 {
                     uint returnValue = (uint)outParams["ReturnValue"];
-                    
+
                     if (returnValue == 0)
                     {
-                        Debug.WriteLine("   ? WMI: Punto de restauraciÛn creado");
+                        Debug.WriteLine("   ? WMI: Punto de restauraci√≥n creado");
                         return true;
                     }
                     else
                     {
-                        Debug.WriteLine($"   ?? WMI retornÛ cÛdigo: {returnValue}");
+                        Debug.WriteLine($"   ?? WMI retorn√≥ c√≥digo: {returnValue}");
                         return false;
                     }
                 }
@@ -125,7 +125,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Crea punto de restauraciÛn usando PowerShell (fallback)
+        /// Crea punto de restauraci√≥n usando PowerShell (fallback)
         /// </summary>
         private static bool CreateRestorePointPowerShell(string description)
         {
@@ -150,7 +150,7 @@ namespace Tweaker.Utilities
                     if (process == null)
                         return false;
 
-                    process.WaitForExit(30000); // Esperar m·ximo 30 segundos
+                    process.WaitForExit(30000); // Esperar m√°ximo 30 segundos
 
                     string output = process.StandardOutput.ReadToEnd();
                     string error = process.StandardError.ReadToEnd();
@@ -179,7 +179,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si System Restore est· habilitado
+        /// Verifica si System Restore est√° habilitado
         /// </summary>
         public static bool IsSystemRestoreEnabled()
         {
@@ -191,7 +191,7 @@ namespace Tweaker.Utilities
                 ObjectQuery query = new ObjectQuery("SELECT * FROM SystemRestore");
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(scope, query);
 
-                // Si podemos ejecutar la query, System Restore est· habilitado
+                // Si podemos ejecutar la query, System Restore est√° habilitado
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     return true;
@@ -201,13 +201,13 @@ namespace Tweaker.Utilities
             }
             catch
             {
-                // Si hay error, asumir que no est· habilitado
+                // Si hay error, asumir que no est√° habilitado
                 return false;
             }
         }
 
         /// <summary>
-        /// Obtiene el tiempo desde el ˙ltimo punto de restauraciÛn creado
+        /// Obtiene el tiempo desde el √∫ltimo punto de restauraci√≥n creado
         /// </summary>
         public static TimeSpan TimeSinceLastRestorePoint()
         {
@@ -215,7 +215,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si se puede crear un nuevo punto de restauraciÛn
+        /// Verifica si se puede crear un nuevo punto de restauraci√≥n
         /// </summary>
         public static bool CanCreateRestorePoint()
         {
@@ -223,18 +223,18 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Muestra prompt al usuario para crear punto de restauraciÛn
+        /// Muestra prompt al usuario para crear punto de restauraci√≥n
         /// </summary>
         public static void PromptCreateRestorePoint()
         {
             try
             {
-                // Intentar crear punto de restauraciÛn autom·ticamente
-                bool success = CreateRestorePoint("Ghost Optimizer - Backup Autom·tico");
+                // Intentar crear punto de restauraci√≥n autom√°ticamente
+                bool success = CreateRestorePoint("Ghost Optimizer - Backup Autom√°tico");
 
                 if (!success)
                 {
-                    Debug.WriteLine("?? No se pudo crear punto de restauraciÛn autom·ticamente");
+                    Debug.WriteLine("?? No se pudo crear punto de restauraci√≥n autom√°ticamente");
                 }
             }
             catch (Exception ex)

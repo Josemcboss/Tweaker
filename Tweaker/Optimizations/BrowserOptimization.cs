@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -16,8 +17,8 @@ namespace Tweaker.Optimizations
         private const string DNS_CACHE_PARAMS = @"SYSTEM\CurrentControlSet\Services\Dnscache\Parameters";
 
         /// <summary>
-        /// Aplica configuraciÛn balanceada para navegadores y gaming
-        /// Corrige tweaks extremos que causan lentitud en navegaciÛn web
+        /// Aplica configuraci√≥n balanceada para navegadores y gaming
+        /// Corrige tweaks extremos que causan lentitud en navegaci√≥n web
         /// </summary>
         public static bool ApplyBrowserBalancedTweaks()
         {
@@ -55,7 +56,7 @@ namespace Tweaker.Optimizations
                             {
                                 if (interfaceKey == null) continue;
 
-                                // Verificar si la interfaz est· activa
+                                // Verificar si la interfaz est√° activa
                                 var dhcpIp = interfaceKey.GetValue("DhcpIPAddress")?.ToString();
                                 var staticIp = interfaceKey.GetValue("IPAddress");
 
@@ -93,12 +94,12 @@ namespace Tweaker.Optimizations
                     if (dnsKey != null)
                     {
                         // Cache positivo alto (bueno para navegadores)
-                        dnsKey.SetValue("MaxCacheTtl", 86400, RegistryValueKind.DWord); // 1 dÌa
+                        dnsKey.SetValue("MaxCacheTtl", 86400, RegistryValueKind.DWord); // 1 d√≠a
 
-                        // Cache negativo corto (evita consultas excesivas pero permite retry r·pido)
+                        // Cache negativo corto (evita consultas excesivas pero permite retry r√°pido)
                         dnsKey.SetValue("MaxNegativeCacheTtl", 30, RegistryValueKind.DWord); // 30 segundos
 
-                        // Failure cache corto (retry r·pido para sitios caÌdos temporalmente)
+                        // Failure cache corto (retry r√°pido para sitios ca√≠dos temporalmente)
                         dnsKey.SetValue("NetFailureCacheTime", 10, RegistryValueKind.DWord); // 10 segundos
 
                         // SOA cache corto
@@ -113,18 +114,18 @@ namespace Tweaker.Optimizations
                 bool dnsFlushSuccess = FlushDnsCache();
                 if (!dnsFlushSuccess)
                 {
-                    Debug.WriteLine("? Advertencia: DNS flush fallÛ, pero tweaks se aplicaron");
+                    Debug.WriteLine("? Advertencia: DNS flush fall√≥, pero tweaks se aplicaron");
                 }
 
                 Debug.WriteLine($"? {interfacesOptimized} interfaces optimizadas");
-                
+
                 if (interfacesOptimized == 0)
                 {
-                    Debug.WriteLine("? No se encontrÛ ninguna interfaz de red activa para optimizar.");
-                    Debug.WriteLine("? Verifica que tu adaptador de red estÈ conectado y activo.");
-                    return false; // No se optimizÛ nada
+                    Debug.WriteLine("? No se encontr√≥ ninguna interfaz de red activa para optimizar.");
+                    Debug.WriteLine("? Verifica que tu adaptador de red est√© conectado y activo.");
+                    return false; // No se optimiz√≥ nada
                 }
-                
+
                 Debug.WriteLine("?? Tweaks balanceados aplicados exitosamente");
                 Debug.WriteLine("?? Navegadores: Velocidad mejorada");
                 Debug.WriteLine("?? Gaming: Rendimiento mantenido");
@@ -209,7 +210,7 @@ namespace Tweaker.Optimizations
                         dnsKey.SetValue("MaxNegativeCacheTtl", 0, RegistryValueKind.DWord);
                         dnsKey.SetValue("NetFailureCacheTime", 0, RegistryValueKind.DWord);
                         dnsKey.SetValue("NegativeSOACacheTime", 0, RegistryValueKind.DWord);
-                        Debug.WriteLine("? DNS Cache: configuraciÛn extrema para gaming");
+                        Debug.WriteLine("? DNS Cache: configuraci√≥n extrema para gaming");
                     }
                 }
 
@@ -226,7 +227,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DiagnÛstica problemas de navegador
+        /// Diagn√≥stica problemas de navegador
         /// </summary>
         public static string DiagnoseBrowserIssues()
         {
@@ -273,7 +274,7 @@ namespace Tweaker.Optimizations
 
                 if (aggressiveInterfaces > 0)
                 {
-                    issues.Add($"? {aggressiveInterfaces} interfaces con configuraciÛn TCP muy agresiva");
+                    issues.Add($"? {aggressiveInterfaces} interfaces con configuraci√≥n TCP muy agresiva");
                 }
 
                 // Verificar DNS Cache
@@ -291,14 +292,14 @@ namespace Tweaker.Optimizations
 
                 if (issues.Count == 0)
                 {
-                    return "? ConfiguraciÛn balanceada detectada - navegadores deberÌan funcionar bien";
+                    return "? Configuraci√≥n balanceada detectada - navegadores deber√≠an funcionar bien";
                 }
 
                 return string.Join("\n", issues);
             }
             catch (Exception ex)
             {
-                return $"? Error en diagnÛstico: {ex.Message}";
+                return $"? Error en diagn√≥stico: {ex.Message}";
             }
         }
 
@@ -327,7 +328,7 @@ namespace Tweaker.Optimizations
 
                 if (process.ExitCode != 0)
                 {
-                    Debug.WriteLine($"? ipconfig /flushdns terminÛ con cÛdigo {process.ExitCode}");
+                    Debug.WriteLine($"? ipconfig /flushdns termin√≥ con c√≥digo {process.ExitCode}");
                     return false;
                 }
 

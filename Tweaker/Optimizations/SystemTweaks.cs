@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -46,7 +47,7 @@ namespace Tweaker.Optimizations
                         key.SetValue("GPU Priority", 8, RegistryValueKind.DWord);
                         key.SetValue("Priority", 6, RegistryValueKind.DWord);
                         key.SetValue("Scheduling Category", "High", RegistryValueKind.String);
-                        
+
                         Debug.WriteLine("✓ GPU Priority: 8 (Máxima)");
                         Debug.WriteLine("✓ CPU Priority: 6 (Alta)");
                         Debug.WriteLine("✓ Scheduling: High");
@@ -99,13 +100,16 @@ namespace Tweaker.Optimizations
 
                 using (Process proc = Process.Start(psi1))
                 {
-                    proc?.WaitForExit();
-                    string output = proc?.StandardOutput.ReadToEnd();
-                    
-                    // Extraer GUID del plan duplicado (si se creó)
-                    if (output.Contains("Power Scheme GUID:"))
+                    if (proc != null) // Check for null
                     {
-                        Debug.WriteLine("✓ Ultimate Performance plan creado");
+                        proc.WaitForExit();
+                        string output = proc.StandardOutput.ReadToEnd();
+
+                        // Extraer GUID del plan duplicado (si se creó)
+                        if (output.Contains("Power Scheme GUID:"))
+                        {
+                            Debug.WriteLine("✓ Ultimate Performance plan creado");
+                        }
                     }
                 }
 

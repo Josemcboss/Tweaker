@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics;
 using System.Management;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// Tweaks avanzados de latencia que no est·n en LatencyOptimization.cs
+    /// Tweaks avanzados de latencia que no est√°n en LatencyOptimization.cs
     /// Incluye: Interrupt Moderation, MenuShowDelay, DataQueueSizes, CSRSS Priority
     /// </summary>
     public static class AdvancedLatencyTweaks
@@ -18,35 +19,35 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Deshabilita Interrupt Moderation en adaptadores de red
         /// 
-        /// øQU… ES INTERRUPT MODERATION?
+        /// ¬øQU√â ES INTERRUPT MODERATION?
         /// ???????????????????????????????????????????????????????????????
-        /// ï Feature de tarjetas de red modernas
-        /// ï Agrupa m˙ltiples interrupciones en una sola
-        /// ï Reduce overhead de CPU (~5-10%)
-        /// ï Pero AUMENTA LATENCIA en 2-10ms
+        /// ‚Ä¢ Feature de tarjetas de red modernas
+        /// ‚Ä¢ Agrupa m√∫ltiples interrupciones en una sola
+        /// ‚Ä¢ Reduce overhead de CPU (~5-10%)
+        /// ‚Ä¢ Pero AUMENTA LATENCIA en 2-10ms
         /// 
         /// PROBLEMA EN GAMING:
         /// ???????????????????????????????????????????????????????????????
-        /// ï Cada packet network genera una interrupciÛn
-        /// ï Interrupt Moderation "espera" antes de notificar al CPU
-        /// ï Causa micro-delays en recepciÛn de datos
-        /// ï CRÕTICO en shooters (CS2, Valorant, Apex)
+        /// ‚Ä¢ Cada packet network genera una interrupci√≥n
+        /// ‚Ä¢ Interrupt Moderation "espera" antes de notificar al CPU
+        /// ‚Ä¢ Causa micro-delays en recepci√≥n de datos
+        /// ‚Ä¢ CR√çTICO en shooters (CS2, Valorant, Apex)
         /// 
-        /// SOLUCI”N:
+        /// SOLUCI√ìN:
         /// ???????????????????????????????????????????????????????????????
-        /// ï InterruptModeration = 0 (Deshabilitado)
-        /// ï Cada packet procesado inmediatamente
-        /// ï Reduce ping efectivo en 2-5ms
-        /// ï Mejor hitreg (registro de disparos)
+        /// ‚Ä¢ InterruptModeration = 0 (Deshabilitado)
+        /// ‚Ä¢ Cada packet procesado inmediatamente
+        /// ‚Ä¢ Reduce ping efectivo en 2-5ms
+        /// ‚Ä¢ Mejor hitreg (registro de disparos)
         /// 
         /// IMPACTO:
         /// ???????????????????????????????????????????????????????????????
         /// ? Ping: -2 a -5ms
         /// ? Mejor hitreg
         /// ? Elimina "peeker's disadvantage"
-        /// ?? CPU usage +3-5% (mÌnimo en PCs modernos)
+        /// ?? CPU usage +3-5% (m√≠nimo en PCs modernos)
         /// 
-        /// UBICACI”N EN REGISTRO:
+        /// UBICACI√ìN EN REGISTRO:
         /// HKLM\SYSTEM\CurrentControlSet\Control\Class\
         /// {4d36e972-e325-11ce-bfc1-08002be10318}\[ID]\*InterruptModeration
         /// </summary>
@@ -73,7 +74,7 @@ namespace Tweaker.Optimizations
                     // Iterar sobre todos los subkeys (0000, 0001, 0002, etc.)
                     foreach (string subKeyName in baseKey.GetSubKeyNames())
                     {
-                        // Solo procesar keys numÈricas (0000-9999)
+                        // Solo procesar keys num√©ricas (0000-9999)
                         if (!subKeyName.All(char.IsDigit) || subKeyName.Length != 4)
                             continue;
 
@@ -84,14 +85,14 @@ namespace Tweaker.Optimizations
                             {
                                 if (adapterKey == null) continue;
 
-                                // Verificar que sea un adaptador de red v·lido
+                                // Verificar que sea un adaptador de red v√°lido
                                 string driverDesc = adapterKey.GetValue("DriverDesc") as string;
                                 if (string.IsNullOrEmpty(driverDesc))
                                     continue;
 
                                 // Deshabilitar Interrupt Moderation
                                 adapterKey.SetValue("*InterruptModeration", "0", RegistryValueKind.String);
-                                
+
                                 Debug.WriteLine($"   ? {driverDesc}: Interrupt Moderation = 0");
                                 adaptersModified++;
                             }
@@ -157,7 +158,7 @@ namespace Tweaker.Optimizations
 
                                 // Restaurar a valor por defecto (1 = habilitado)
                                 adapterKey.SetValue("*InterruptModeration", "1", RegistryValueKind.String);
-                                
+
                                 Debug.WriteLine($"   ? {driverDesc}: Interrupt Moderation restaurado");
                                 adaptersModified++;
                             }
@@ -181,19 +182,19 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Elimina delay en men˙s contextuales de Windows
+        /// Elimina delay en men√∫s contextuales de Windows
         /// 
         /// PROBLEMA:
-        /// ï Windows espera 400ms antes de mostrar men˙s
-        /// ï Delay artificial para "suavizar" la experiencia
-        /// ï Hace que Windows se sienta "lento"
+        /// ‚Ä¢ Windows espera 400ms antes de mostrar men√∫s
+        /// ‚Ä¢ Delay artificial para "suavizar" la experiencia
+        /// ‚Ä¢ Hace que Windows se sienta "lento"
         /// 
-        /// SOLUCI”N:
-        /// ï MenuShowDelay = 0
-        /// ï Men˙s aparecen instant·neamente
-        /// ï UI m·s responsive y "snappy"
+        /// SOLUCI√ìN:
+        /// ‚Ä¢ MenuShowDelay = 0
+        /// ‚Ä¢ Men√∫s aparecen instant√°neamente
+        /// ‚Ä¢ UI m√°s responsive y "snappy"
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKCU\Control Panel\Desktop\MenuShowDelay
         /// </summary>
         public static bool SetMenuShowDelayZero()
@@ -214,7 +215,7 @@ namespace Tweaker.Optimizations
                     key.SetValue("MenuShowDelay", "0", RegistryValueKind.String);
 
                     Debug.WriteLine("? MenuShowDelay = 0ms");
-                    Debug.WriteLine("?? Los men˙s ahora aparecen instant·neamente");
+                    Debug.WriteLine("?? Los men√∫s ahora aparecen instant√°neamente");
                     return true;
                 }
             }
@@ -257,24 +258,24 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Aumenta tamaÒo de colas de datos de mouse y teclado
+        /// Aumenta tama√±o de colas de datos de mouse y teclado
         /// 
         /// PROBLEMA:
-        /// ï Colas por defecto: 100 (0x64)
-        /// ï Con input r·pido, se pueden perder eventos
-        /// ï Causa "skipped inputs" en gaming competitivo
+        /// ‚Ä¢ Colas por defecto: 100 (0x64)
+        /// ‚Ä¢ Con input r√°pido, se pueden perder eventos
+        /// ‚Ä¢ Causa "skipped inputs" en gaming competitivo
         /// 
-        /// SOLUCI”N:
-        /// ï KeyboardDataQueueSize = 256 (0x100)
-        /// ï MouseDataQueueSize = 256 (0x100)
-        /// ï Mayor buffer = menos inputs perdidos
+        /// SOLUCI√ìN:
+        /// ‚Ä¢ KeyboardDataQueueSize = 256 (0x100)
+        /// ‚Ä¢ MouseDataQueueSize = 256 (0x100)
+        /// ‚Ä¢ Mayor buffer = menos inputs perdidos
         /// 
         /// IMPACTO:
         /// ? Elimina "skipped inputs"
-        /// ? Mejor tracking de mouse r·pido
-        /// ? M·s inputs registrados en flicks
+        /// ? Mejor tracking de mouse r√°pido
+        /// ? M√°s inputs registrados en flicks
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKLM\SYSTEM\CurrentControlSet\Services\mouclass\Parameters
         /// HKLM\SYSTEM\CurrentControlSet\Services\kbdclass\Parameters
         /// </summary>
@@ -388,23 +389,23 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Optimiza prioridad de CSRSS para mejor rendering
         /// 
-        /// øQU… ES CSRSS?
+        /// ¬øQU√â ES CSRSS?
         /// ???????????????????????????????????????????????????????????????
-        /// ï Client/Server Runtime Subsystem
-        /// ï Proceso crÌtico de Windows
-        /// ï Maneja GDI (Graphics Device Interface)
-        /// ï Responsable de UI rendering
+        /// ‚Ä¢ Client/Server Runtime Subsystem
+        /// ‚Ä¢ Proceso cr√≠tico de Windows
+        /// ‚Ä¢ Maneja GDI (Graphics Device Interface)
+        /// ‚Ä¢ Responsable de UI rendering
         /// 
         /// PROBLEMA:
-        /// ï Por defecto, CSRSS tiene baja prioridad
-        /// ï Causa stuttering en UI
-        /// ï Delay en rendering de overlays
+        /// ‚Ä¢ Por defecto, CSRSS tiene baja prioridad
+        /// ‚Ä¢ Causa stuttering en UI
+        /// ‚Ä¢ Delay en rendering de overlays
         /// 
-        /// SOLUCI”N:
-        /// ï Win32PrioritySeparation con GDI optimizado
-        /// ï Realtime priority para CSRSS
+        /// SOLUCI√ìN:
+        /// ‚Ä¢ Win32PrioritySeparation con GDI optimizado
+        /// ‚Ä¢ Realtime priority para CSRSS
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe
         /// </summary>
         public static bool OptimizeCSRSSPriority()
@@ -415,7 +416,7 @@ namespace Tweaker.Optimizations
 
                 // Crear clave para CSRSS.exe
                 string csrssPath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe";
-                
+
                 using (var key = Registry.LocalMachine.CreateSubKey(csrssPath, true))
                 {
                     if (key == null)
@@ -431,7 +432,7 @@ namespace Tweaker.Optimizations
                         {
                             // CpuPriorityClass = 3 (High Priority)
                             perfKey.SetValue("CpuPriorityClass", 3, RegistryValueKind.DWord);
-                            
+
                             // IoPriority = 3 (High)
                             perfKey.SetValue("IoPriority", 3, RegistryValueKind.DWord);
 
@@ -463,7 +464,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("?? Restaurando CSRSS Priority...");
 
                 string csrssPath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\csrss.exe";
-                
+
                 // Eliminar toda la clave (restaura a comportamiento por defecto)
                 Registry.LocalMachine.DeleteSubKeyTree(csrssPath, false);
 
@@ -493,7 +494,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("???????????????????????????????????????");
 
                 bool success = true;
-                
+
                 success &= DisableInterruptModeration();
                 success &= SetMenuShowDelayZero();
                 success &= OptimizeDataQueueSizes();

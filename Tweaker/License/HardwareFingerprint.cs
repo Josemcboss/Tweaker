@@ -1,9 +1,9 @@
 using System;
+using System.Linq;
 using System.Management;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
-using System.Linq;
 
 namespace Tweaker.License
 {

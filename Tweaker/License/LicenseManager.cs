@@ -58,8 +58,13 @@ namespace Tweaker.License
                     return false;
                 }
 
-                // Re-validar la llave completa
-                var validatedLicense = LicenseValidator.ValidateLicenseKey(licenseKey, currentFingerprint);
+                // TODO: Refactor this to use dependency injection
+                var keyVault = new KeyVault();
+                var securityChecks = new SecurityChecks();
+                var validator = new LicenseValidator(keyVault, securityChecks);
+
+                // Re-validar la llave completa (usando la fecha de creación guardada)
+                var validatedLicense = validator.ValidateLicenseKey(licenseKey, currentFingerprint, DateTime.Now, savedLicense.CreatedDate);
                 if (validatedLicense == null)
                 {
                     // Llave no válida (archivo corrupto/modificado)
@@ -104,7 +109,7 @@ namespace Tweaker.License
                     "Licencia Requerida",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
-                
+
                 Application.Current.Shutdown();
             }
 
@@ -146,7 +151,7 @@ namespace Tweaker.License
 
             var info = "Licencia Activa\n";
             info += $"Hardware ID: {HardwareFingerprint.GetDisplayFingerprint()}\n";
-            
+
             if (currentLicense.IsPerpetual)
             {
                 info += "Tipo: Perpetua ♾️\n";

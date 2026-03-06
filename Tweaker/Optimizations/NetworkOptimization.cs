@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -15,12 +16,12 @@ namespace Tweaker.Optimizations
         private const string SYSTEM_PROFILE = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
 
         /// <summary>
-        /// OPTIMIZACI”N COMPLETA DE RED (Adamx Tweaks)
+        /// OPTIMIZACI√ìN COMPLETA DE RED (Adamx Tweaks)
         /// 
-        /// Este mÈtodo hace 2 cosas crÌticas:
+        /// Este m√©todo hace 2 cosas cr√≠ticas:
         /// 
         /// 1. TWEAKS TCP/IP EN LA INTERFAZ DE RED ACTIVA:
-        ///    - Busca din·micamente la tarjeta de red activa (con IP asignada)
+        ///    - Busca din√°micamente la tarjeta de red activa (con IP asignada)
         ///    - Aplica tweaks TCP/IP para eliminar delays artificiales
         /// 
         /// 2. TWEAKS GLOBALES DEL SISTEMA:
@@ -43,13 +44,13 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 1: BUSCAR Y OPTIMIZAR INTERFAZ DE RED ACTIVA
                 // ???????????????????????????????????????????????????????????
-                
+
                 tcpipSuccess = OptimizeTcpIpInterface();
 
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: APLICAR TWEAKS GLOBALES DE SISTEMA
                 // ???????????????????????????????????????????????????????????
-                
+
                 systemSuccess = OptimizeSystemNetworkSettings();
 
                 return tcpipSuccess && systemSuccess;
@@ -64,24 +65,24 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// OPTIMIZA LA INTERFAZ DE RED TCP/IP ACTIVA
         /// 
-        /// B⁄SQUEDA DIN¡MICA:
+        /// B√öSQUEDA DIN√ÅMICA:
         /// - Itera sobre todas las interfaces en el registro
-        /// - Busca la que tiene DHCP habilitado O direcciÛn IP est·tica
-        /// - Aplica los tweaks TCP/IP crÌticos
+        /// - Busca la que tiene DHCP habilitado O direcci√≥n IP est√°tica
+        /// - Aplica los tweaks TCP/IP cr√≠ticos
         /// 
         /// TWEAKS APLICADOS:
         /// 
-        /// 1. TcpAckFrequency = 1 (CRÕTICO)
+        /// 1. TcpAckFrequency = 1 (CR√çTICO)
         ///    - Windows por defecto espera recibir 2 paquetes antes de enviar ACK
         ///    - O espera 200ms si solo llega 1 paquete
         ///    - Valor 1 = ACK inmediato sin esperar
         ///    - REDUCE PING EN 10-40ms en juegos
         /// 
         /// 2. TCPNoDelay = 1 (Deshabilita Nagle's Algorithm)
-        ///    - Nagle's Algorithm agrupa paquetes pequeÒos para "eficiencia"
+        ///    - Nagle's Algorithm agrupa paquetes peque√±os para "eficiencia"
         ///    - En gaming causa LAG porque retrasa paquetes
         ///    - Valor 1 = Enviar paquetes inmediatamente sin agrupar
-        ///    - CRÕTICO para shooters (Valorant, CS2, COD)
+        ///    - CR√çTICO para shooters (Valorant, CS2, COD)
         /// 
         /// 3. TcpDelAckTicks = 0
         ///    - Controla el delay de ACK (en ticks de 100ms)
@@ -108,7 +109,7 @@ namespace Tweaker.Optimizations
 
                     // Obtener todas las sub-claves (cada una es una interfaz de red)
                     string[] interfaceGuids = interfacesKey.GetSubKeyNames();
-                    
+
                     int optimizedInterfaces = 0;
 
                     // Iterar sobre todas las interfaces
@@ -124,17 +125,17 @@ namespace Tweaker.Optimizations
                                 // ???????????????????????????????????????????????????????
                                 // DETECTAR SI ES UNA INTERFAZ ACTIVA
                                 // ???????????????????????????????????????????????????????
-                                
+
                                 // Verificar si tiene DHCP habilitado
                                 object dhcpEnabled = interfaceKey.GetValue("EnableDHCP");
-                                
-                                // Verificar si tiene IP est·tica asignada
+
+                                // Verificar si tiene IP est√°tica asignada
                                 object ipAddress = interfaceKey.GetValue("IPAddress");
                                 object dhcpIpAddress = interfaceKey.GetValue("DhcpIPAddress");
 
                                 // Es una interfaz activa si:
                                 // - Tiene DHCP habilitado (valor 1)
-                                // - O tiene una direcciÛn IP asignada (est·tica o DHCP)
+                                // - O tiene una direcci√≥n IP asignada (est√°tica o DHCP)
                                 bool isActiveInterface = false;
 
                                 if (dhcpEnabled != null && dhcpEnabled.ToString() == "1")
@@ -156,7 +157,7 @@ namespace Tweaker.Optimizations
                                     Debug.WriteLine($"Optimizando interfaz activa: {guid}");
 
                                     // ???????????????????????????????????????????????????????
-                                    // APLICAR TWEAKS TCP/IP CRÕTICOS
+                                    // APLICAR TWEAKS TCP/IP CR√çTICOS
                                     // ???????????????????????????????????????????????????????
 
                                     // TcpAckFrequency = 2 (BALANCEADO: gaming + navegadores)
@@ -201,7 +202,7 @@ namespace Tweaker.Optimizations
                     }
                     else
                     {
-                        Debug.WriteLine("? No se encontrÛ ninguna interfaz de red activa");
+                        Debug.WriteLine("? No se encontr√≥ ninguna interfaz de red activa");
                         return false;
                     }
                 }
@@ -214,21 +215,21 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// OPTIMIZA CONFIGURACI”N GLOBAL DE RED DEL SISTEMA
+        /// OPTIMIZA CONFIGURACI√ìN GLOBAL DE RED DEL SISTEMA
         /// 
-        /// NetworkThrottlingIndex = 0xFFFFFFFF (DWORD m·ximo)
-        ///   - Windows limita paquetes de red por segundo para "ahorrar energÌa"
+        /// NetworkThrottlingIndex = 0xFFFFFFFF (DWORD m√°ximo)
+        ///   - Windows limita paquetes de red por segundo para "ahorrar energ√≠a"
         ///   - Este tweak ELIMINA completamente el throttling
-        ///   - Valor m·ximo (FFFFFFFF) = sin lÌmite de paquetes
+        ///   - Valor m√°ximo (FFFFFFFF) = sin l√≠mite de paquetes
         ///   
         ///   IMPACTO:
         ///   - Reduce ping en 5-20ms
         ///   - Elimina "packet loss" artificial
         ///   - Mejora "tickrate" percibido en juegos
-        ///   - CRÕTICO para juegos de 128 tick (CS2, Valorant)
+        ///   - CR√çTICO para juegos de 128 tick (CS2, Valorant)
         /// 
         /// SystemResponsiveness = 0
-        ///   - Controla cu·nto CPU reserva Windows para tareas del sistema
+        ///   - Controla cu√°nto CPU reserva Windows para tareas del sistema
         ///   - Valor 0 = 0% reservado, TODO disponible para juegos
         ///   
         ///   IMPACTO:
@@ -273,14 +274,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// RESTAURA CONFIGURACI”N DE RED A VALORES PREDETERMINADOS DE WINDOWS
+        /// RESTAURA CONFIGURACI√ìN DE RED A VALORES PREDETERMINADOS DE WINDOWS
         /// 
         /// ELIMINA los valores personalizados de las interfaces TCP/IP
         /// y restaura los valores del sistema a predeterminados.
         /// 
         /// NOTA: Los valores TCP/IP se ELIMINAN en vez de cambiarlos porque:
         /// - Windows usa valores internos si no existen en el registro
-        /// - Es m·s limpio que intentar adivinar los valores originales
+        /// - Es m√°s limpio que intentar adivinar los valores originales
         /// </summary>
         public static bool RestoreNetwork()
         {
@@ -292,13 +293,13 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 1: RESTAURAR INTERFACES TCP/IP
                 // ???????????????????????????????????????????????????????????
-                
+
                 tcpipSuccess = RestoreTcpIpInterface();
 
                 // ???????????????????????????????????????????????????????????
-                // PASO 2: RESTAURAR CONFIGURACI”N GLOBAL DE SISTEMA
+                // PASO 2: RESTAURAR CONFIGURACI√ìN GLOBAL DE SISTEMA
                 // ???????????????????????????????????????????????????????????
-                
+
                 systemSuccess = RestoreSystemNetworkSettings();
 
                 return tcpipSuccess && systemSuccess;
@@ -337,13 +338,13 @@ namespace Tweaker.Optimizations
                             {
                                 if (interfaceKey == null) continue;
 
-                                // Eliminar valores personalizados (Windows usar· sus defaults)
+                                // Eliminar valores personalizados (Windows usar√° sus defaults)
                                 try
                                 {
                                     interfaceKey.DeleteValue("TcpAckFrequency", false);
                                     interfaceKey.DeleteValue("TCPNoDelay", false);
                                     interfaceKey.DeleteValue("TcpDelAckTicks", false);
-                                    
+
                                     restoredInterfaces++;
                                     Debug.WriteLine($"? Interfaz restaurada: {guid}");
                                 }
@@ -371,7 +372,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// RESTAURA configuraciÛn global de red del sistema a valores predeterminados
+        /// RESTAURA configuraci√≥n global de red del sistema a valores predeterminados
         /// </summary>
         private static bool RestoreSystemNetworkSettings()
         {
@@ -391,7 +392,7 @@ namespace Tweaker.Optimizations
                     // SystemResponsiveness = 20 (valor predeterminado de Windows)
                     key.SetValue("SystemResponsiveness", 20, RegistryValueKind.DWord);
 
-                    Debug.WriteLine("? ConfiguraciÛn global de red restaurada:");
+                    Debug.WriteLine("? Configuraci√≥n global de red restaurada:");
                     Debug.WriteLine("  - NetworkThrottlingIndex: 10 (predeterminado)");
                     Debug.WriteLine("  - SystemResponsiveness: 20 (predeterminado)");
 
@@ -406,8 +407,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Muestra informaciÛn de las interfaces de red detectadas
-        /// ⁄til para debugging y verificar quÈ interfaces se est·n optimizando
+        /// M√âTODO AUXILIAR: Muestra informaci√≥n de las interfaces de red detectadas
+        /// √ötil para debugging y verificar qu√© interfaces se est√°n optimizando
         /// </summary>
         public static string GetNetworkInterfacesInfo()
         {
@@ -431,15 +432,15 @@ namespace Tweaker.Optimizations
                                 if (interfaceKey == null) continue;
 
                                 info += $"GUID: {guid}\n";
-                                
+
                                 object dhcp = interfaceKey.GetValue("EnableDHCP");
                                 object ip = interfaceKey.GetValue("DhcpIPAddress");
-                                
+
                                 if (dhcp != null)
                                     info += $"  DHCP: {dhcp}\n";
                                 if (ip != null && !string.IsNullOrEmpty(ip.ToString()))
                                     info += $"  IP: {ip}\n";
-                                
+
                                 info += "\n";
                             }
                         }
@@ -451,7 +452,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                return $"Error obteniendo informaciÛn: {ex.Message}";
+                return $"Error obteniendo informaci√≥n: {ex.Message}";
             }
         }
 
@@ -466,17 +467,17 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("???????????????????????????????????????????????");
 
                 bool success = true;
-                
+
                 // Restaurar interfaces TCP/IP
                 success &= RestoreTcpIpInterface();
-                
+
                 // Restaurar configuraciones globales del sistema
                 success &= RestoreSystemNetworkSettings();
 
                 if (success)
                 {
                     Debug.WriteLine("\n? TODAS LAS OPTIMIZACIONES DE RED REVERTIDAS");
-                    Debug.WriteLine("   Red restaurada a configuraciÛn por defecto");
+                    Debug.WriteLine("   Red restaurada a configuraci√≥n por defecto");
                 }
                 else
                 {
@@ -493,9 +494,9 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODOS DE COMPATIBILIDAD PARA PRESETS
+        /// M√âTODOS DE COMPATIBILIDAD PARA PRESETS
         /// </summary>
-        
+
         /// <summary>
         /// Aplica optimizaciones balanceadas de red (para laptops)
         /// Usa valores menos agresivos que las optimizaciones extremas
@@ -525,7 +526,7 @@ namespace Tweaker.Optimizations
                             // Verificar si es una interfaz activa
                             object enableDhcp = interfaceKey.GetValue("EnableDHCP");
                             object dhcpIp = interfaceKey.GetValue("DhcpIPAddress");
-                            
+
                             if ((enableDhcp != null && enableDhcp.ToString() == "1" && dhcpIp != null && !string.IsNullOrEmpty(dhcpIp.ToString())) ||
                                 interfaceKey.GetValue("IPAddress") != null)
                             {
@@ -533,7 +534,7 @@ namespace Tweaker.Optimizations
                                 interfaceKey.SetValue("TcpAckFrequency", 2, RegistryValueKind.DWord);  // 2 en lugar de 1
                                 interfaceKey.SetValue("TCPNoDelay", 1, RegistryValueKind.DWord);
                                 interfaceKey.SetValue("TcpDelAckTicks", 1, RegistryValueKind.DWord);    // 1 en lugar de 0
-                                interfaceKey.SetValue("TcpWindowSize", 65536, RegistryValueKind.DWord); // Buffer m·s grande
+                                interfaceKey.SetValue("TcpWindowSize", 65536, RegistryValueKind.DWord); // Buffer m√°s grande
 
                                 Debug.WriteLine($"? Optimizaciones balanceadas aplicadas a interfaz: {guid}");
                                 success = true;
@@ -556,9 +557,9 @@ namespace Tweaker.Optimizations
                 if (success)
                 {
                     Debug.WriteLine("\n?? OPTIMIZACIONES BALANCEADAS APLICADAS");
-                    Debug.WriteLine("   ï 90% del rendimiento de gaming");
-                    Debug.WriteLine("   ï Compatible con navegadores");
-                    Debug.WriteLine("   ï Estable para uso mixto");
+                    Debug.WriteLine("   ‚Ä¢ 90% del rendimiento de gaming");
+                    Debug.WriteLine("   ‚Ä¢ Compatible con navegadores");
+                    Debug.WriteLine("   ‚Ä¢ Estable para uso mixto");
                 }
 
                 return success;
@@ -571,13 +572,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Optimiza el cachÈ DNS para mejor rendimiento
+        /// Optimiza el cach√© DNS para mejor rendimiento
         /// </summary>
         public static bool OptimizeDNSCache()
         {
             try
             {
-                Debug.WriteLine("?? OPTIMIZANDO CACH… DNS");
+                Debug.WriteLine("?? OPTIMIZANDO CACH√â DNS");
                 Debug.WriteLine("???????????????????????");
 
                 bool success = false;
@@ -587,17 +588,17 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        // Optimizar cachÈ DNS
+                        // Optimizar cach√© DNS
                         key.SetValue("MaxCacheTtl", 86400, RegistryValueKind.DWord);      // 24 horas
-                        key.SetValue("NegativeCacheTime", 0, RegistryValueKind.DWord);    // Sin cachÈ negativo
-                        key.SetValue("MaxNegativeCacheTtl", 0, RegistryValueKind.DWord);  
+                        key.SetValue("NegativeCacheTime", 0, RegistryValueKind.DWord);    // Sin cach√© negativo
+                        key.SetValue("MaxNegativeCacheTtl", 0, RegistryValueKind.DWord);
                         key.SetValue("NetFailureCacheTime", 0, RegistryValueKind.DWord);
 
-                        Debug.WriteLine("? CachÈ DNS optimizado");
-                        Debug.WriteLine("   ï MaxCacheTtl: 86400s (24h)");
-                        Debug.WriteLine("   ï NegativeCacheTime: 0s");
-                        Debug.WriteLine("   ï ResoluciÛn DNS m·s r·pida");
-                        
+                        Debug.WriteLine("? Cach√© DNS optimizado");
+                        Debug.WriteLine("   ‚Ä¢ MaxCacheTtl: 86400s (24h)");
+                        Debug.WriteLine("   ‚Ä¢ NegativeCacheTime: 0s");
+                        Debug.WriteLine("   ‚Ä¢ Resoluci√≥n DNS m√°s r√°pida");
+
                         success = true;
                     }
                 }
@@ -612,13 +613,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si las optimizaciones de red est·n aplicadas
+        /// Verifica si las optimizaciones de red est√°n aplicadas
         /// </summary>
         public static bool IsNetworkOptimized()
         {
             try
             {
-                // Verificar si NetworkThrottlingIndex est· optimizado
+                // Verificar si NetworkThrottlingIndex est√° optimizado
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey(SYSTEM_PROFILE, false))
                 {
                     if (key != null)
@@ -627,7 +628,7 @@ namespace Tweaker.Optimizations
                         if (value != null)
                         {
                             int intValue = Convert.ToInt32(value);
-                            // Si es FFFFFFFF (-1) o un valor bajo (<=10), est· optimizado
+                            // Si es FFFFFFFF (-1) o un valor bajo (<=10), est√° optimizado
                             return intValue == -1 || intValue <= 10;
                         }
                     }

@@ -5,7 +5,7 @@ using System.Windows.Data;
 namespace Tweaker.Converters
 {
     /// <summary>
-    /// Converter para mostrar iconos de recomendación basados en si el tweak es recomendado o no
+    /// Converter para mostrar iconos de recomendaciÃ³n basados en si el tweak es recomendado o no
     /// </summary>
     public class BoolToRecommendationIconConverter : IValueConverter
     {

@@ -3,53 +3,53 @@ using System;
 namespace Tweaker.Models
 {
     /// <summary>
-    /// Informaci髇 sobre una actualizaci髇 disponible
+    /// Informaci贸n sobre una actualizaci贸n disponible
     /// </summary>
     public class UpdateInfo
     {
         /// <summary>
-        /// Versi髇 de la actualizaci髇 (ej: "2.4.0")
+        /// Versi贸n de la actualizaci贸n (ej: "2.4.0")
         /// </summary>
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         /// <summary>
         /// URL de descarga del instalador
         /// </summary>
-        public string DownloadUrl { get; set; }
+        public string? DownloadUrl { get; set; }
 
         /// <summary>
-        /// Tama駉 del archivo en bytes
+        /// Tama帽o del archivo en bytes
         /// </summary>
         public long FileSize { get; set; }
 
         /// <summary>
         /// Hash SHA256 del archivo para verificar integridad
         /// </summary>
-        public string Sha256Hash { get; set; }
+        public string? Sha256Hash { get; set; }
 
         /// <summary>
-        /// Changelog de la actualizaci髇
+        /// Changelog de la actualizaci贸n
         /// </summary>
-        public string Changelog { get; set; }
+        public string? Changelog { get; set; }
 
         /// <summary>
-        /// Fecha de publicaci髇
+        /// Fecha de publicaci贸n
         /// </summary>
         public DateTime ReleaseDate { get; set; }
 
         /// <summary>
-        /// Si es una actualizaci髇 cr韙ica (obligatoria)
+        /// Si es una actualizaci贸n cr铆tica (obligatoria)
         /// </summary>
         public bool IsCritical { get; set; }
 
         /// <summary>
-        /// Versi髇 m韓ima requerida para actualizar
+        /// Versi贸n m铆nima requerida para actualizar
         /// </summary>
-        public string MinimumVersion { get; set; }
+        public string? MinimumVersion { get; set; }
 
         /// <summary>
         /// Notas adicionales
         /// </summary>
-        public string ReleaseNotes { get; set; }
+        public string? ReleaseNotes { get; set; }
     }
 }

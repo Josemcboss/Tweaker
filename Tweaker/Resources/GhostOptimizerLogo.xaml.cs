@@ -3,8 +3,8 @@ using System.Windows.Controls;
 namespace Tweaker.Resources
 {
     /// <summary>
-    /// Logo GHOST OPTIMIZER para la aplicación Tweaker
-    /// Diseño cyberpunk con efectos de neón
+    /// Logo GHOST OPTIMIZER para la aplicaciÃ³n Tweaker
+    /// DiseÃ±o cyberpunk con efectos de neÃ³n
     /// </summary>
     public partial class GhostOptimizerLogo : UserControl
     {

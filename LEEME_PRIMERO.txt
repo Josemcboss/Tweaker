@@ -1,0 +1,59 @@
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║         🎮 GHOST OPTIMIZER v2.5.0                       ║
+║         CREAR EJECUTABLE PARA COMPARTIR                 ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+
+
+🚀 CÓMO CREAR EJECUTABLE (1 CLICK):
+
+   OPCIÓN 1 (Más Simple - Si hay problemas):
+   >>> BUILD_ULTRA_SIMPLE.bat
+
+   OPCIÓN 2 (Simple con ZIP):
+   >>> BUILD_SIMPLE.bat
+
+   OPCIÓN 3 (Completa):
+   >>> BUILD_AND_ZIP.bat
+
+   ⭐ Recomendado: BUILD_SIMPLE.bat
+
+
+📦 RESULTADO:
+
+   Se creará: publish\GhostOptimizer_v2.5.0_Windows_x64.zip
+   ¡Listo para compartir!
+
+
+📤 CÓMO COMPARTIR:
+
+   1. Google Drive / OneDrive  → Sube y comparte enlace
+   2. WeTransfer.com           → Subida rápida sin cuenta
+   3. Discord / Telegram       → Arrastra el ZIP al chat
+   4. GitHub Releases          → Crea release y adjunta ZIP
+
+
+📖 DOCUMENTACIÓN COMPLETA:
+
+   - INSTRUCCIONES_COMPARTIR.md     (instrucciones detalladas)
+   - COMO_CREAR_EJECUTABLE.md       (guía rápida)
+   - Release\GUIA_COMPILACION_Y_DISTRIBUCION_v2.5.0.md
+
+
+⚙️ REQUISITOS:
+
+   - Windows 10/11
+   - .NET 10 SDK → https://dotnet.microsoft.com/download
+
+
+❓ AYUDA:
+
+   Lee: INSTRUCCIONES_COMPARTIR.md
+
+
+═══════════════════════════════════════════════════════════
+
+           ¡Solo ejecuta BUILD_AND_ZIP.bat!
+
+═══════════════════════════════════════════════════════════

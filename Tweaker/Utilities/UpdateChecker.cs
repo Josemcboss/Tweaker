@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+
 using Tweaker.Models;
 
 namespace Tweaker.Utilities
@@ -22,20 +23,20 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si hay una actualización disponible
+        /// Verifica si hay una actualizaciÃ³n disponible
         /// </summary>
-        /// <returns>UpdateInfo si hay actualización, null si no hay o hay error</returns>
+        /// <returns>UpdateInfo si hay actualizaciÃ³n, null si no hay o hay error</returns>
         public static async Task<UpdateInfo> CheckForUpdatesAsync()
         {
             try
             {
                 Debug.WriteLine("?? Verificando actualizaciones...");
-                Debug.WriteLine($"   Versión actual: {VersionHelper.CurrentVersion}");
+                Debug.WriteLine($"   VersiÃ³n actual: {VersionHelper.CurrentVersion}");
                 Debug.WriteLine($"   URL: {UpdateCheckUrl}");
 
-                // Descargar archivo de información de actualización
+                // Descargar archivo de informaciÃ³n de actualizaciÃ³n
                 var response = await _httpClient.GetAsync(UpdateCheckUrl);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     Debug.WriteLine($"   ? Error HTTP: {response.StatusCode}");
@@ -57,26 +58,26 @@ namespace Tweaker.Utilities
                     return null;
                 }
 
-                Debug.WriteLine($"   ?? Versión remota: {updateInfo.Version}");
+                Debug.WriteLine($"   ?? VersiÃ³n remota: {updateInfo.Version}");
 
-                // Verificar si es una versión más nueva
+                // Verificar si es una versiÃ³n mÃ¡s nueva
                 if (!VersionHelper.IsNewerVersion(updateInfo.Version))
                 {
-                    Debug.WriteLine("   ? Ya estás en la última versión");
+                    Debug.WriteLine("   ? Ya estÃ¡s en la Ãºltima versiÃ³n");
                     return null;
                 }
 
-                // Verificar versión mínima requerida
+                // Verificar versiÃ³n mÃ­nima requerida
                 if (!VersionHelper.MeetsMinimumVersion(updateInfo.MinimumVersion))
                 {
-                    Debug.WriteLine($"   ?? Versión actual no cumple mínimo requerido: {updateInfo.MinimumVersion}");
-                    updateInfo.IsCritical = true; // Forzar actualización crítica
+                    Debug.WriteLine($"   ?? VersiÃ³n actual no cumple mÃ­nimo requerido: {updateInfo.MinimumVersion}");
+                    updateInfo.IsCritical = true; // Forzar actualizaciÃ³n crÃ­tica
                 }
 
-                Debug.WriteLine("   ?? Nueva actualización disponible!");
-                Debug.WriteLine($"      Versión: {updateInfo.Version}");
-                Debug.WriteLine($"      Crítica: {updateInfo.IsCritical}");
-                Debug.WriteLine($"      Tamaño: {FormatFileSize(updateInfo.FileSize)}");
+                Debug.WriteLine("   ?? Nueva actualizaciÃ³n disponible!");
+                Debug.WriteLine($"      VersiÃ³n: {updateInfo.Version}");
+                Debug.WriteLine($"      CrÃ­tica: {updateInfo.IsCritical}");
+                Debug.WriteLine($"      TamaÃ±o: {FormatFileSize(updateInfo.FileSize)}");
 
                 return updateInfo;
             }
@@ -113,14 +114,14 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Formatea el tamaño de archivo para mostrar al usuario
+        /// Formatea el tamaÃ±o de archivo para mostrar al usuario
         /// </summary>
         private static string FormatFileSize(long bytes)
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = bytes;
             int order = 0;
-            
+
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;
@@ -131,8 +132,8 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si la aplicación debería verificar actualizaciones
-        /// (basado en última verificación)
+        /// Verifica si la aplicaciÃ³n deberÃ­a verificar actualizaciones
+        /// (basado en Ãºltima verificaciÃ³n)
         /// </summary>
         public static bool ShouldCheckForUpdates()
         {
@@ -161,7 +162,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Registra que se verificó actualizaciones
+        /// Registra que se verificÃ³ actualizaciones
         /// </summary>
         public static void RecordUpdateCheck()
         {

@@ -1,13 +1,14 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using Microsoft.Win32;
+
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// MouseTweaks - Desactivar AceleraciÛn del Mouse
-    /// CRÕTICO para FPS gaming (CS2, Valorant, Apex)
+    /// MouseTweaks - Desactivar Aceleraci√≥n del Mouse
+    /// CR√çTICO para FPS gaming (CS2, Valorant, Apex)
     /// </summary>
     public static class MouseTweaks
     {
@@ -23,20 +24,20 @@ namespace Tweaker.Optimizations
         private const string MOUSE_KEY = @"Control Panel\Mouse";
 
         /// <summary>
-        /// DESACTIVAR ACELERACI”N DEL MOUSE
+        /// DESACTIVAR ACELERACI√ìN DEL MOUSE
         /// 
-        /// øQuÈ es la AceleraciÛn del Mouse?
+        /// ¬øQu√© es la Aceleraci√≥n del Mouse?
         /// ????????????????????????????????????????????????????????????????
-        /// Windows aÒade aceleraciÛn artificial que hace que el cursor
-        /// se mueva m·s r·pido cuanto m·s r·pido muevas el mouse.
+        /// Windows a√±ade aceleraci√≥n artificial que hace que el cursor
+        /// se mueva m√°s r√°pido cuanto m√°s r√°pido muevas el mouse.
         /// 
         /// PROBLEMA EN GAMING:
         /// - Inconsistencia en el aim (imposible crear muscle memory)
-        /// - Un movimiento r·pido = distancia impredecible
+        /// - Un movimiento r√°pido = distancia impredecible
         /// - Los PRO PLAYERS SIEMPRE la deshabilitan
         /// 
-        /// SOLUCI”N:
-        /// - MouseSpeed = 0 (Deshabilitar aceleraciÛn)
+        /// SOLUCI√ìN:
+        /// - MouseSpeed = 0 (Deshabilitar aceleraci√≥n)
         /// - MouseThreshold1 = 0 (Sin umbral de velocidad)
         /// - MouseThreshold2 = 0 (Sin segundo umbral)
         /// 
@@ -44,7 +45,7 @@ namespace Tweaker.Optimizations
         /// ? 1:1 pixel perfect tracking
         /// ? Movimientos predecibles
         /// ? Muscle memory consistente
-        /// ? Aim m·s preciso
+        /// ? Aim m√°s preciso
         /// 
         /// USADO POR:
         /// - 100% de PRO PLAYERS en shooters
@@ -62,7 +63,7 @@ namespace Tweaker.Optimizations
                         return false;
                     }
 
-                    // Desactivar aceleraciÛn
+                    // Desactivar aceleraci√≥n
                     key.SetValue("MouseSpeed", "0", RegistryValueKind.String);
                     key.SetValue("MouseThreshold1", "0", RegistryValueKind.String);
                     key.SetValue("MouseThreshold2", "0", RegistryValueKind.String);
@@ -92,9 +93,9 @@ namespace Tweaker.Optimizations
                 }
                 else
                 {
-                    Debug.WriteLine("?? Registro modificado pero SystemParametersInfo fallÛ");
+                    Debug.WriteLine("?? Registro modificado pero SystemParametersInfo fall√≥");
                     Debug.WriteLine("Reinicia Windows para aplicar cambios");
-                    return true; // Registro sÌ se modificÛ
+                    return true; // Registro s√≠ se modific√≥
                 }
             }
             catch (Exception ex)
@@ -105,7 +106,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// RESTAURAR ACELERACI”N DEL MOUSE
+        /// RESTAURAR ACELERACI√ìN DEL MOUSE
         /// (Valores predeterminados de Windows)
         /// </summary>
         public static bool Revert()
@@ -156,9 +157,9 @@ namespace Tweaker.Optimizations
                     string t2 = key.GetValue("MouseThreshold2")?.ToString() ?? "?";
 
                     if (speed == "0" && t1 == "0" && t2 == "0")
-                        return "? AceleraciÛn DESACTIVADA (”ptimo)";
+                        return "? Aceleraci√≥n DESACTIVADA (√ìptimo)";
                     else
-                        return "?? AceleraciÛn ACTIVA (Afecta aim)";
+                        return "?? Aceleraci√≥n ACTIVA (Afecta aim)";
                 }
             }
             catch

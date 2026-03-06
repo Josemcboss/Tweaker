@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Diagnostics;
+
 using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations
@@ -53,7 +54,7 @@ namespace Tweaker.Optimizations
                 // PASO 1: Eliminar useplatformclock (fuerza TSC)
                 string command1 = "bcdedit /deletevalue useplatformclock";
                 Debug.WriteLine($"Ejecutando: {command1}");
-                
+
                 ProcessStartInfo psi1 = new ProcessStartInfo
                 {
                     FileName = "bcdedit",
@@ -93,7 +94,7 @@ namespace Tweaker.Optimizations
                 // PASO 2: Deshabilitar dynamic tick
                 string command2 = "bcdedit /set disabledynamictick yes";
                 Debug.WriteLine($"Ejecutando: {command2}");
-                
+
                 ProcessStartInfo psi2 = new ProcessStartInfo
                 {
                     FileName = "bcdedit",
@@ -307,12 +308,12 @@ namespace Tweaker.Optimizations
             try
             {
                 Debug.WriteLine("🔧 APLICANDO KERNEL TWEAKS...");
-                
+
                 bool hpetResult = OptimizeHPET();
                 bool hypervResult = OptimizeHyperV();
-                
+
                 bool success = hpetResult && hypervResult;
-                
+
                 if (success)
                 {
                     Debug.WriteLine("✅ KERNEL TWEAKS APLICADOS EXITOSAMENTE");
@@ -321,7 +322,7 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine("⚠️ Algunos kernel tweaks fallaron");
                 }
-                
+
                 return success;
             }
             catch (Exception ex)
@@ -339,12 +340,12 @@ namespace Tweaker.Optimizations
             try
             {
                 Debug.WriteLine("🔄 REVIRTIENDO KERNEL TWEAKS...");
-                
+
                 bool hpetResult = RestoreHPET();
                 bool hypervResult = RestoreHyperV();
-                
+
                 bool success = hpetResult && hypervResult;
-                
+
                 if (success)
                 {
                     Debug.WriteLine("✅ KERNEL TWEAKS REVERTIDOS EXITOSAMENTE");
@@ -353,7 +354,7 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine("⚠️ Algunos kernel tweaks no se pudieron revertir");
                 }
-                
+
                 return success;
             }
             catch (Exception ex)

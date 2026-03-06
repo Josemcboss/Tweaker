@@ -1,6 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
+
 using Tweaker.Optimizations.Base;
 using Tweaker.Utilities;
 
@@ -30,18 +32,18 @@ namespace Tweaker.Optimizations
         public static bool EnableGameMode() => _impl.EnableGameMode();
 
         /// <summary>
-        /// Verifica si Game Bar est· deshabilitado
+        /// Verifica si Game Bar est√° deshabilitado
         /// </summary>
         public static bool IsGameBarDisabled() => _impl.IsGameBarDisabled();
 
         /// <summary>
-        /// Verifica si Game Mode est· habilitado
+        /// Verifica si Game Mode est√° habilitado
         /// </summary>
         public static bool IsGameModeEnabled() => _impl.IsGameModeEnabled();
     }
 
     /// <summary>
-    /// ImplementaciÛn interna usando BaseOptimization para eliminar redundancia
+    /// Implementaci√≥n interna usando BaseOptimization para eliminar redundancia
     /// </summary>
     internal class GamingOptimizationImpl : BaseOptimization
     {
@@ -51,15 +53,11 @@ namespace Tweaker.Optimizations
 
         public bool DisableGameBar()
         {
-            var operations = new[]
+            bool result = ApplyRegistryTransaction("Deshabilitar Xbox Game Bar", transaction =>
             {
-                RegistryOperation.SetDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr, 
-                    RegistryValues.AppCaptureEnabled, 0, "Deshabilitar captura de apps"),
-                RegistryOperation.SetDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr, 
-                    RegistryValues.GameDvrEnabled, 0, "Deshabilitar Game DVR")
-            };
-
-            bool result = ExecuteRegistryOperations("Deshabilitar Xbox Game Bar", operations);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserGaming.GameDvr, RegistryValues.AppCaptureEnabled, 0, RegistryValueKind.DWord);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserGaming.GameDvr, RegistryValues.GameDvrEnabled, 0, RegistryValueKind.DWord);
+            });
 
             if (result)
             {
@@ -76,33 +74,29 @@ namespace Tweaker.Optimizations
 
         public bool EnableGameBar()
         {
-            var operations = new[]
+            return ApplyRegistryTransaction("Habilitar Xbox Game Bar", transaction =>
             {
-                RegistryOperation.SetDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr, 
-                    RegistryValues.AppCaptureEnabled, 1, "Habilitar captura de apps"),
-                RegistryOperation.SetDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr, 
-                    RegistryValues.GameDvrEnabled, 1, "Habilitar Game DVR")
-            };
-
-            return ExecuteRegistryOperations("Habilitar Xbox Game Bar", operations);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserGaming.GameDvr, RegistryValues.AppCaptureEnabled, 1, RegistryValueKind.DWord);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserGaming.GameDvr, RegistryValues.GameDvrEnabled, 1, RegistryValueKind.DWord);
+            });
         }
 
         public bool EnableGameMode()
         {
-            return SetRegistryDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameBar, 
+            return SetRegistryDWord(Registry.CurrentUser, RegistryPaths.UserGaming.GameBar,
                 "UseNexusForGameBarEnabled", 0, "Optimizar Windows Game Mode");
         }
 
         public bool IsGameBarDisabled()
         {
-            return IsRegistryValueEqual(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr, 
+            return IsRegistryValueEqual(Registry.CurrentUser, RegistryPaths.UserGaming.GameDvr,
                 RegistryValues.GameDvrEnabled, "0");
         }
 
         public bool IsGameModeEnabled()
         {
-            // Por defecto est· habilitado si no existe el valor o es 0
-            int value = GetRegistryValue<int>(Registry.CurrentUser, RegistryPaths.UserGaming.GameBar, 
+            // Por defecto est√° habilitado si no existe el valor o es 0
+            int value = GetRegistryValue<int>(Registry.CurrentUser, RegistryPaths.UserGaming.GameBar,
                 "UseNexusForGameBarEnabled", 0);
             return value == 0;
         }

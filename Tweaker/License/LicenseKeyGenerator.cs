@@ -7,11 +7,18 @@ namespace Tweaker.License
     /// <summary>
     /// Genera llaves de licencia válidas (herramienta administrativa)
     /// </summary>
-    public static class LicenseKeyGenerator
+    public class LicenseKeyGenerator
     {
+        private readonly IKeyVault _keyVault;
+
+        public LicenseKeyGenerator(IKeyVault keyVault)
+        {
+            _keyVault = keyVault;
+        }
+
         // SEGURIDAD: La clave secreta se obtiene dinámicamente desde KeyVault
         // Esto dificulta la ingeniería inversa al no tener la clave completa en el código
-        
+
         /// <summary>
         /// Genera una llave de licencia válida
         /// </summary>
@@ -19,7 +26,7 @@ namespace Tweaker.License
         /// <param name="expirationDate">Fecha de expiración (null = perpetua)</param>
         /// <param name="maxTweaks">Límite máximo de tweaks activos (-1 = ilimitado)</param>
         /// <returns>Llave de licencia en formato XXXXX-XXXXX-XXXXX-XXXXX</returns>
-        public static string GenerateKey(string hardwareFingerprint, DateTime? expirationDate = null, int maxTweaks = -1)
+        public string GenerateKey(string hardwareFingerprint, DateTime? expirationDate = null, int maxTweaks = -1)
         {
             try
             {
@@ -42,11 +49,11 @@ namespace Tweaker.License
 #endif
 
                 // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
-                string secretKey = KeyVault.GetMasterSecret();
-                
+                string secretKey = _keyVault.GetMasterSecret();
+
                 // NUEVO ENFOQUE SIMPLE: Usar hash directo sin encriptación compleja
-                
-                
+
+
                 // Crear datos de la licencia
                 var licenseData = new StringBuilder();
                 licenseData.Append(hardwareFingerprint);
@@ -58,15 +65,15 @@ namespace Tweaker.License
                 licenseData.Append(maxTweaks); // Límite de tweaks
                 licenseData.Append("|");
                 licenseData.Append(secretKey); // Incluir clave secreta en el hash
-                
+
                 // Calcular hash SHA256
                 using (var sha256 = SHA256.Create())
                 {
                     var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(licenseData.ToString()));
-                    
+
                     // Tomar los primeros 10 bytes (20 caracteres hex)
                     var hashHex = BitConverter.ToString(hashBytes, 0, 10).Replace("-", "");
-                    
+
                     // Formatear como XXXXX-XXXXX-XXXXX-XXXXX
                     return FormatLicenseKey(hashHex);
                 }
@@ -80,11 +87,11 @@ namespace Tweaker.License
         /// <summary>
         /// Encripta una cadena usando AES
         /// </summary>
-        private static string EncryptString(string plainText)
+        private string EncryptString(string plainText)
         {
             // Obtener clave secreta desde KeyVault (seguridad por oscuridad)
-            string secretKey = KeyVault.GetMasterSecret();
-            
+            string secretKey = _keyVault.GetMasterSecret();
+
             using (var aes = Aes.Create())
             {
                 // Derivar clave de 32 bytes (256 bits)
@@ -92,7 +99,7 @@ namespace Tweaker.License
                 var keyBytes = Encoding.UTF8.GetBytes(secretKey);
                 Array.Copy(keyBytes, key, Math.Min(keyBytes.Length, key.Length));
                 aes.Key = key;
-                
+
                 // Generar IV determinista basado en la clave secreta
                 var iv = new byte[16];
                 using (var sha = SHA256.Create())
@@ -115,7 +122,7 @@ namespace Tweaker.License
         /// <summary>
         /// Calcula un checksum de 16 bits
         /// </summary>
-        private static ushort CalculateChecksum(string data)
+        private ushort CalculateChecksum(string data)
         {
             ushort checksum = 0;
             foreach (char c in data)
@@ -128,7 +135,7 @@ namespace Tweaker.License
         /// <summary>
         /// Formatea una cadena en formato de llave XXXXX-XXXXX-XXXXX-XXXXX
         /// </summary>
-        private static string FormatLicenseKey(string rawKey)
+        private string FormatLicenseKey(string rawKey)
         {
             // Asegurar que tenemos exactamente 20 caracteres
             if (rawKey.Length > 20)
@@ -139,7 +146,7 @@ namespace Tweaker.License
             {
                 rawKey = rawKey.PadRight(20, '0');
             }
-            
+
             // Convertir a mayúsculas
             rawKey = rawKey.ToUpper();
 

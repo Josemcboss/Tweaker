@@ -1,4 +1,3 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,11 +5,13 @@ using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
 
+using Microsoft.Win32;
+
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Servicio de diagnÛstico autom·tico de problemas de red
-    /// Detecta y repara configuraciones problem·ticas para navegadores
+    /// Servicio de diagn√≥stico autom√°tico de problemas de red
+    /// Detecta y repara configuraciones problem√°ticas para navegadores
     /// </summary>
     public class NetworkDiagnosticsService
     {
@@ -23,31 +24,31 @@ namespace Tweaker.Utilities
         };
 
         /// <summary>
-        /// Realiza diagnÛstico completo de la configuraciÛn de red
+        /// Realiza diagn√≥stico completo de la configuraci√≥n de red
         /// </summary>
         public async Task<NetworkDiagnosisResult> PerformFullDiagnosis()
         {
             var result = new NetworkDiagnosisResult();
-            
-            Debug.WriteLine("?? Analizando configuraciÛn de red...");
 
-            // 1. Verificar configuraciones problem·ticas del registro
+            Debug.WriteLine("?? Analizando configuraci√≥n de red...");
+
+            // 1. Verificar configuraciones problem√°ticas del registro
             await CheckRegistrySettings(result);
 
-            // 2. Test de conectividad b·sica
+            // 2. Test de conectividad b√°sica
             await CheckBasicConnectivity(result);
 
             // 3. Test de DNS
             await CheckDnsPerformance(result);
 
-            // 4. An·lisis de latencia
+            // 4. An√°lisis de latencia
             await CheckLatencyIssues(result);
 
             return result;
         }
 
         /// <summary>
-        /// Verifica configuraciones problem·ticas en el registro
+        /// Verifica configuraciones problem√°ticas en el registro
         /// </summary>
         private async Task CheckRegistrySettings(NetworkDiagnosisResult result)
         {
@@ -67,7 +68,7 @@ namespace Tweaker.Utilities
                             var value = RegistryHelper.GetDwordValue(setting.RegistryPath, setting.Key);
                             if (value?.ToString()?.ToLowerInvariant() == setting.ProblematicValue.ToLowerInvariant())
                             {
-                                result.CriticalIssues.Add($"{setting.Key} est· configurado como {setting.ProblematicValue} (problem·tico para navegadores)");
+                                result.CriticalIssues.Add($"{setting.Key} est√° configurado como {setting.ProblematicValue} (problem√°tico para navegadores)");
                                 result.HasCriticalIssues = true;
                             }
                         }
@@ -89,22 +90,22 @@ namespace Tweaker.Utilities
             {
                 string interfacesPath = @"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces";
                 using var key = Registry.LocalMachine.OpenSubKey(interfacesPath);
-                
+
                 if (key != null)
                 {
                     int problematicInterfaces = 0;
-                    
+
                     foreach (string subkeyName in key.GetSubKeyNames())
                     {
                         using var interfaceKey = key.OpenSubKey(subkeyName);
                         var value = interfaceKey?.GetValue("TcpAckFrequency");
-                        
+
                         if (value?.ToString() == "1")
                         {
                             problematicInterfaces++;
                         }
                     }
-                    
+
                     if (problematicInterfaces > 0)
                     {
                         result.CriticalIssues.Add($"TcpAckFrequency = 1 en {problematicInterfaces} interface(s) (muy agresivo para navegadores)");
@@ -119,7 +120,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica conectividad b·sica
+        /// Verifica conectividad b√°sica
         /// </summary>
         private async Task CheckBasicConnectivity(NetworkDiagnosisResult result)
         {
@@ -127,10 +128,10 @@ namespace Tweaker.Utilities
             {
                 using var ping = new Ping();
                 var reply = await ping.SendPingAsync("8.8.8.8", 5000);
-                
+
                 if (reply.Status != IPStatus.Success)
                 {
-                    result.Warnings.Add("Problemas de conectividad b·sica detectados");
+                    result.Warnings.Add("Problemas de conectividad b√°sica detectados");
                 }
                 else if (reply.RoundtripTime > 200)
                 {
@@ -163,7 +164,7 @@ namespace Tweaker.Utilities
             catch (Exception ex)
             {
                 Debug.WriteLine($"?? Error en test DNS: {ex.Message}");
-                result.Warnings.Add("Problemas de resoluciÛn DNS detectados");
+                result.Warnings.Add("Problemas de resoluci√≥n DNS detectados");
             }
         }
 
@@ -174,7 +175,7 @@ namespace Tweaker.Utilities
         {
             try
             {
-                // Test m˙ltiple para detectar variaciones de latencia
+                // Test m√∫ltiple para detectar variaciones de latencia
                 var latencies = new List<long>();
                 using var ping = new Ping();
 
@@ -197,23 +198,23 @@ namespace Tweaker.Utilities
 
                     if (jitter > 50)
                     {
-                        result.Warnings.Add($"Alta variaciÛn de latencia detectada (jitter: {jitter}ms)");
+                        result.Warnings.Add($"Alta variaci√≥n de latencia detectada (jitter: {jitter}ms)");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"?? Error en an·lisis de latencia: {ex.Message}");
+                Debug.WriteLine($"?? Error en an√°lisis de latencia: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Aplica configuraciÛn balanceada para resolver problemas de navegadores
+        /// Aplica configuraci√≥n balanceada para resolver problemas de navegadores
         /// </summary>
         public async Task<bool> ApplyBalancedNetworkFix()
         {
-            Debug.WriteLine("?? Aplicando configuraciÛn de red balanceada...");
-            
+            Debug.WriteLine("?? Aplicando configuraci√≥n de red balanceada...");
+
             try
             {
                 bool allSuccess = true;
@@ -229,17 +230,17 @@ namespace Tweaker.Utilities
                     // 3. SystemResponsiveness: 0 ? 20
                     allSuccess &= FixSystemResponsiveness();
 
-                    // 4. Optimizar configuraciÛn DNS para navegadores
+                    // 4. Optimizar configuraci√≥n DNS para navegadores
                     allSuccess &= OptimizeDnsForBrowsers();
                 });
 
                 if (allSuccess)
                 {
-                    Debug.WriteLine("? ConfiguraciÛn balanceada aplicada exitosamente");
+                    Debug.WriteLine("? Configuraci√≥n balanceada aplicada exitosamente");
                 }
                 else
                 {
-                    Debug.WriteLine("?? Algunos ajustes fallaron, pero la mayorÌa se aplicaron");
+                    Debug.WriteLine("?? Algunos ajustes fallaron, pero la mayor√≠a se aplicaron");
                 }
 
                 return allSuccess;
@@ -260,14 +261,14 @@ namespace Tweaker.Utilities
             {
                 string interfacesPath = @"SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces";
                 using var key = Registry.LocalMachine.OpenSubKey(interfacesPath, true);
-                
+
                 if (key != null)
                 {
                     foreach (string subkeyName in key.GetSubKeyNames())
                     {
                         using var interfaceKey = key.OpenSubKey(subkeyName, true);
                         var currentValue = interfaceKey?.GetValue("TcpAckFrequency");
-                        
+
                         if (currentValue?.ToString() == "1")
                         {
                             interfaceKey?.SetValue("TcpAckFrequency", 2, RegistryValueKind.DWord);
@@ -293,9 +294,9 @@ namespace Tweaker.Utilities
             {
                 string path = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
                 using var key = Registry.LocalMachine.OpenSubKey(path, true);
-                
+
                 var currentValue = key?.GetValue("NetworkThrottlingIndex");
-                if (currentValue?.ToString().ToLowerInvariant() == "ffffffff")
+                if (currentValue != null && currentValue.ToString().ToLowerInvariant() == "ffffffff")
                 {
                     key?.SetValue("NetworkThrottlingIndex", 10, RegistryValueKind.DWord);
                     Debug.WriteLine("  ? NetworkThrottlingIndex: ffffffff ? 10");
@@ -318,7 +319,7 @@ namespace Tweaker.Utilities
             {
                 string path = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
                 using var key = Registry.LocalMachine.OpenSubKey(path, true);
-                
+
                 var currentValue = key?.GetValue("SystemResponsiveness");
                 if (currentValue?.ToString() == "0")
                 {
@@ -335,7 +336,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Optimiza DNS especÌficamente para navegadores
+        /// Optimiza DNS espec√≠ficamente para navegadores
         /// </summary>
         private bool OptimizeDnsForBrowsers()
         {
@@ -343,12 +344,12 @@ namespace Tweaker.Utilities
             {
                 string path = @"SYSTEM\CurrentControlSet\Services\Dnscache\Parameters";
                 using var key = Registry.LocalMachine.OpenSubKey(path, true);
-                
+
                 // Configuraciones optimizadas para navegadores
                 key?.SetValue("MaxCacheTtl", 7200, RegistryValueKind.DWord);  // 2 horas
                 key?.SetValue("NegativeCacheTime", 5, RegistryValueKind.DWord);  // 5 segundos
                 key?.SetValue("MaxNegativeCacheTtl", 30, RegistryValueKind.DWord);  // 30 segundos
-                
+
                 Debug.WriteLine("  ? Cache DNS optimizado para navegadores");
                 return true;
             }
@@ -361,7 +362,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// Resultado del diagnÛstico de red
+    /// Resultado del diagn√≥stico de red
     /// </summary>
     public class NetworkDiagnosisResult
     {
@@ -372,7 +373,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// ConfiguraciÛn de red problem·tica
+    /// Configuraci√≥n de red problem√°tica
     /// </summary>
     public class NetworkSetting
     {
@@ -391,7 +392,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// ConfiguraciÛn para XAML (no usada por ahora, pero preparada para futuro)
+    /// Configuraci√≥n para XAML (no usada por ahora, pero preparada para futuro)
     /// </summary>
     public class NetworkDiagnosticsConfig
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+
 using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations
@@ -14,7 +15,7 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// DESHABILITAR SYSMAIN (Superfetch)
         /// 
-        /// øQuÈ es SysMain?
+        /// ¬øQu√© es SysMain?
         /// ????????????????????????????????????????????????????????????????
         /// Servicio de "pre-carga inteligente" de Windows.
         /// Analiza tus patrones de uso y pre-carga apps en RAM.
@@ -39,51 +40,51 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DESHABILITAR DIAGTRACK (TelemetrÌa)
+        /// DESHABILITAR DIAGTRACK (Telemetr√≠a)
         /// 
-        /// øQuÈ es DiagTrack?
+        /// ¬øQu√© es DiagTrack?
         /// ????????????????????????????????????????????????????????????????
-        /// Servicio de telemetrÌa de Microsoft.
-        /// EnvÌa datos de uso, crashes, diagnÛsticos a Microsoft.
+        /// Servicio de telemetr√≠a de Microsoft.
+        /// Env√≠a datos de uso, crashes, diagn√≥sticos a Microsoft.
         /// 
         /// PROBLEMA:
         /// - "Espionaje" de Windows
         /// - Usa CPU y red constantemente
-        /// - EnvÌa datos personales sin consentimiento explÌcito
+        /// - Env√≠a datos personales sin consentimiento expl√≠cito
         /// 
         /// IMPACTO:
         /// ? Privacidad mejorada
         /// ? CPU libre +3-5%
-        /// ? Tr·fico de red reducido
+        /// ? Tr√°fico de red reducido
         /// ? Sin conexiones misteriosas a Microsoft
         /// 
         /// RECOMENDADO: SIEMPRE deshabilitarlo
         /// </summary>
         public static bool DisableDiagTrack()
         {
-            return ServiceSafetyWrapper.SafeDisableService("DiagTrack", "DiagTrack (TelemetrÌa)");
+            return ServiceSafetyWrapper.SafeDisableService("DiagTrack", "DiagTrack (Telemetr√≠a)");
         }
 
         /// <summary>
         /// DESHABILITAR WSEARCH (Windows Search)
         /// 
-        /// øQuÈ es WSearch?
+        /// ¬øQu√© es WSearch?
         /// ????????????????????????????????????????????????????????????????
-        /// Servicio de indexaciÛn de archivos de Windows.
-        /// Escanea TODOS tus archivos para b˙squedas r·pidas.
+        /// Servicio de indexaci√≥n de archivos de Windows.
+        /// Escanea TODOS tus archivos para b√∫squedas r√°pidas.
         /// 
         /// PROBLEMA:
         /// - Uso de disco 20-80% constante
         /// - CPU +5-15% en background
-        /// - Micro-stuttering durante indexaciÛn
-        /// - Los gamers NO necesitan b˙squeda instant·nea
+        /// - Micro-stuttering durante indexaci√≥n
+        /// - Los gamers NO necesitan b√∫squeda instant√°nea
         /// 
         /// IMPACTO:
         /// ? Uso de disco -30-60%
         /// ? CPU libre +5-10%
         /// ? Micro-stuttering eliminado
         /// 
-        /// ?? NOTA: La b˙squeda de Windows ser· m·s lenta
+        /// ?? NOTA: La b√∫squeda de Windows ser√° m√°s lenta
         /// ?? OPCIONAL: Desactivar solo si te molesta el ruido/stuttering
         /// </summary>
         public static bool DisableWindowsSearch()
@@ -92,18 +93,18 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// MÈtodo genÈrico para deshabilitar servicios
+        /// M√©todo gen√©rico para deshabilitar servicios
         /// </summary>
         private static bool DisableService(string serviceName, string displayName)
         {
             // ???????????????????????????????????????????????????????????????
-            // VERIFICACI”N DE SEGURIDAD: ServiceGuard
+            // VERIFICACI√ìN DE SEGURIDAD: ServiceGuard
             // ???????????????????????????????????????????????????????????????
-            
+
             if (ServiceGuard.IsProtected(serviceName))
             {
-                Debug.WriteLine($"? OPERACI”N BLOQUEADA: {displayName} es un servicio protegido");
-                return false; // NO MODIFICAR SERVICIOS CRÕTICOS
+                Debug.WriteLine($"? OPERACI√ìN BLOQUEADA: {displayName} es un servicio protegido");
+                return false; // NO MODIFICAR SERVICIOS CR√çTICOS
             }
 
             try
@@ -111,7 +112,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????????
                 // BACKUP DEL REGISTRO ANTES DE MODIFICAR
                 // ???????????????????????????????????????????????????????????????
-                
+
                 OptimizationBackup.BackupRegistryValue(
                     $@"SYSTEM\CurrentControlSet\Services\{serviceName}",
                     "Start"
@@ -124,7 +125,7 @@ namespace Tweaker.Optimizations
 
                     Debug.WriteLine($"Estado actual de {displayName}: {status}");
 
-                    // Detener el servicio si est· corriendo
+                    // Detener el servicio si est√° corriendo
                     if (status == ServiceControllerStatus.Running)
                     {
                         sc.Stop();
@@ -141,7 +142,7 @@ namespace Tweaker.Optimizations
                     {
                         // Start = 4: Disabled
                         key.SetValue("Start", 4, Microsoft.Win32.RegistryValueKind.DWord);
-                        Debug.WriteLine($"? {displayName} DESHABILITADO (no arrancar· en boot)");
+                        Debug.WriteLine($"? {displayName} DESHABILITADO (no arrancar√° en boot)");
                     }
                 }
 
@@ -154,12 +155,12 @@ namespace Tweaker.Optimizations
             catch (InvalidOperationException)
             {
                 Debug.WriteLine($"?? Servicio {displayName} no encontrado (puede estar ya deshabilitado)");
-                return true; // No es un error crÌtico
+                return true; // No es un error cr√≠tico
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"? Error al deshabilitar {displayName}: {ex.Message}");
-                Debug.WriteLine("?? Aseg˙rate de ejecutar como Admin");
+                Debug.WriteLine("?? Aseg√∫rate de ejecutar como Admin");
                 return false;
             }
         }
@@ -177,7 +178,7 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool EnableDiagTrack()
         {
-            return ServiceSafetyWrapper.SafeEnableService("DiagTrack", "DiagTrack (TelemetrÌa)");
+            return ServiceSafetyWrapper.SafeEnableService("DiagTrack", "DiagTrack (Telemetr√≠a)");
         }
 
         /// <summary>
@@ -189,7 +190,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// MÈtodo genÈrico para habilitar servicios
+        /// M√©todo gen√©rico para habilitar servicios
         /// </summary>
         private static bool EnableService(string serviceName, string displayName)
         {
@@ -235,10 +236,10 @@ namespace Tweaker.Optimizations
             Debug.WriteLine("????????????????????????????????????????");
             Debug.WriteLine("DESHABILITANDO SERVICIOS BLOATWARE");
             Debug.WriteLine("????????????????????????????????????????");
-            Debug.WriteLine("?? Esto desactivar·:");
-            Debug.WriteLine("  ï SysMain (Superfetch)");
-            Debug.WriteLine("  ï DiagTrack (TelemetrÌa)");
-            Debug.WriteLine("  ï WSearch (IndexaciÛn)");
+            Debug.WriteLine("?? Esto desactivar√°:");
+            Debug.WriteLine("  ‚Ä¢ SysMain (Superfetch)");
+            Debug.WriteLine("  ‚Ä¢ DiagTrack (Telemetr√≠a)");
+            Debug.WriteLine("  ‚Ä¢ WSearch (Indexaci√≥n)");
             Debug.WriteLine("");
             Debug.WriteLine("RECOMENDADO si tienes SSD");
             Debug.WriteLine("????????????????????????????????????????");

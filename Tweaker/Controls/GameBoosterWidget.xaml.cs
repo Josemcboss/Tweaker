@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+
 using Tweaker.Services;
 
 namespace Tweaker.Controls
@@ -23,7 +24,7 @@ namespace Tweaker.Controls
             _gameBooster = GameBoosterService.Instance;
             _gameBooster.GameModeChanged += GameBooster_GameModeChanged;
 
-            // AnimaciÛn de entrada
+            // Animaci√≥n de entrada
             Loaded += (s, e) =>
             {
                 var slideIn = (Storyboard)FindResource("SlideIn");
@@ -59,7 +60,7 @@ namespace Tweaker.Controls
                        Color.FromRgb(128, 128, 128); // Gris
 
             StatusLed.Fill = new SolidColorBrush(color);
-            
+
             // Actualizar efecto de glow
             var effect = StatusLed.Effect as DropShadowEffect;
             if (effect != null)
@@ -68,7 +69,7 @@ namespace Tweaker.Controls
                 effect.BlurRadius = isGameActive ? 15 : 10;
             }
 
-            // Pulsar LED si est· activo
+            // Pulsar LED si est√° activo
             if (isGameActive)
             {
                 StartLedPulse();
@@ -119,7 +120,7 @@ namespace Tweaker.Controls
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
-            // AnimaciÛn de salida
+            // Animaci√≥n de salida
             var fadeOut = new DoubleAnimation
             {
                 To = 0,

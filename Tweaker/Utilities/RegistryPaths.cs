@@ -1,7 +1,7 @@
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// RegistryPaths - Centraliza todas las rutas de registro para evitar duplicaciÛn
+    /// RegistryPaths - Centraliza todas las rutas de registro para evitar duplicaci√≥n
     /// </summary>
     public static class RegistryPaths
     {
@@ -21,7 +21,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Rutas relacionadas con energÌa y CPU
+        /// Rutas relacionadas con energ√≠a y CPU
         /// </summary>
         public static class Power
         {
@@ -32,7 +32,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Rutas relacionadas con GPU y gr·ficos
+        /// Rutas relacionadas con GPU y gr√°ficos
         /// </summary>
         public static class Graphics
         {
@@ -53,7 +53,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Rutas relacionadas con polÌticas del sistema
+        /// Rutas relacionadas con pol√≠ticas del sistema
         /// </summary>
         public static class Policies
         {

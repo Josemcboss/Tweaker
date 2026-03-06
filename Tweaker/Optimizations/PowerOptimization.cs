@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Management;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -11,14 +12,14 @@ namespace Tweaker.Optimizations
     public static class PowerOptimization
     {
         /// <summary>
-        /// Verifica si Power Throttling est· habilitado
+        /// Verifica si Power Throttling est√° habilitado
         /// </summary>
         public static bool IsPowerThrottlingEnabled()
         {
             try
             {
                 const string powerKey = @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling";
-                
+
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey(powerKey, false))
                 {
                     if (key != null)
@@ -27,7 +28,7 @@ namespace Tweaker.Optimizations
                         return value == null || value.ToString() != "1";
                     }
                 }
-                return true; // Por defecto est· habilitado
+                return true; // Por defecto est√° habilitado
             }
             catch
             {
@@ -36,7 +37,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si la hibernaciÛn est· habilitada
+        /// Verifica si la hibernaci√≥n est√° habilitada
         /// </summary>
         public static bool IsHibernationEnabled()
         {
@@ -57,7 +58,7 @@ namespace Tweaker.Optimizations
                     string output = process.StandardOutput.ReadToEnd();
                     process.WaitForExit();
 
-                    // Si el output contiene "hibernar", est· habilitado
+                    // Si el output contiene "hibernar", est√° habilitado
                     return output.ToLower().Contains("hibernar") || output.ToLower().Contains("hibernate");
                 }
             }
@@ -75,7 +76,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string powerKey = @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling";
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(powerKey))
                 {
                     if (key != null)
@@ -102,7 +103,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string powerKey = @"SYSTEM\CurrentControlSet\Control\Power\PowerThrottling";
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(powerKey))
                 {
                     if (key != null)
@@ -122,7 +123,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Deshabilita hibernaciÛn
+        /// Deshabilita hibernaci√≥n
         /// </summary>
         public static bool DisableHibernation()
         {
@@ -142,19 +143,19 @@ namespace Tweaker.Optimizations
                     process.Start();
                     process.WaitForExit();
 
-                    Debug.WriteLine("? HibernaciÛn deshabilitada");
+                    Debug.WriteLine("? Hibernaci√≥n deshabilitada");
                     return process.ExitCode == 0;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error deshabilitando hibernaciÛn: {ex.Message}");
+                Debug.WriteLine($"? Error deshabilitando hibernaci√≥n: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// Habilita hibernaciÛn
+        /// Habilita hibernaci√≥n
         /// </summary>
         public static bool EnableHibernation()
         {
@@ -174,13 +175,13 @@ namespace Tweaker.Optimizations
                     process.Start();
                     process.WaitForExit();
 
-                    Debug.WriteLine("? HibernaciÛn habilitada");
+                    Debug.WriteLine("? Hibernaci√≥n habilitada");
                     return process.ExitCode == 0;
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error habilitando hibernaciÛn: {ex.Message}");
+                Debug.WriteLine($"? Error habilitando hibernaci√≥n: {ex.Message}");
                 return false;
             }
         }

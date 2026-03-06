@@ -1,26 +1,28 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+
+using Microsoft.Win32;
+
 using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// OptimizaciÛn de Servicios de Windows (Debloat)
+    /// Optimizaci√≥n de Servicios de Windows (Debloat)
     /// Deshabilita servicios innecesarios que consumen recursos en gaming
     /// 
-    /// SEGURIDAD v2.0: Ahora usa ServiceSafetyWrapper para validaciÛn exhaustiva
+    /// SEGURIDAD v2.0: Ahora usa ServiceSafetyWrapper para validaci√≥n exhaustiva
     /// </summary>
     public static class ServiceOptimization
     {
         /// <summary>
         /// DESHABILITA SysMain (SuperFetch)
         /// 
-        /// øQuÈ es SysMain?
+        /// ¬øQu√© es SysMain?
         /// - Antiguo nombre: SuperFetch
         /// - Pre-carga aplicaciones "frecuentes" en RAM
-        /// - Intenta predecir quÈ vas a abrir
+        /// - Intenta predecir qu√© vas a abrir
         /// 
         /// PROBLEMA EN GAMING:
         /// - Consume 1-3GB de RAM innecesariamente
@@ -34,10 +36,10 @@ namespace Tweaker.Optimizations
         /// - Elimina stuttering en sistemas con poca RAM
         /// - RAM disponible para el juego en vez de cache
         /// 
-        /// M…TODO USADO:
+        /// M√âTODO USADO:
         /// - ServiceController para detener el servicio
         /// - Registro para cambiar StartType a Disabled
-        /// - M·s seguro y robusto que solo registry
+        /// - M√°s seguro y robusto que solo registry
         /// </summary>
         public static bool DisableSysMain()
         {
@@ -54,11 +56,11 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DESHABILITA DiagTrack (TelemetrÌa de Windows)
+        /// DESHABILITA DiagTrack (Telemetr√≠a de Windows)
         /// 
-        /// øQuÈ es DiagTrack?
+        /// ¬øQu√© es DiagTrack?
         /// - "Connected User Experiences and Telemetry"
-        /// - EnvÌa datos de uso a Microsoft constantemente
+        /// - Env√≠a datos de uso a Microsoft constantemente
         /// - Monitorea TODA tu actividad en Windows
         /// 
         /// PROBLEMA EN GAMING:
@@ -70,43 +72,43 @@ namespace Tweaker.Optimizations
         /// IMPACTO AL DESHABILITAR:
         /// - Libera 5-10% de CPU
         /// - Reduce uso de ancho de banda
-        /// - Mejora ping en juegos online (menos tr·fico background)
+        /// - Mejora ping en juegos online (menos tr√°fico background)
         /// - Mejora PRIVACIDAD
         /// - USADO POR TODOS LOS GAMERS CONSCIENTES
         /// 
         /// NOTA LEGAL:
-        /// - Es tu derecho deshabilitar telemetrÌa
+        /// - Es tu derecho deshabilitar telemetr√≠a
         /// - Microsoft permite hacerlo en Windows Pro/Enterprise
-        /// - En Windows Home es m·s persistente pero se puede
+        /// - En Windows Home es m√°s persistente pero se puede
         /// </summary>
         public static bool DisableDiagTrack()
         {
-            return ServiceSafetyWrapper.SafeDisableService("DiagTrack", "DiagTrack (TelemetrÌa)");
+            return ServiceSafetyWrapper.SafeDisableService("DiagTrack", "DiagTrack (Telemetr√≠a)");
         }
 
         /// <summary>
-        /// HABILITA DiagTrack (TelemetrÌa)
-        /// Restaura telemetrÌa de Windows
+        /// HABILITA DiagTrack (Telemetr√≠a)
+        /// Restaura telemetr√≠a de Windows
         /// </summary>
         public static bool EnableDiagTrack()
         {
-            return ServiceSafetyWrapper.SafeEnableService("DiagTrack", "DiagTrack (TelemetrÌa)");
+            return ServiceSafetyWrapper.SafeEnableService("DiagTrack", "DiagTrack (Telemetr√≠a)");
         }
 
         /// <summary>
-        /// M…TODO GEN…RICO: Deshabilita cualquier servicio de Windows
+        /// M√âTODO GEN√âRICO: Deshabilita cualquier servicio de Windows
         /// 
-        /// ESTRATEGIA DUAL (M·xima Confiabilidad):
+        /// ESTRATEGIA DUAL (M√°xima Confiabilidad):
         /// 
         /// 1. ServiceController.Stop()
         ///    - Detiene el servicio AHORA (efecto inmediato)
         ///    - Usa API de Windows nativa
-        ///    - Puede fallar si el servicio est· protegido
+        ///    - Puede fallar si el servicio est√° protegido
         /// 
         /// 2. Registro: Start = 4 (Disabled)
         ///    - Cambia StartType a "Disabled" permanentemente
-        ///    - El servicio NO se iniciar· en el prÛximo boot
-        ///    - M·s confiable que ServiceController.ChangeStartMode (menos permisos)
+        ///    - El servicio NO se iniciar√° en el pr√≥ximo boot
+        ///    - M√°s confiable que ServiceController.ChangeStartMode (menos permisos)
         /// 
         /// VENTAJAS DE ESTE ENFOQUE:
         /// - Efecto inmediato (stop) + permanente (registry)
@@ -114,19 +116,19 @@ namespace Tweaker.Optimizations
         /// - Maneja servicios protegidos por TrustedInstaller
         /// 
         /// SEGURIDAD INTEGRADA:
-        /// - Verifica ServiceGuard antes de modificar (protecciÛn contra servicios crÌticos)
+        /// - Verifica ServiceGuard antes de modificar (protecci√≥n contra servicios cr√≠ticos)
         /// - Hace backup del valor del registro antes de modificar
         /// </summary>
         private static bool DisableService(string serviceName, string displayName, string registryPath)
         {
             // ???????????????????????????????????????????????????????????????
-            // PASO 0: VERIFICACI”N DE SEGURIDAD (ServiceGuard)
+            // PASO 0: VERIFICACI√ìN DE SEGURIDAD (ServiceGuard)
             // ???????????????????????????????????????????????????????????????
-            
+
             if (ServiceGuard.IsProtected(serviceName))
             {
-                Debug.WriteLine($"? OPERACI”N BLOQUEADA: {displayName} es un servicio protegido");
-                return false; // NO MODIFICAR SERVICIOS CRÕTICOS
+                Debug.WriteLine($"? OPERACI√ìN BLOQUEADA: {displayName} es un servicio protegido");
+                return false; // NO MODIFICAR SERVICIOS CR√çTICOS
             }
 
             bool stopSuccess = false;
@@ -137,21 +139,21 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????????
                 // PASO 1: BACKUP DEL VALOR ACTUAL (OptimizationBackup)
                 // ???????????????????????????????????????????????????????????????
-                
+
                 OptimizationBackup.BackupRegistryValue(registryPath, "Start");
-                
+
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: DETENER EL SERVICIO (Efecto Inmediato)
                 // ???????????????????????????????????????????????????????????
-                
+
                 try
                 {
                     using (ServiceController sc = new ServiceController(serviceName))
                     {
                         // Verificar que el servicio exista
-                        var status = sc.Status; // Lanza excepciÛn si no existe
+                        var status = sc.Status; // Lanza excepci√≥n si no existe
 
-                        // Detener solo si est· corriendo
+                        // Detener solo si est√° corriendo
                         if (sc.Status != ServiceControllerStatus.Stopped)
                         {
                             Debug.WriteLine($"Deteniendo servicio: {displayName}...");
@@ -169,22 +171,22 @@ namespace Tweaker.Optimizations
                 }
                 catch (InvalidOperationException)
                 {
-                    // Servicio no existe en esta versiÛn de Windows
+                    // Servicio no existe en esta versi√≥n de Windows
                     Debug.WriteLine($"? Servicio no encontrado: {displayName}");
-                    // No es error crÌtico, continuamos con registro
+                    // No es error cr√≠tico, continuamos con registro
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
                     // Servicio protegido o sin permisos
                     Debug.WriteLine($"? No se pudo detener {displayName}: {ex.Message}");
-                    // Continuamos con registro que puede tener m·s permisos
+                    // Continuamos con registro que puede tener m√°s permisos
                 }
 
                 // ???????????????????????????????????????????????????????????
-                // PASO 3: DESHABILITAR VÕA REGISTRO (Permanente)
+                // PASO 3: DESHABILITAR V√çA REGISTRO (Permanente)
                 // ???????????????????????????????????????????????????????????
-                
-                
+
+
                 try
                 {
                     using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath, true))
@@ -199,7 +201,7 @@ namespace Tweaker.Optimizations
                             // 3 = Manual
                             // 4 = Disabled
                             key.SetValue("Start", 4, RegistryValueKind.DWord);
-                            
+
                             Debug.WriteLine($"? Servicio deshabilitado en registro: {displayName}");
                             Debug.WriteLine($"  Clave: HKLM\\{registryPath}");
                             Debug.WriteLine($"  Start = 4 (Disabled)");
@@ -207,7 +209,7 @@ namespace Tweaker.Optimizations
                         }
                         else
                         {
-                            Debug.WriteLine($"? No se encontrÛ clave de registro: {registryPath}");
+                            Debug.WriteLine($"? No se encontr√≥ clave de registro: {registryPath}");
                         }
                     }
                 }
@@ -216,7 +218,7 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine($"? Error modificando registro para {displayName}: {ex.Message}");
                 }
 
-                // Consideramos Èxito si al menos uno de los mÈtodos funcionÛ
+                // Consideramos √©xito si al menos uno de los m√©todos funcion√≥
                 return stopSuccess || registrySuccess;
             }
             catch (Exception ex)
@@ -227,7 +229,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO GEN…RICO: Habilita y arranca cualquier servicio de Windows
+        /// M√âTODO GEN√âRICO: Habilita y arranca cualquier servicio de Windows
         /// </summary>
         private static bool EnableService(string serviceName, string displayName, string registryPath)
         {
@@ -237,9 +239,9 @@ namespace Tweaker.Optimizations
             try
             {
                 // ???????????????????????????????????????????????????????????
-                // PASO 1: CAMBIAR STARTTYPE A AUTOMATIC VÕA REGISTRO
+                // PASO 1: CAMBIAR STARTTYPE A AUTOMATIC V√çA REGISTRO
                 // ???????????????????????????????????????????????????????????
-                
+
                 try
                 {
                     using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath, true))
@@ -248,7 +250,7 @@ namespace Tweaker.Optimizations
                         {
                             // Start = 2 significa "Automatic"
                             key.SetValue("Start", 2, RegistryValueKind.DWord);
-                            
+
                             Debug.WriteLine($"? Servicio habilitado en registro: {displayName}");
                             Debug.WriteLine($"  Start = 2 (Automatic)");
                             registrySuccess = true;
@@ -263,7 +265,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: INICIAR EL SERVICIO (Efecto Inmediato)
                 // ???????????????????????????????????????????????????????????
-                
+
                 try
                 {
                     using (ServiceController sc = new ServiceController(serviceName))
@@ -304,8 +306,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Obtiene el estado actual de un servicio
-        /// ⁄til para debugging y verificar si el tweak se aplicÛ
+        /// M√âTODO AUXILIAR: Obtiene el estado actual de un servicio
+        /// √ötil para debugging y verificar si el tweak se aplic√≥
         /// </summary>
         public static string GetServiceStatus(string serviceName)
         {
@@ -327,8 +329,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Deshabilita M⁄LTIPLES servicios de una vez
-        /// Para implementar un botÛn "Debloat Todo"
+        /// M√âTODO AUXILIAR: Deshabilita M√öLTIPLES servicios de una vez
+        /// Para implementar un bot√≥n "Debloat Todo"
         /// </summary>
         public static (int success, int total) DisableAllBloatServices()
         {
@@ -342,7 +344,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Habilita M⁄LTIPLES servicios de una vez
+        /// M√âTODO AUXILIAR: Habilita M√öLTIPLES servicios de una vez
         /// Para restaurar todos a la vez
         /// </summary>
         public static (int success, int total) EnableAllBloatServices()

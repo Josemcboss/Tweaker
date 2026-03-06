@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
@@ -19,12 +20,12 @@ namespace Tweaker.Optimizations
         /// Win32PrioritySeparation = 38 (0x26)
         /// 
         /// IMPACTO:
-        /// ? Ventanas activas (juegos) reciben m·s tiempo de CPU
+        /// ? Ventanas activas (juegos) reciben m√°s tiempo de CPU
         /// ? Reduce input lag en aplicaciones foreground
         /// ? Mejora frame consistency en gaming
         /// 
-        /// DECODIFICACI”N DEL VALOR 38 (0x26 en hex):
-        /// - Bits 0-1: Short quantum (m·s context switches)
+        /// DECODIFICACI√ìN DEL VALOR 38 (0x26 en hex):
+        /// - Bits 0-1: Short quantum (m√°s context switches)
         /// - Bits 2-3: Variable quantum length
         /// - Bits 4-5: Foreground boost de 2:1
         /// 
@@ -104,22 +105,22 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Desactiva el ahorro de energÌa en USB
+        /// Desactiva el ahorro de energ√≠a en USB
         /// 
         /// IMPACTO:
-        /// ? Evita que mouse/teclado entren en suspensiÛn
+        /// ? Evita que mouse/teclado entren en suspensi√≥n
         /// ? Elimina micro-delays al reactivar dispositivos USB
-        /// ? CRÕTICO para gaming (mouse sin lag)
+        /// ? CR√çTICO para gaming (mouse sin lag)
         /// 
         /// IMPORTANTE:
-        /// ?? Aumenta consumo de energÌa en ~0.5W por puerto USB
+        /// ?? Aumenta consumo de energ√≠a en ~0.5W por puerto USB
         /// ?? Solo recomendado para PCs de escritorio o gaming laptops
         /// </summary>
         public static bool DisableUsbPowerSaving()
         {
             try
             {
-                Debug.WriteLine("?? Deshabilitando ahorro de energÌa USB...");
+                Debug.WriteLine("?? Deshabilitando ahorro de energ√≠a USB...");
 
                 using (var key = Registry.LocalMachine.OpenSubKey(
                     @"SYSTEM\CurrentControlSet\Services\USB", true))
@@ -134,7 +135,7 @@ namespace Tweaker.Optimizations
                     key.SetValue("DisableSelectiveSuspend", 1, RegistryValueKind.DWord);
 
                     Debug.WriteLine("? USB Selective Suspend deshabilitado");
-                    Debug.WriteLine("   ? Mouse y teclado sin delays de reactivaciÛn");
+                    Debug.WriteLine("   ? Mouse y teclado sin delays de reactivaci√≥n");
                     return true;
                 }
             }
@@ -151,13 +152,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Restaura el ahorro de energÌa USB
+        /// Restaura el ahorro de energ√≠a USB
         /// </summary>
         public static bool RevertUsbPowerSaving()
         {
             try
             {
-                Debug.WriteLine("?? Restaurando ahorro de energÌa USB...");
+                Debug.WriteLine("?? Restaurando ahorro de energ√≠a USB...");
 
                 using (var key = Registry.LocalMachine.OpenSubKey(
                     @"SYSTEM\CurrentControlSet\Services\USB", true))
@@ -190,18 +191,18 @@ namespace Tweaker.Optimizations
         /// Optimiza delays de la interfaz de usuario
         /// 
         /// CAMBIOS:
-        /// ï MenuShowDelay = 0 (men˙s instant·neos)
-        /// ï WaitToKillAppTimeout = 2000 (cierre r·pido de apps)
-        /// ï WaitToKillServiceTimeout = 2000 (cierre r·pido de servicios)
+        /// ‚Ä¢ MenuShowDelay = 0 (men√∫s instant√°neos)
+        /// ‚Ä¢ WaitToKillAppTimeout = 2000 (cierre r√°pido de apps)
+        /// ‚Ä¢ WaitToKillServiceTimeout = 2000 (cierre r√°pido de servicios)
         /// 
         /// IMPACTO:
-        /// ? Men˙s contextuales aparecen al instante
+        /// ? Men√∫s contextuales aparecen al instante
         /// ? Apps cierran en 2s en vez de 5s al hacer Alt+F4
-        /// ? Windows se apaga/reinicia m·s r·pido
-        /// ? UI m·s responsive y "snappy"
+        /// ? Windows se apaga/reinicia m√°s r√°pido
+        /// ? UI m√°s responsive y "snappy"
         /// 
         /// SEGURIDAD:
-        /// ?? Apps que no responden se cerrar·n m·s r·pido (posible pÈrdida de datos)
+        /// ?? Apps que no responden se cerrar√°n m√°s r√°pido (posible p√©rdida de datos)
         /// </summary>
         public static bool OptimizeUserInterface()
         {
@@ -218,10 +219,10 @@ namespace Tweaker.Optimizations
                         return false;
                     }
 
-                    // MenuShowDelay: Delay antes de mostrar men˙s contextuales
-                    // 0 = Instant·neo (default es 400ms)
+                    // MenuShowDelay: Delay antes de mostrar men√∫s contextuales
+                    // 0 = Instant√°neo (default es 400ms)
                     key.SetValue("MenuShowDelay", "0", RegistryValueKind.String);
-                    Debug.WriteLine("? MenuShowDelay configurado a 0 (instant·neo)");
+                    Debug.WriteLine("? MenuShowDelay configurado a 0 (instant√°neo)");
 
                     // WaitToKillAppTimeout: Tiempo de espera antes de forzar cierre de app
                     // 2000ms = 2 segundos (default es 5000ms)
@@ -233,9 +234,9 @@ namespace Tweaker.Optimizations
                     key.SetValue("WaitToKillServiceTimeout", "2000", RegistryValueKind.String);
                     Debug.WriteLine("? WaitToKillServiceTimeout configurado a 2000ms");
 
-                    Debug.WriteLine("   ? Men˙s contextuales instant·neos");
+                    Debug.WriteLine("   ? Men√∫s contextuales instant√°neos");
                     Debug.WriteLine("   ? Apps cierran en 2s en vez de 5s");
-                    Debug.WriteLine("   ? UI m·s responsive");
+                    Debug.WriteLine("   ? UI m√°s responsive");
                     return true;
                 }
             }

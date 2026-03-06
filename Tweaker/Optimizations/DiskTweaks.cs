@@ -1,18 +1,19 @@
 using System;
 using System.Diagnostics;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// Optimizaciones de disco para gaming - reduce IO overhead y alarga vida ˙til del SSD
-    /// Tweaks especÌficos para NTFS que mejoran rendimiento y reducen escrituras innecesarias
+    /// Optimizaciones de disco para gaming - reduce IO overhead y alarga vida √∫til del SSD
+    /// Tweaks espec√≠ficos para NTFS que mejoran rendimiento y reducen escrituras innecesarias
     /// </summary>
     public static class DiskTweaks
     {
         /// <summary>
         /// Optimiza comportamiento NTFS para gaming y longevidad del SSD
-        /// Desactiva actualizaciÛn de fecha de acceso y nombres 8.3 DOS
+        /// Desactiva actualizaci√≥n de fecha de acceso y nombres 8.3 DOS
         /// </summary>
         public static bool OptimizeNTFS()
         {
@@ -24,7 +25,7 @@ namespace Tweaker.Optimizations
 
                 bool success = true;
 
-                // 1. Desactivar Last Access Time (CRÕTICO para SSD)
+                // 1. Desactivar Last Access Time (CR√çTICO para SSD)
                 Debug.WriteLine("?? Desactivando Last Access Time...");
                 if (DisableLastAccessTime())
                 {
@@ -45,7 +46,7 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine("? Nombres 8.3 DOS desactivados");
                     Debug.WriteLine("   ?? BENEFICIO: Menos metadata por archivo");
-                    Debug.WriteLine("   ? BENEFICIO: Acceso a archivos m·s r·pido");
+                    Debug.WriteLine("   ? BENEFICIO: Acceso a archivos m√°s r√°pido");
                 }
                 else
                 {
@@ -73,18 +74,18 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine("?? RESUMEN DE OPTIMIZACIONES APLICADAS:");
                     Debug.WriteLine("???????????????????????????????????????");
                     Debug.WriteLine("? Last Access Time: DESACTIVADO");
-                    Debug.WriteLine("   ï Reduce escrituras SSD en ~30%");
-                    Debug.WriteLine("   ï Alarga vida ˙til del SSD significativamente");
-                    Debug.WriteLine("   ï Elimina micro-freezes durante carga");
+                    Debug.WriteLine("   ‚Ä¢ Reduce escrituras SSD en ~30%");
+                    Debug.WriteLine("   ‚Ä¢ Alarga vida √∫til del SSD significativamente");
+                    Debug.WriteLine("   ‚Ä¢ Elimina micro-freezes durante carga");
                     Debug.WriteLine("");
                     Debug.WriteLine("? Nombres 8.3 DOS: DESACTIVADOS");
-                    Debug.WriteLine("   ï Menos overhead por archivo creado");
-                    Debug.WriteLine("   ï NavegaciÛn de carpetas m·s r·pida");
+                    Debug.WriteLine("   ‚Ä¢ Menos overhead por archivo creado");
+                    Debug.WriteLine("   ‚Ä¢ Navegaci√≥n de carpetas m√°s r√°pida");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? IMPACTO GAMING:");
-                    Debug.WriteLine("   ï Menos stuttering en world loading");
-                    Debug.WriteLine("   ï Tiempos de carga mejorados");
-                    Debug.WriteLine("   ï SSD durar· aÒos m·s");
+                    Debug.WriteLine("   ‚Ä¢ Menos stuttering en world loading");
+                    Debug.WriteLine("   ‚Ä¢ Tiempos de carga mejorados");
+                    Debug.WriteLine("   ‚Ä¢ SSD durar√° a√±os m√°s");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? REQUIERE REINICIO para efecto completo");
                 }
@@ -99,7 +100,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Desactiva Last Access Time - CRÕTICO para longevidad del SSD
+        /// Desactiva Last Access Time - CR√çTICO para longevidad del SSD
         /// Evita que Windows escriba fecha de acceso cada vez que se lee un archivo
         /// </summary>
         private static bool DisableLastAccessTime()
@@ -131,8 +132,8 @@ namespace Tweaker.Optimizations
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine($"   ?? fsutil output: {output.Trim()}");
-                        Debug.WriteLine("   ?? EXPLICACI”N: Last Access Time causa escritura SSD en cada lectura");
-                        Debug.WriteLine("   ?? Sin esto, el SSD durar· 2-3x m·s tiempo");
+                        Debug.WriteLine("   ?? EXPLICACI√ìN: Last Access Time causa escritura SSD en cada lectura");
+                        Debug.WriteLine("   ?? Sin esto, el SSD durar√° 2-3x m√°s tiempo");
                         return true;
                     }
                     else
@@ -151,7 +152,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// Desactiva nombres 8.3 DOS (legacy)
-        /// Mejora rendimiento de navegaciÛn de archivos
+        /// Mejora rendimiento de navegaci√≥n de archivos
         /// </summary>
         private static bool Disable8Dot3Names()
         {
@@ -182,7 +183,7 @@ namespace Tweaker.Optimizations
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine($"   ?? fsutil output: {output.Trim()}");
-                        Debug.WriteLine("   ?? EXPLICACI”N: Nombres 8.3 son legacy de DOS (ARCHIV~1.TXT)");
+                        Debug.WriteLine("   ?? EXPLICACI√ìN: Nombres 8.3 son legacy de DOS (ARCHIV~1.TXT)");
                         Debug.WriteLine("   ?? Desactivarlos reduce overhead de metadata por archivo");
                         return true;
                     }
@@ -208,7 +209,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string MEMORY_KEY = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(MEMORY_KEY, true))
                 {
                     if (key == null)
@@ -253,7 +254,7 @@ namespace Tweaker.Optimizations
                 if (EnableLastAccessTime())
                 {
                     Debug.WriteLine("? Last Access Time restaurado");
-                    Debug.WriteLine("   ?? ADVERTENCIA: Esto aumentar· escrituras en SSD");
+                    Debug.WriteLine("   ?? ADVERTENCIA: Esto aumentar√° escrituras en SSD");
                 }
                 else
                 {
@@ -314,7 +315,7 @@ namespace Tweaker.Optimizations
             try
             {
                 const string MEMORY_KEY = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(MEMORY_KEY, true))
                 {
                     if (key != null)
@@ -361,7 +362,7 @@ namespace Tweaker.Optimizations
                     }
 
                     process.WaitForExit();
-                    
+
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine($"   ? {description} completed successfully");
@@ -383,14 +384,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DiagnÛstico completo del estado de optimizaciones NTFS
+        /// Diagn√≥stico completo del estado de optimizaciones NTFS
         /// </summary>
         public static string DiagnoseDiskSettings()
         {
             try
             {
                 var diagnosis = "???????????????????????????????????????????????????????????\n";
-                diagnosis += "DIAGN”STICO DISK & NTFS OPTIMIZATIONS\n";
+                diagnosis += "DIAGN√ìSTICO DISK & NTFS OPTIMIZATIONS\n";
                 diagnosis += "???????????????????????????????????????????????????????????\n\n";
 
                 // Verificar configuraciones fsutil
@@ -419,7 +420,7 @@ namespace Tweaker.Optimizations
                             }
                             else
                             {
-                                diagnosis += "   ?? ConfiguraciÛn por defecto (Services optimized)\n";
+                                diagnosis += "   ?? Configuraci√≥n por defecto (Services optimized)\n";
                             }
                         }
                     }
@@ -430,30 +431,30 @@ namespace Tweaker.Optimizations
                 }
 
                 diagnosis += "\n?? RECOMENDACIONES SSD/GAMING:\n";
-                diagnosis += "   ï Desactivar Last Access Time (CRÕTICO para SSD)\n";
-                diagnosis += "   ï Desactivar nombres 8.3 DOS (Mejor rendimiento)\n";
-                diagnosis += "   ï Configurar LargeSystemCache para aplicaciones\n";
-                diagnosis += "   ï Reiniciar despuÈs de cambios NTFS\n";
+                diagnosis += "   ‚Ä¢ Desactivar Last Access Time (CR√çTICO para SSD)\n";
+                diagnosis += "   ‚Ä¢ Desactivar nombres 8.3 DOS (Mejor rendimiento)\n";
+                diagnosis += "   ‚Ä¢ Configurar LargeSystemCache para aplicaciones\n";
+                diagnosis += "   ‚Ä¢ Reiniciar despu√©s de cambios NTFS\n";
 
-                diagnosis += "\n?? EDUCACI”N SSD:\n";
-                diagnosis += "   ï Last Access Time causa 1 escritura por cada lectura\n";
-                diagnosis += "   ï En gaming intensivo = miles de escrituras extra\n";
-                diagnosis += "   ï Sin esto, SSD durar· 2-3 aÒos m·s\n";
-                diagnosis += "   ï Mejora performance sin pÈrdida de funcionalidad\n";
+                diagnosis += "\n?? EDUCACI√ìN SSD:\n";
+                diagnosis += "   ‚Ä¢ Last Access Time causa 1 escritura por cada lectura\n";
+                diagnosis += "   ‚Ä¢ En gaming intensivo = miles de escrituras extra\n";
+                diagnosis += "   ‚Ä¢ Sin esto, SSD durar√° 2-3 a√±os m√°s\n";
+                diagnosis += "   ‚Ä¢ Mejora performance sin p√©rdida de funcionalidad\n";
 
                 Debug.WriteLine(diagnosis);
                 return diagnosis;
             }
             catch (Exception ex)
             {
-                var error = $"? ERROR en diagnÛstico: {ex.Message}";
+                var error = $"? ERROR en diagn√≥stico: {ex.Message}";
                 Debug.WriteLine(error);
                 return error;
             }
         }
 
         /// <summary>
-        /// Verifica una configuraciÛn fsutil especÌfica
+        /// Verifica una configuraci√≥n fsutil espec√≠fica
         /// </summary>
         private static string CheckFsutilSetting(string queryCommand, string settingName)
         {
@@ -474,14 +475,14 @@ namespace Tweaker.Optimizations
                     {
                         process.WaitForExit();
                         string output = process.StandardOutput.ReadToEnd();
-                        
+
                         if (process.ExitCode == 0)
                         {
                             return $"   ?? {settingName}: {output.Trim()}\n";
                         }
                     }
                 }
-                
+
                 return $"   ? {settingName}: No se pudo verificar\n";
             }
             catch (Exception)
@@ -491,7 +492,7 @@ namespace Tweaker.Optimizations
         }
 
         // ???????????????????????????????????????????????????????????????????
-        // M…TODOS PARA COMPATIBILIDAD CON MAINWINDOW
+        // M√âTODOS PARA COMPATIBILIDAD CON MAINWINDOW
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -527,12 +528,12 @@ namespace Tweaker.Optimizations
         }
 
         // ???????????????????????????????????????????????????????????????????
-        // CONFIGURACIONES QoS (QUALITY OF SERVICE) M⁄LTIPLES
+        // CONFIGURACIONES QoS (QUALITY OF SERVICE) M√öLTIPLES
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// CONFIGURACI”N QoS PARA GAMING COMPETITIVO
-        /// Prioriza latencia mÌnima y responsividad por encima de throughput
+        /// CONFIGURACI√ìN QoS PARA GAMING COMPETITIVO
+        /// Prioriza latencia m√≠nima y responsividad por encima de throughput
         /// </summary>
         public static bool ApplyGamingQoSProfile()
         {
@@ -545,20 +546,20 @@ namespace Tweaker.Optimizations
 
                 // I/O Priority para gaming
                 success &= SetIOPriority("Gaming");
-                
+
                 // Network QoS para gaming
                 success &= ConfigureNetworkQoS("Gaming");
-                
+
                 // Memory QoS optimizado
                 success &= ConfigureMemoryQoS("Gaming");
 
                 if (success)
                 {
                     Debug.WriteLine("\n? QoS GAMING PROFILE APLICADO:");
-                    Debug.WriteLine("   ï Latencia I/O: MÕNIMA");
-                    Debug.WriteLine("   ï Network Priority: ALTA");
-                    Debug.WriteLine("   ï Memory Access: INMEDIATO");
-                    Debug.WriteLine("   ï File Access: OPTIMIZADO para assets");
+                    Debug.WriteLine("   ‚Ä¢ Latencia I/O: M√çNIMA");
+                    Debug.WriteLine("   ‚Ä¢ Network Priority: ALTA");
+                    Debug.WriteLine("   ‚Ä¢ Memory Access: INMEDIATO");
+                    Debug.WriteLine("   ‚Ä¢ File Access: OPTIMIZADO para assets");
                 }
 
                 return success;
@@ -571,7 +572,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURACI”N QoS PARA STREAMING
+        /// CONFIGURACI√ìN QoS PARA STREAMING
         /// Balance entre calidad de stream y performance gaming
         /// </summary>
         public static bool ApplyStreamingQoSProfile()
@@ -590,10 +591,10 @@ namespace Tweaker.Optimizations
                 if (success)
                 {
                     Debug.WriteLine("\n? QoS STREAMING PROFILE APLICADO:");
-                    Debug.WriteLine("   ï Upload Bandwidth: RESERVADO");
-                    Debug.WriteLine("   ï Encoding Priority: ALTA");
-                    Debug.WriteLine("   ï Game Process: BALANCEADO");
-                    Debug.WriteLine("   ï Network Stability: PRIORIZADA");
+                    Debug.WriteLine("   ‚Ä¢ Upload Bandwidth: RESERVADO");
+                    Debug.WriteLine("   ‚Ä¢ Encoding Priority: ALTA");
+                    Debug.WriteLine("   ‚Ä¢ Game Process: BALANCEADO");
+                    Debug.WriteLine("   ‚Ä¢ Network Stability: PRIORIZADA");
                 }
 
                 return success;
@@ -606,7 +607,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURACI”N QoS PARA PRODUCTIVIDAD
+        /// CONFIGURACI√ìN QoS PARA PRODUCTIVIDAD
         /// Optimizado para trabajo, multitasking y aplicaciones profesionales
         /// </summary>
         public static bool ApplyProductivityQoSProfile()
@@ -625,10 +626,10 @@ namespace Tweaker.Optimizations
                 if (success)
                 {
                     Debug.WriteLine("\n? QoS PRODUCTIVITY PROFILE APLICADO:");
-                    Debug.WriteLine("   ï Multitasking: OPTIMIZADO");
-                    Debug.WriteLine("   ï File Operations: ACELERADAS");
-                    Debug.WriteLine("   ï Network Downloads: PRIORIZADAS");
-                    Debug.WriteLine("   ï Background Tasks: BALANCEADAS");
+                    Debug.WriteLine("   ‚Ä¢ Multitasking: OPTIMIZADO");
+                    Debug.WriteLine("   ‚Ä¢ File Operations: ACELERADAS");
+                    Debug.WriteLine("   ‚Ä¢ Network Downloads: PRIORIZADAS");
+                    Debug.WriteLine("   ‚Ä¢ Background Tasks: BALANCEADAS");
                 }
 
                 return success;
@@ -641,8 +642,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURACI”N QoS EXTREMA PARA ESPORTS
-        /// ConfiguraciÛn agresiva para competiciones profesionales
+        /// CONFIGURACI√ìN QoS EXTREMA PARA ESPORTS
+        /// Configuraci√≥n agresiva para competiciones profesionales
         /// </summary>
         public static bool ApplyEsportsQoSProfile()
         {
@@ -661,10 +662,10 @@ namespace Tweaker.Optimizations
                 if (success)
                 {
                     Debug.WriteLine("\n? QoS ESPORTS EXTREMO APLICADO:");
-                    Debug.WriteLine("   ï Latencia: SUB-1MS");
-                    Debug.WriteLine("   ï Jitter: ELIMINADO");
-                    Debug.WriteLine("   ï Background Apps: SUSPENDIDAS");
-                    Debug.WriteLine("   ï CPU/GPU: DEDICADOS");
+                    Debug.WriteLine("   ‚Ä¢ Latencia: SUB-1MS");
+                    Debug.WriteLine("   ‚Ä¢ Jitter: ELIMINADO");
+                    Debug.WriteLine("   ‚Ä¢ Background Apps: SUSPENDIDAS");
+                    Debug.WriteLine("   ‚Ä¢ CPU/GPU: DEDICADOS");
                     Debug.WriteLine("   ??  SOLO para competiciones");
                 }
 
@@ -678,8 +679,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURACI”N QoS BALANCEADA (DEFAULT MEJORADO)
-        /// Balance Ûptimo para uso diario
+        /// CONFIGURACI√ìN QoS BALANCEADA (DEFAULT MEJORADO)
+        /// Balance √≥ptimo para uso diario
         /// </summary>
         public static bool ApplyBalancedQoSProfile()
         {
@@ -697,10 +698,10 @@ namespace Tweaker.Optimizations
                 if (success)
                 {
                     Debug.WriteLine("\n? QoS BALANCEADO APLICADO:");
-                    Debug.WriteLine("   ï Gaming: BUENA performance");
-                    Debug.WriteLine("   ï NavegaciÛn: FLUIDA");
-                    Debug.WriteLine("   ï Downloads: SIN INTERFERIR");
-                    Debug.WriteLine("   ï Sistema: ESTABLE");
+                    Debug.WriteLine("   ‚Ä¢ Gaming: BUENA performance");
+                    Debug.WriteLine("   ‚Ä¢ Navegaci√≥n: FLUIDA");
+                    Debug.WriteLine("   ‚Ä¢ Downloads: SIN INTERFERIR");
+                    Debug.WriteLine("   ‚Ä¢ Sistema: ESTABLE");
                 }
 
                 return success;
@@ -713,14 +714,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURAR PRIORIDAD I/O SEG⁄N PERFIL
+        /// CONFIGURAR PRIORIDAD I/O SEG√öN PERFIL
         /// </summary>
         private static bool SetIOPriority(string profile)
         {
             try
             {
                 const string IO_KEY = @"SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(IO_KEY, true))
                 {
                     if (key == null) return false;
@@ -771,14 +772,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURAR QoS DE RED SEG⁄N PERFIL
+        /// CONFIGURAR QoS DE RED SEG√öN PERFIL
         /// </summary>
         private static bool ConfigureNetworkQoS(string profile)
         {
             try
             {
                 const string NETWORK_KEY = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(NETWORK_KEY, true))
                 {
                     if (key == null) return false;
@@ -800,13 +801,13 @@ namespace Tweaker.Optimizations
                         case "productivity":
                             key.SetValue("NetworkThrottlingIndex", 20, RegistryValueKind.DWord);
                             key.SetValue("SystemResponsiveness", 20, RegistryValueKind.DWord); // Windows default
-                            Debug.WriteLine("   ?? Network: ConfiguraciÛn estable para trabajo");
+                            Debug.WriteLine("   ?? Network: Configuraci√≥n estable para trabajo");
                             break;
 
                         case "esports":
                             key.SetValue("NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegistryValueKind.DWord);
                             key.SetValue("SystemResponsiveness", 0, RegistryValueKind.DWord);
-                            Debug.WriteLine("   ?? Network: EXTREMO - Sin lÌmites ni throttling");
+                            Debug.WriteLine("   ?? Network: EXTREMO - Sin l√≠mites ni throttling");
                             break;
 
                         case "balanced":
@@ -828,14 +829,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// CONFIGURAR QoS DE MEMORIA SEG⁄N PERFIL
+        /// CONFIGURAR QoS DE MEMORIA SEG√öN PERFIL
         /// </summary>
         private static bool ConfigureMemoryQoS(string profile)
         {
             try
             {
                 const string PRIORITY_KEY = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(PRIORITY_KEY, true))
                 {
                     if (key == null) return false;
@@ -854,7 +855,7 @@ namespace Tweaker.Optimizations
 
                         case "productivity":
                             key.SetValue("Win32PrioritySeparation", 2, RegistryValueKind.DWord); // Windows default
-                            Debug.WriteLine("   ?? Memory: ConfiguraciÛn Windows est·ndar");
+                            Debug.WriteLine("   ?? Memory: Configuraci√≥n Windows est√°ndar");
                             break;
 
                         case "esports":
@@ -865,7 +866,7 @@ namespace Tweaker.Optimizations
                         case "balanced":
                         default:
                             key.SetValue("Win32PrioritySeparation", 38, RegistryValueKind.DWord);
-                            Debug.WriteLine("   ?? Memory: Balance Ûptimo");
+                            Debug.WriteLine("   ?? Memory: Balance √≥ptimo");
                             break;
                     }
                 }
@@ -886,7 +887,7 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("   ?? MODO ESPORTS: Deshabilitando servicios no crÌticos...");
+                Debug.WriteLine("   ?? MODO ESPORTS: Deshabilitando servicios no cr√≠ticos...");
 
                 // Deshabilitar Windows Update durante gaming
                 const string UPDATE_KEY = @"SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU";
@@ -899,14 +900,14 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                // Deshabilitar telemetrÌa durante competiciÛn
+                // Deshabilitar telemetr√≠a durante competici√≥n
                 const string TELEMETRY_KEY = @"SOFTWARE\Policies\Microsoft\Windows\DataCollection";
                 using (var key = Registry.LocalMachine.CreateSubKey(TELEMETRY_KEY))
                 {
                     if (key != null)
                     {
                         key.SetValue("AllowTelemetry", 0, RegistryValueKind.DWord);
-                        Debug.WriteLine("   ? TelemetrÌa pausada");
+                        Debug.WriteLine("   ? Telemetr√≠a pausada");
                     }
                 }
 
@@ -920,13 +921,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// RESTAURAR QoS A CONFIGURACI”N POR DEFECTO
+        /// RESTAURAR QoS A CONFIGURACI√ìN POR DEFECTO
         /// </summary>
         public static bool RestoreDefaultQoS()
         {
             try
             {
-                Debug.WriteLine("?? RESTAURANDO QoS A CONFIGURACI”N POR DEFECTO");
+                Debug.WriteLine("?? RESTAURANDO QoS A CONFIGURACI√ìN POR DEFECTO");
                 Debug.WriteLine("???????????????????????????????????????????????");
 
                 bool success = true;
@@ -967,7 +968,7 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                Debug.WriteLine("\n? QoS RESTAURADO A CONFIGURACI”N WINDOWS POR DEFECTO");
+                Debug.WriteLine("\n? QoS RESTAURADO A CONFIGURACI√ìN WINDOWS POR DEFECTO");
                 return success;
             }
             catch (Exception ex)
@@ -978,13 +979,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DIAGN”STICO DE QoS ACTUAL
+        /// DIAGN√ìSTICO DE QoS ACTUAL
         /// </summary>
         public static string DiagnoseCurrentQoS()
         {
             try
             {
-                var diagnosis = "?? DIAGN”STICO QoS (QUALITY OF SERVICE)\n";
+                var diagnosis = "?? DIAGN√ìSTICO QoS (QUALITY OF SERVICE)\n";
                 diagnosis += "???????????????????????????????????????????????\n\n";
 
                 // Verificar I/O Settings
@@ -1028,7 +1029,7 @@ namespace Tweaker.Optimizations
                     {
                         var priority = key.GetValue("Win32PrioritySeparation");
                         diagnosis += $"   Win32PrioritySeparation: {priority ?? "Default (2)"}\n";
-                        
+
                         if (priority != null)
                         {
                             int val = (int)priority;
@@ -1046,10 +1047,10 @@ namespace Tweaker.Optimizations
                 }
 
                 diagnosis += "\n?? PERFILES QoS DISPONIBLES:\n";
-                diagnosis += "   ?? Gaming - Latencia mÌnima para competitivo\n";
+                diagnosis += "   ?? Gaming - Latencia m√≠nima para competitivo\n";
                 diagnosis += "   ?? Streaming - Balance gaming + broadcast\n";
                 diagnosis += "   ?? Productivity - Multitasking optimizado\n";
-                diagnosis += "   ?? Esports - ConfiguraciÛn extrema competiciÛn\n";
+                diagnosis += "   ?? Esports - Configuraci√≥n extrema competici√≥n\n";
                 diagnosis += "   ?? Balanced - Uso diario equilibrado\n";
 
                 Debug.WriteLine(diagnosis);
@@ -1057,7 +1058,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                var error = $"? ERROR en diagnÛstico QoS: {ex.Message}";
+                var error = $"? ERROR en diagn√≥stico QoS: {ex.Message}";
                 Debug.WriteLine(error);
                 return error;
             }

@@ -1,6 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
+
 using Tweaker.Utilities;
 
 namespace Tweaker.Optimizations.Base
@@ -12,23 +14,23 @@ namespace Tweaker.Optimizations.Base
     public abstract class BaseOptimization
     {
         protected string OptimizationName { get; }
-        
+
         protected BaseOptimization(string optimizationName)
         {
             OptimizationName = optimizationName;
         }
 
         /// <summary>
-        /// Ejecuta una operación de optimización con manejo de errores estándar
+        /// Ejecuta una operaciÃ³n de optimizaciÃ³n con manejo de errores estÃ¡ndar
         /// </summary>
         protected bool ExecuteOptimization(string operationDescription, Func<bool> operation)
         {
             try
             {
                 Debug.WriteLine($"?? {OptimizationName}: {operationDescription}");
-                
+
                 bool result = operation();
-                
+
                 if (result)
                 {
                     Debug.WriteLine($"? {OptimizationName}: {operationDescription} - EXITOSO");
@@ -37,46 +39,52 @@ namespace Tweaker.Optimizations.Base
                 {
                     Debug.WriteLine($"? {OptimizationName}: {operationDescription} - FALLIDO");
                 }
-                
+
                 return result;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"? {OptimizationName}: Error en {operationDescription}");
-                Debug.WriteLine($"   Excepción: {ex.Message}");
+                Debug.WriteLine($"   ExcepciÃ³n: {ex.Message}");
                 return false;
             }
         }
 
-        /// <summary>
-        /// Ejecuta múltiples operaciones de registro como una transacción
-        /// </summary>
-        protected bool ExecuteRegistryOperations(string operationName, params RegistryOperation[] operations)
+
+
+        protected bool ApplyRegistryTransaction(string operationName, Action<RegistryTransaction> transactionActions)
         {
-            return RegistryHelper.ExecuteRegistryTransaction($"{OptimizationName} - {operationName}", operations);
+            return ExecuteOptimization(operationName, () => {
+                using (var transaction = new RegistryTransaction())
+                {
+                    transactionActions(transaction);
+                    transaction.Commit();
+                }
+                return true;
+            });
         }
 
         /// <summary>
-        /// Helper para establecer un valor DWORD con logging automático
+        /// Helper para establecer un valor DWORD con logging automÃ¡tico
         /// </summary>
         protected bool SetRegistryDWord(RegistryKey hive, string keyPath, string valueName, int value, string description = "")
         {
-            string fullDescription = string.IsNullOrEmpty(description) ? 
+            string fullDescription = string.IsNullOrEmpty(description) ?
                 $"Configurar {valueName} = {value}" : description;
-            
-            return RegistryHelper.SetRegistryValue(hive, keyPath, valueName, value, 
+
+            return RegistryHelper.SetRegistryValue(hive, keyPath, valueName, value,
                 $"{OptimizationName} - {fullDescription}");
         }
 
         /// <summary>
-        /// Helper para establecer un valor String con logging automático
+        /// Helper para establecer un valor String con logging automÃ¡tico
         /// </summary>
         protected bool SetRegistryString(RegistryKey hive, string keyPath, string valueName, string value, string description = "")
         {
-            string fullDescription = string.IsNullOrEmpty(description) ? 
+            string fullDescription = string.IsNullOrEmpty(description) ?
                 $"Configurar {valueName} = {value}" : description;
-            
-            return RegistryHelper.SetRegistryValue(hive, keyPath, valueName, value, 
+
+            return RegistryHelper.SetRegistryValue(hive, keyPath, valueName, value,
                 $"{OptimizationName} - {fullDescription}");
         }
 
@@ -89,7 +97,7 @@ namespace Tweaker.Optimizations.Base
         }
 
         /// <summary>
-        /// Helper para verificar si un valor del registro tiene un valor específico
+        /// Helper para verificar si un valor del registro tiene un valor especÃ­fico
         /// </summary>
         protected bool IsRegistryValueEqual(RegistryKey hive, string keyPath, string valueName, object expectedValue)
         {
@@ -139,7 +147,7 @@ namespace Tweaker.Optimizations.Base
         }
 
         /// <summary>
-        /// Muestra un resumen de la operación
+        /// Muestra un resumen de la operaciÃ³n
         /// </summary>
         protected void ShowOperationSummary(bool success, string successMessage, string failureMessage)
         {
@@ -156,14 +164,14 @@ namespace Tweaker.Optimizations.Base
         }
 
         /// <summary>
-        /// Muestra información sobre beneficios esperados
+        /// Muestra informaciÃ³n sobre beneficios esperados
         /// </summary>
         protected void ShowBenefits(params string[] benefits)
         {
             Debug.WriteLine($"?? {OptimizationName} - BENEFICIOS ESPERADOS:");
             foreach (string benefit in benefits)
             {
-                Debug.WriteLine($"   • {benefit}");
+                Debug.WriteLine($"   â€¢ {benefit}");
             }
         }
 
@@ -181,7 +189,7 @@ namespace Tweaker.Optimizations.Base
     }
 
     /// <summary>
-    /// Clase base específica para optimizaciones que requieren reinicio
+    /// Clase base especÃ­fica para optimizaciones que requieren reinicio
     /// </summary>
     public abstract class RestartRequiredOptimization : BaseOptimization
     {

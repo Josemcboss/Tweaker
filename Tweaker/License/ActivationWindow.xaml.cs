@@ -11,13 +11,13 @@ namespace Tweaker.License
     public partial class ActivationWindow : Window
     {
         private string currentHardwareFingerprint;
-        
+
         public bool ActivationSuccessful { get; private set; }
 
         public ActivationWindow()
         {
             InitializeComponent();
-            
+
             // Obtener y mostrar el fingerprint del hardware
             try
             {
@@ -39,7 +39,7 @@ namespace Tweaker.License
         {
             // Auto-formatear con guiones
             var text = TxtLicenseKey.Text.Replace("-", "").ToUpper();
-            
+
             if (text.Length > 20)
             {
                 text = text.Substring(0, 20);
@@ -64,7 +64,7 @@ namespace Tweaker.License
 
             // Habilitar botón de activar si el formato es válido
             BtnActivate.IsEnabled = LicenseValidator.IsValidFormat(TxtLicenseKey.Text);
-            
+
             // Limpiar mensaje de estado al editar
             if (BorderStatus.Visibility == Visibility.Visible)
             {
@@ -88,8 +88,13 @@ namespace Tweaker.License
                     return;
                 }
 
+                // TODO: Refactor this to use dependency injection
+                var keyVault = new KeyVault();
+                var securityChecks = new SecurityChecks();
+                var validator = new LicenseValidator(keyVault, securityChecks);
+
                 // Validar llave
-                var licenseData = LicenseValidator.ValidateLicenseKey(licenseKey, currentHardwareFingerprint);
+                var licenseData = validator.ValidateLicenseKey(licenseKey, currentHardwareFingerprint, DateTime.Now);
 
                 if (licenseData == null)
                 {
@@ -107,8 +112,8 @@ namespace Tweaker.License
                 LicenseStorage.SaveLicense(licenseKey, licenseData);
 
                 // Mostrar mensaje de éxito
-                var expirationMsg = licenseData.IsPerpetual 
-                    ? "Licencia Perpetua ♾️" 
+                var expirationMsg = licenseData.IsPerpetual
+                    ? "Licencia Perpetua ♾️"
                     : $"Válida hasta: {licenseData.ExpirationDate:yyyy-MM-dd}";
 
                 MessageBox.Show(
@@ -149,14 +154,14 @@ namespace Tweaker.License
                 {
                     Clipboard.SetText(currentHardwareFingerprint);
                     ShowStatus("✅ Fingerprint copiado al portapapeles", true);
-                    
+
                     // Cambiar temporalmente el texto del botón
                     var button = sender as System.Windows.Controls.Button;
                     if (button != null)
                     {
                         var originalContent = button.Content;
                         button.Content = "✅ Copiado";
-                        
+
                         // Restaurar después de 2 segundos
                         var timer = new System.Windows.Threading.DispatcherTimer();
                         timer.Interval = TimeSpan.FromSeconds(2);

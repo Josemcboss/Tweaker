@@ -1,18 +1,19 @@
 using System;
 using System.Diagnostics;
+
 using Tweaker.Optimizations;
 
 namespace Tweaker.Presets
 {
     /// <summary>
-    /// Preset especÌfico para usuarios de laptop
-    /// Optimiza para gaming sin sacrificar baterÌa, tÈrmica o funcionalidad crÌtica
+    /// Preset espec√≠fico para usuarios de laptop
+    /// Optimiza para gaming sin sacrificar bater√≠a, t√©rmica o funcionalidad cr√≠tica
     /// </summary>
     public static class LaptopPreset
     {
         /// <summary>
         /// Aplica configuraciones optimizadas para laptops
-        /// Balance entre rendimiento gaming y preservar funcionalidades crÌticas
+        /// Balance entre rendimiento gaming y preservar funcionalidades cr√≠ticas
         /// </summary>
         public static bool ApplyLaptopOptimizations()
         {
@@ -21,9 +22,9 @@ namespace Tweaker.Presets
                 Debug.WriteLine("??????????????????????????????????????????");
                 Debug.WriteLine("?? GHOST OPTIMIZER - PRESET LAPTOP ??");
                 Debug.WriteLine("??????????????????????????????????????????");
-                Debug.WriteLine("?? Optimizando para gaming port·til...");
-                Debug.WriteLine("?? Preservando gestiÛn de energÌa...");
-                Debug.WriteLine("??? Manteniendo control tÈrmico...");
+                Debug.WriteLine("?? Optimizando para gaming port√°til...");
+                Debug.WriteLine("?? Preservando gesti√≥n de energ√≠a...");
+                Debug.WriteLine("??? Manteniendo control t√©rmico...");
                 Debug.WriteLine("");
 
                 bool overallSuccess = true;
@@ -32,7 +33,7 @@ namespace Tweaker.Presets
                 // ???????????????????????????????????????????
                 // 1. OPTIMIZACIONES DE INPUT (SEGURAS)
                 // ???????????????????????????????????????????
-                
+
                 Debug.WriteLine("?? OPTIMIZACIONES DE INPUT:");
                 Debug.WriteLine("?????????????????????????????????");
 
@@ -65,17 +66,17 @@ namespace Tweaker.Presets
                 Debug.WriteLine("");
 
                 // ???????????????????????????????????????????
-                // 2. OPTIMIZACIONES VISUALES (AHORRO BATERÕA)
+                // 2. OPTIMIZACIONES VISUALES (AHORRO BATER√çA)
                 // ???????????????????????????????????????????
 
-                Debug.WriteLine("?? OPTIMIZACIONES VISUALES (Ahorro de baterÌa):");
+                Debug.WriteLine("?? OPTIMIZACIONES VISUALES (Ahorro de bater√≠a):");
                 Debug.WriteLine("?????????????????????????????????????????????");
 
                 // Efectos visuales OFF
                 if (VisualOptimization.OptimizeVisuals())
                 {
                     Debug.WriteLine("? Efectos Visuales: DESACTIVADOS");
-                    Debug.WriteLine("   ?? BaterÌa +10-15% duraciÛn");
+                    Debug.WriteLine("   ?? Bater√≠a +10-15% duraci√≥n");
                     Debug.WriteLine("   ?? FPS +3-8%");
                     tweaksApplied++;
                 }
@@ -127,7 +128,7 @@ namespace Tweaker.Presets
                 if (NetworkOptimization.OptimizeDNSCache())
                 {
                     Debug.WriteLine("? DNS Cache: OPTIMIZADO");
-                    Debug.WriteLine("   ? ResoluciÛn DNS m·s r·pida");
+                    Debug.WriteLine("   ? Resoluci√≥n DNS m√°s r√°pida");
                     tweaksApplied++;
                 }
                 else
@@ -173,17 +174,17 @@ namespace Tweaker.Presets
                     overallSuccess = false;
                 }
 
-                // GPU Scheduling (si est· disponible)
+                // GPU Scheduling (si est√° disponible)
                 if (GpuOptimization.OptimizeGpuScheduling())
                 {
                     Debug.WriteLine("? GPU Scheduling: OPTIMIZADO");
-                    Debug.WriteLine("   ?? Frame times m·s consistentes");
+                    Debug.WriteLine("   ?? Frame times m√°s consistentes");
                     tweaksApplied++;
                 }
                 else
                 {
                     Debug.WriteLine("?? GPU Scheduling: No disponible o error");
-                    // No es crÌtico para laptops
+                    // No es cr√≠tico para laptops
                 }
 
                 Debug.WriteLine("");
@@ -225,41 +226,41 @@ namespace Tweaker.Presets
                 Debug.WriteLine("");
 
                 // ???????????????????????????????????????????
-                // 6. PRIVACIDAD SEGURA (Sin tocar servicios crÌticos)
+                // 6. PRIVACIDAD SEGURA (Sin tocar servicios cr√≠ticos)
                 // ???????????????????????????????????????????
 
-                Debug.WriteLine("?? PRIVACIDAD (MÈtodo seguro):");
+                Debug.WriteLine("?? PRIVACIDAD (M√©todo seguro):");
                 Debug.WriteLine("?????????????????????????????");
 
-                // TelemetrÌa b·sica OFF (seguro)
+                // Telemetr√≠a b√°sica OFF (seguro)
                 if (PrivacyTweaks.DisableTelemetryAndTracking())
                 {
-                    Debug.WriteLine("? TelemetrÌa: DESACTIVADA (Modo seguro)");
+                    Debug.WriteLine("? Telemetr√≠a: DESACTIVADA (Modo seguro)");
                     Debug.WriteLine("   ?? CPU libre +3-5%");
-                    Debug.WriteLine("   ?? Menos tr·fico de red");
-                    Debug.WriteLine("   ? Bluetooth/Discord funcionar·n correctamente");
+                    Debug.WriteLine("   ?? Menos tr√°fico de red");
+                    Debug.WriteLine("   ? Bluetooth/Discord funcionar√°n correctamente");
                     tweaksApplied++;
                 }
                 else
                 {
-                    Debug.WriteLine("? TelemetrÌa: Error");
+                    Debug.WriteLine("? Telemetr√≠a: Error");
                     overallSuccess = false;
                 }
 
                 Debug.WriteLine("");
 
                 // ???????????????????????????????????????????
-                // TWEAKS ESPECÕFICAMENTE NO APLICADOS EN LAPTOPS
+                // TWEAKS ESPEC√çFICAMENTE NO APLICADOS EN LAPTOPS
                 // ???????????????????????????????????????????
 
-                Debug.WriteLine("? TWEAKS NO APLICADOS (EspecÌficos para laptops):");
+                Debug.WriteLine("? TWEAKS NO APLICADOS (Espec√≠ficos para laptops):");
                 Debug.WriteLine("??????????????????????????????????????????????");
-                Debug.WriteLine("?? HibernaciÛn: MANTENIDA (Ahorro de baterÌa)");
-                Debug.WriteLine("??? Power Throttling: MANTENIDO (Control tÈrmico)");
-                Debug.WriteLine("?? Core Parking: MANTENIDO (Ahorro de baterÌa)");
+                Debug.WriteLine("?? Hibernaci√≥n: MANTENIDA (Ahorro de bater√≠a)");
+                Debug.WriteLine("??? Power Throttling: MANTENIDO (Control t√©rmico)");
+                Debug.WriteLine("?? Core Parking: MANTENIDO (Ahorro de bater√≠a)");
                 Debug.WriteLine("? Ultimate Performance: NO APLICADO (Consumo excesivo)");
-                Debug.WriteLine("??? Spectre/Meltdown: NO APLICADO (TÈrmica + seguridad)");
-                Debug.WriteLine("?? Servicios de energÌa: MANTENIDOS (GestiÛn de baterÌa)");
+                Debug.WriteLine("??? Spectre/Meltdown: NO APLICADO (T√©rmica + seguridad)");
+                Debug.WriteLine("?? Servicios de energ√≠a: MANTENIDOS (Gesti√≥n de bater√≠a)");
 
                 Debug.WriteLine("");
 
@@ -274,24 +275,24 @@ namespace Tweaker.Presets
                     Debug.WriteLine($"?? Tweaks aplicados: {tweaksApplied}");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? OPTIMIZACIONES APLICADAS:");
-                    Debug.WriteLine("  ï Input lag reducido para gaming");
-                    Debug.WriteLine("  ï Efectos visuales optimizados para baterÌa");
-                    Debug.WriteLine("  ï Red balanceada (gaming + navegaciÛn)");
-                    Debug.WriteLine("  ï Gaming optimizado sin comprometer tÈrmica");
-                    Debug.WriteLine("  ï Limpieza del sistema");
-                    Debug.WriteLine("  ï Privacidad mejorada (mÈtodo seguro)");
+                    Debug.WriteLine("  ‚Ä¢ Input lag reducido para gaming");
+                    Debug.WriteLine("  ‚Ä¢ Efectos visuales optimizados para bater√≠a");
+                    Debug.WriteLine("  ‚Ä¢ Red balanceada (gaming + navegaci√≥n)");
+                    Debug.WriteLine("  ‚Ä¢ Gaming optimizado sin comprometer t√©rmica");
+                    Debug.WriteLine("  ‚Ä¢ Limpieza del sistema");
+                    Debug.WriteLine("  ‚Ä¢ Privacidad mejorada (m√©todo seguro)");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? BENEFICIOS LAPTOP:");
-                    Debug.WriteLine("  ï Gaming: FPS +5-15%, Input lag -50-70ms");
-                    Debug.WriteLine("  ï BaterÌa: DuraciÛn +10-20% adicional");
-                    Debug.WriteLine("  ï TÈrmica: Sin comprometer gestiÛn de calor");
-                    Debug.WriteLine("  ï Conectividad: Bluetooth/WiFi funcionan perfectamente");
-                    Debug.WriteLine("  ï Estabilidad: Sin tweaks extremos peligrosos");
+                    Debug.WriteLine("  ‚Ä¢ Gaming: FPS +5-15%, Input lag -50-70ms");
+                    Debug.WriteLine("  ‚Ä¢ Bater√≠a: Duraci√≥n +10-20% adicional");
+                    Debug.WriteLine("  ‚Ä¢ T√©rmica: Sin comprometer gesti√≥n de calor");
+                    Debug.WriteLine("  ‚Ä¢ Conectividad: Bluetooth/WiFi funcionan perfectamente");
+                    Debug.WriteLine("  ‚Ä¢ Estabilidad: Sin tweaks extremos peligrosos");
                     Debug.WriteLine("");
                     Debug.WriteLine("? RESULTADO ESPERADO:");
-                    Debug.WriteLine("  ï Gaming competitivo mejorado");
-                    Debug.WriteLine("  ï Productividad sin interrupciones");
-                    Debug.WriteLine("  ï Laptop optimizada pero estable");
+                    Debug.WriteLine("  ‚Ä¢ Gaming competitivo mejorado");
+                    Debug.WriteLine("  ‚Ä¢ Productividad sin interrupciones");
+                    Debug.WriteLine("  ‚Ä¢ Laptop optimizada pero estable");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? REINICIO RECOMENDADO para efecto completo");
                 }
@@ -303,16 +304,16 @@ namespace Tweaker.Presets
                     Debug.WriteLine("? Algunos tweaks fallaron, revisa permisos de administrador");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? RECOMENDACIONES:");
-                    Debug.WriteLine("  ï Ejecutar como administrador");
-                    Debug.WriteLine("  ï Verificar antivirus no est· bloqueando");
-                    Debug.WriteLine("  ï Intentar tweaks individuales");
+                    Debug.WriteLine("  ‚Ä¢ Ejecutar como administrador");
+                    Debug.WriteLine("  ‚Ä¢ Verificar antivirus no est√° bloqueando");
+                    Debug.WriteLine("  ‚Ä¢ Intentar tweaks individuales");
                 }
 
                 return overallSuccess;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? ERROR CRÕTICO en LaptopPreset: {ex.Message}");
+                Debug.WriteLine($"? ERROR CR√çTICO en LaptopPreset: {ex.Message}");
                 Debug.WriteLine($"?? Stack trace: {ex.StackTrace}");
                 return false;
             }
@@ -338,7 +339,7 @@ namespace Tweaker.Presets
                 // Privacidad
                 if (PrivacyTweaks.EnableTelemetryAndTracking())
                 {
-                    Debug.WriteLine("? TelemetrÌa restaurada");
+                    Debug.WriteLine("? Telemetr√≠a restaurada");
                     tweaksReverted++;
                 }
 
@@ -392,7 +393,7 @@ namespace Tweaker.Presets
                     Debug.WriteLine("");
                     Debug.WriteLine("? PRESET LAPTOP REVERTIDO EXITOSAMENTE");
                     Debug.WriteLine($"?? Tweaks revertidos: {tweaksReverted}");
-                    Debug.WriteLine("?? Sistema restaurado a configuraciÛn por defecto");
+                    Debug.WriteLine("?? Sistema restaurado a configuraci√≥n por defecto");
                     Debug.WriteLine("");
                     Debug.WriteLine("?? REINICIO RECOMENDADO para efecto completo");
                 }
@@ -407,53 +408,53 @@ namespace Tweaker.Presets
         }
 
         /// <summary>
-        /// DiagnÛstico especÌfico para laptops
+        /// Diagn√≥stico espec√≠fico para laptops
         /// </summary>
         public static string DiagnoseLaptopOptimizations()
         {
             try
             {
                 var diagnosis = "??????????????????????????????????????????\n";
-                diagnosis += "?? DIAGN”STICO LAPTOP OPTIMIZATIONS\n";
+                diagnosis += "?? DIAGN√ìSTICO LAPTOP OPTIMIZATIONS\n";
                 diagnosis += "??????????????????????????????????????????\n\n";
 
-                diagnosis += "?? GESTI”N DE ENERGÕA:\n";
+                diagnosis += "?? GESTI√ìN DE ENERG√çA:\n";
                 diagnosis += "?????????????????????\n";
-                
+
                 // Verificar power throttling
                 diagnosis += $"  Power Throttling: {(PowerOptimization.IsPowerThrottlingEnabled() ? "? ACTIVO (Correcto)" : "? Desactivado (Malo para laptop)")}\n";
-                
-                // Verificar hibernaciÛn
-                diagnosis += $"  HibernaciÛn: {(PowerOptimization.IsHibernationEnabled() ? "? ACTIVA (Correcto)" : "?? Desactivada (Perdida ahorro baterÌa)")}\n";
-                
+
+                // Verificar hibernaci√≥n
+                diagnosis += $"  Hibernaci√≥n: {(PowerOptimization.IsHibernationEnabled() ? "? ACTIVA (Correcto)" : "?? Desactivada (Perdida ahorro bater√≠a)")}\n";
+
                 // Verificar core parking
-                diagnosis += $"  Core Parking: {(CpuOptimization.IsCoreParking() ? "? ACTIVO (Ahorro baterÌa)" : "?? Desactivado (Mayor consumo)")}\n";
+                diagnosis += $"  Core Parking: {(CpuOptimization.IsCoreParking() ? "? ACTIVO (Ahorro bater√≠a)" : "?? Desactivado (Mayor consumo)")}\n";
 
                 diagnosis += "\n?? GAMING OPTIMIZATIONS:\n";
                 diagnosis += "?????????????????????\n";
-                
+
                 diagnosis += $"  Game Bar: {(GamingOptimization.IsGameBarDisabled() ? "? Desactivado (Optimizado)" : "?? Activo (Afecta performance)")}\n";
-                diagnosis += $"  Game Mode: {(GamingOptimization.IsGameModeEnabled() ? "? Activo (Optimizado)" : "?? Desactivado (PÈrdida performance)")}\n";
-                
+                diagnosis += $"  Game Mode: {(GamingOptimization.IsGameModeEnabled() ? "? Activo (Optimizado)" : "?? Desactivado (P√©rdida performance)")}\n";
+
                 diagnosis += "\n?? CONECTIVIDAD:\n";
                 diagnosis += "?????????????\n";
-                
+
                 diagnosis += $"  Bluetooth: {(BluetoothOptimization.IsBluetoothHealthy() ? "? Funcionando correctamente" : "? Problemas detectados")}\n";
                 diagnosis += $"  WiFi: {(NetworkOptimization.IsNetworkOptimized() ? "? Optimizado" : "?? Por defecto")}\n";
 
                 diagnosis += "\n?? RECOMENDACIONES LAPTOP:\n";
                 diagnosis += "?????????????????????????\n";
-                diagnosis += "  ï Mantener power throttling activo\n";
-                diagnosis += "  ï No usar Ultimate Performance (baterÌa)\n";
-                diagnosis += "  ï Optimizar efectos visuales para ahorrar baterÌa\n";
-                diagnosis += "  ï Gaming tweaks balanceados, no extremos\n";
-                diagnosis += "  ï Monitorear temperaturas durante gaming\n";
+                diagnosis += "  ‚Ä¢ Mantener power throttling activo\n";
+                diagnosis += "  ‚Ä¢ No usar Ultimate Performance (bater√≠a)\n";
+                diagnosis += "  ‚Ä¢ Optimizar efectos visuales para ahorrar bater√≠a\n";
+                diagnosis += "  ‚Ä¢ Gaming tweaks balanceados, no extremos\n";
+                diagnosis += "  ‚Ä¢ Monitorear temperaturas durante gaming\n";
 
                 return diagnosis;
             }
             catch (Exception ex)
             {
-                return $"? Error en diagnÛstico laptop: {ex.Message}";
+                return $"? Error en diagn√≥stico laptop: {ex.Message}";
             }
         }
     }

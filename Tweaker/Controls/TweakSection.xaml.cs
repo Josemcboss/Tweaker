@@ -5,8 +5,8 @@ using System.Windows.Controls;
 namespace Tweaker.Controls
 {
     /// <summary>
-    /// UserControl para representar una secci髇 completa de tweaks
-    /// Reduce la duplicaci髇 de headers y estructura de p醙inas
+    /// UserControl para representar una secci贸n completa de tweaks
+    /// Reduce la duplicaci贸n de headers y estructura de p谩ginas
     /// </summary>
     public partial class TweakSection : UserControl
     {
@@ -68,7 +68,7 @@ namespace Tweaker.Controls
         #region Public Methods
 
         /// <summary>
-        /// Agrega un TweakItem a la secci髇
+        /// Agrega un TweakItem a la secci贸n
         /// </summary>
         public void AddTweakItem(TweakItem tweakItem)
         {
@@ -76,7 +76,7 @@ namespace Tweaker.Controls
         }
 
         /// <summary>
-        /// Limpia todos los TweakItems de la secci髇
+        /// Limpia todos los TweakItems de la secci贸n
         /// </summary>
         public void ClearTweakItems()
         {

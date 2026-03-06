@@ -23,28 +23,28 @@ namespace Tweaker.Utilities
         private BackupService()
         {
             _stateManager = TweakStateManager.Instance;
-            
+
             // Crear directorio de backups en AppData
             string appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             _backupDirectory = Path.Combine(appData, "Tweaker", "Backups");
-            
+
             Directory.CreateDirectory(_backupDirectory);
-            
+
             Debug.WriteLine($"?? Backup directory: {_backupDirectory}");
         }
 
         /// <summary>
         /// Crea un backup del estado actual de todos los tweaks
         /// </summary>
-        public bool CreateBackup(string name = null)
+        public bool CreateBackup(string? name = null)
         {
             try
             {
                 string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
-                string backupName = string.IsNullOrWhiteSpace(name) 
-                    ? $"Backup_{timestamp}" 
+                string backupName = string.IsNullOrWhiteSpace(name)
+                    ? $"Backup_{timestamp}"
                     : $"{name}_{timestamp}";
-                
+
                 string filePath = Path.Combine(_backupDirectory, $"{backupName}.json");
 
                 var backup = new BackupData
@@ -55,13 +55,13 @@ namespace Tweaker.Utilities
                     SystemInfo = GetSystemInfo()
                 };
 
-                string json = JsonSerializer.Serialize(backup, new JsonSerializerOptions 
-                { 
-                    WriteIndented = true 
+                string json = JsonSerializer.Serialize(backup, new JsonSerializerOptions
+                {
+                    WriteIndented = true
                 });
-                
+
                 File.WriteAllText(filePath, json);
-                
+
                 Debug.WriteLine($"? Backup creado: {filePath}");
                 return true;
             }
@@ -73,14 +73,14 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Restaura un backup espec韋ico
+        /// Restaura un backup espec铆fico
         /// </summary>
         public bool RestoreBackup(string backupName)
         {
             try
             {
                 string filePath = Path.Combine(_backupDirectory, $"{backupName}.json");
-                
+
                 if (!File.Exists(filePath))
                 {
                     Debug.WriteLine($"? Backup no encontrado: {filePath}");
@@ -96,10 +96,10 @@ namespace Tweaker.Utilities
                     return false;
                 }
 
-                // Restaurar cada tweak seg鷑 su estado en el backup
+                // Restaurar cada tweak seg煤n su estado en el backup
                 foreach (var tweak in backup.Tweaks)
                 {
-                    // TODO: Implementar l骻ica de restauraci髇
+                    // TODO: Implementar l贸gica de restauraci贸n
                     // Por ahora solo logging
                     Debug.WriteLine($"Restaurando tweak: {tweak.Id} - Activo: {tweak.IsEnabled}");
                 }
@@ -160,21 +160,21 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Elimina un backup espec韋ico
+        /// Elimina un backup espec铆fico
         /// </summary>
         public bool DeleteBackup(string backupName)
         {
             try
             {
                 string filePath = Path.Combine(_backupDirectory, $"{backupName}.json");
-                
+
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
                     Debug.WriteLine($"? Backup eliminado: {backupName}");
                     return true;
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -185,14 +185,14 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Exporta un backup a una ubicaci髇 espec韋ica
+        /// Exporta un backup a una ubicaci贸n espec铆fica
         /// </summary>
         public bool ExportBackup(string backupName, string exportPath)
         {
             try
             {
                 string sourcePath = Path.Combine(_backupDirectory, $"{backupName}.json");
-                
+
                 if (!File.Exists(sourcePath))
                     return false;
 
@@ -208,7 +208,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Importa un backup desde una ubicaci髇 espec韋ica
+        /// Importa un backup desde una ubicaci贸n espec铆fica
         /// </summary>
         public bool ImportBackup(string importPath)
         {
@@ -232,7 +232,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene informaci髇 del sistema para el backup
+        /// Obtiene informaci贸n del sistema para el backup
         /// </summary>
         private SystemInfo GetSystemInfo()
         {
@@ -247,7 +247,7 @@ namespace Tweaker.Utilities
 
         private double GetTotalMemoryGB()
         {
-            // M閠odo alternativo sin Microsoft.VisualBasic
+            // M茅todo alternativo sin Microsoft.VisualBasic
             try
             {
                 return GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024.0 / 1024.0 / 1024.0;
@@ -271,7 +271,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// Informaci髇 del sistema
+    /// Informaci贸n del sistema
     /// </summary>
     public class SystemInfo
     {
@@ -282,7 +282,7 @@ namespace Tweaker.Utilities
     }
 
     /// <summary>
-    /// Informaci髇 resumida de un backup
+    /// Informaci贸n resumida de un backup
     /// </summary>
     public class BackupInfo
     {

@@ -443,7 +443,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="288*"/>
             <ColumnDefinition Width="123*"/>
-            <ColumnDefinition Width="1127*"/>
+            <ColumnDefinition Width="396*"/>
+            <ColumnDefinition Width="582*"/>
+            <ColumnDefinition Width="149*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="32"/>
@@ -459,7 +461,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                 Background="#1A1A1A" 
                 BorderThickness="0,0,0,1"
                 BorderBrush="#2A2A2A"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.ColumnSpan="3">
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Grid.ColumnSpan="5" HorizontalAlignment="Stretch" Height="NaN" Margin="0,0,0,0" VerticalAlignment="Stretch" Width="NaN">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -552,7 +554,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
         <!-- ═══════════════════════════════════════════════════════════════════ -->
         <!-- CONTENIDO PRINCIPAL (SIDEBAR + PÁGINAS) -->
         <!-- ═══════════════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="1" Grid.ColumnSpan="3">
+        <Grid Grid.Row="1" Grid.ColumnSpan="5">
             <Grid.ColumnDefinitions>
                 <!-- Columna 0: Sidebar -->
                 <ColumnDefinition Width="240"/>
@@ -633,6 +635,15 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         </Button>
 
                         <Button Style="{StaticResource SidebarButton}"
+                            Click="NavigateToStartup"
+                            x:Name="BtnNavStartup">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🚀" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Startup Manager" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SidebarButton}"
                             Click="NavigateToGhost"
                             x:Name="BtnNavGhost">
                             <StackPanel Orientation="Horizontal">
@@ -665,6 +676,15 @@ Icon="{StaticResource GhostOptimizerIcon}">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🏆" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0"/>
                                 <TextBlock Text="Competitive Gaming" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Style="{StaticResource SidebarButton}"
+                            Click="NavigateToDebloatWizard"
+                            x:Name="BtnNavDebloat">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="🧹" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0"/>
+                                <TextBlock Text="Debloat Wizard" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </StackPanel>
@@ -838,6 +858,109 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 </StackPanel>
                             </Border>
                         </Grid>
+
+                        <!-- Real-time Hardware Monitoring -->
+                        <TextBlock Text="Monitoreo de Hardware en Tiempo Real" 
+                               FontSize="14" 
+                               Foreground="#A0A0A0"
+                               Margin="0,20,0,10"/>
+                        
+                        <Grid Margin="0,0,0,20">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- CPU Graph -->
+                            <Border Grid.Column="0" Style="{StaticResource NeonGlowCard}" Margin="0,0,10,0" Padding="15">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock Text="CPU" FontWeight="Bold" Foreground="#5865F2" HorizontalAlignment="Left"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock x:Name="TxtCpuTemp" Text="0°C" Foreground="#A0A0A0" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtCpuLoad" Text="0%" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <controls:HardwareGraph x:Name="GraphCpu" Height="120" LineColor="DodgerBlue" MaxValue="100" ValueUnit="%"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- GPU Graph -->
+                            <Border Grid.Column="1" Style="{StaticResource NeonGlowCard}" Margin="5,0" Padding="15">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock Text="GPU" FontWeight="Bold" Foreground="#2ECC71" HorizontalAlignment="Left"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock x:Name="TxtGpuTemp" Text="0°C" Foreground="#A0A0A0" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtGpuLoad" Text="0%" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <controls:HardwareGraph x:Name="GraphGpu" Height="120" LineColor="SpringGreen" MaxValue="100" ValueUnit="%"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- RAM Graph -->
+                            <Border Grid.Column="2" Style="{StaticResource NeonGlowCard}" Margin="10,0,0,0" Padding="15">
+                                <StackPanel>
+                                    <Grid Margin="0,0,0,10">
+                                        <TextBlock Text="RAM" FontWeight="Bold" Foreground="#9B59B6" HorizontalAlignment="Left"/>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <TextBlock x:Name="TxtRamLoad" Text="0%" Foreground="White" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                    <controls:HardwareGraph x:Name="GraphRam" Height="120" LineColor="MediumPurple" MaxValue="100" ValueUnit="%"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Smart Scan Section (NUEVO) -->
+                        <Border Style="{DynamicResource NeonGlowCard}"
+                            Padding="25"
+                            Margin="0,20,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock FontFamily="Segoe UI Emoji" FontSize="18" FontWeight="Bold" Foreground="White" Margin="0,0,0,5">
+                                    <Run Text="🔍"/>&#x0020;<Run Text="Smart Scan &amp; Optimization"/>
+                                    </TextBlock>
+                                    <TextBlock Text="Analiza tu sistema en busca de optimizaciones pendientes y mejora tu rendimiento con un clic." 
+                                           Foreground="#A0A0A0" Margin="0,0,0,15"/>
+                                    
+                                    <!-- Scanning State (Hidden by default) -->
+                                    <StackPanel x:Name="ScanningState" Visibility="{Binding IsScanning, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10">
+                                        <ProgressBar x:Name="ScanProgressBar" Height="10" Background="#1A1A1A" Foreground="#5865F2" IsIndeterminate="True" Margin="0,0,0,10"/>
+                                        <TextBlock x:Name="TxtScanStatus" Text="Analizando servicios y registro..." Foreground="#B9BBBE" FontSize="12"/>
+                                    </StackPanel>
+
+                                    <!-- Result State (Hidden by default) -->
+                                    <StackPanel x:Name="ResultState" Visibility="{Binding ShowScanResults, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,0,0,10">
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                            <TextBlock Text="Puntaje de Optimización: " Foreground="White" FontSize="16" VerticalAlignment="Center"/>
+                                            <TextBlock x:Name="TxtOptimizationScore" Text="{Binding ScanScore, StringFormat={}{0}%}" Foreground="#0E7A0D" FontSize="24" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="TxtScanSummary" Text="{Binding ScanSummary}" Foreground="#B9BBBE" Margin="0,0,0,15"/>
+                                        <Button x:Name="BtnOptimizeNow" Content="OPTIMIZAR AHORA" Visibility="{Binding ShowOptimizeButton, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding OptimizeNowCommand}" Style="{StaticResource OnButton}" Padding="20,10" HorizontalAlignment="Left"/>
+                                    </StackPanel>
+                                    </StackPanel>
+
+                                    <Button Grid.Column="1"
+                                        x:Name="BtnStartScan"
+                                        Style="{StaticResource OnButton}"
+                                        Background="#5865F2"
+                                        BorderBrush="#4752C4"
+                                        VerticalAlignment="Center"
+                                        Padding="25,15"
+                                        Command="{Binding StartScanCommand}">                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="🔍" FontFamily="Segoe UI Emoji" Margin="0,0,10,0"/>
+                                        <TextBlock Text="ANALIZAR PC" FontWeight="Bold"/>
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Border>
 
                         <!-- Info Section -->
                         <Border Style="{DynamicResource NeonGlowCard}"
@@ -1053,8 +1176,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="mouse_acceleration"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnMouseAccel_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnMouseAccel_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleMouseAccel"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnMouseAccel_On_Click"
+                                              Unchecked="BtnMouseAccel_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtMouseAccelStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1094,8 +1231,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="keyboard_optimization"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnKeyboard_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnKeyboard_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleKeyboard"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnKeyboard_On_Click"
+                                              Unchecked="BtnKeyboard_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtKeyboardStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1123,8 +1274,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="visual_effects"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnVisuals_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnVisuals_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleVisuals"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnVisuals_On_Click"
+                                              Unchecked="BtnVisuals_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtVisualsStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1152,8 +1317,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="memory_optimization"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnMemory_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnMemory_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleMemory"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnMemory_On_Click"
+                                              Unchecked="BtnMemory_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtMemoryStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1185,8 +1364,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="transparency_effects"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnTransparency_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnTransparency_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleTransparency"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnTransparency_On_Click"
+                                              Unchecked="BtnTransparency_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtTransparencyStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1218,8 +1411,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="sticky_keys"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnStickyKeys_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnStickyKeys_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleStickyKeys"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnStickyKeys_On_Click"
+                                              Unchecked="BtnStickyKeys_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtStickyKeysStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1264,8 +1471,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="network_optimization"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnNetworkOptimization_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnNetworkOptimization_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleNetworkOptimization"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnNetworkOptimization_On_Click"
+                                              Unchecked="BtnNetworkOptimization_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtNetworkOptimizationStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1351,8 +1572,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnDnsCache_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnDnsCache_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleDnsCache"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnDnsCache_On_Click"
+                                              Unchecked="BtnDnsCache_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtDnsCacheStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1373,8 +1608,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnNetworkPower_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnNetworkPower_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleNetworkPower"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnNetworkPower_On_Click"
+                                              Unchecked="BtnNetworkPower_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtNetworkPowerStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1395,8 +1644,166 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnNetBios_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnNetBios_Off_Click"/>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleNetBios"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnNetBios_On_Click"
+                                              Unchecked="BtnNetBios_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
+
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtNetBiosStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- ═══════════════════════════════════════ -->
+                        <!-- ANTI-BUFFERBLOAT TWEAKS -->
+                        <!-- ═══════════════════════════════════════ -->
+
+                        <TextBlock Text="🛡️ Anti-Bufferbloat" 
+                               FontFamily="Segoe UI Emoji"
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="White" 
+                               Margin="0,40,0,20"/>
+
+                        <!-- ECN Capability -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Activar ECN (Anti-Bufferbloat)" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Mitiga el bufferbloat severo y estabiliza el ping"/>
+                                    <LineBreak/>
+                                    <Run Text="Evita packet loss notificando al router antes de saturarse"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleEcnCapability"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnEcnCapability_On_Click"
+                                              Unchecked="BtnEcnCapability_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtEcnCapabilityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- TCP Congestion -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Algoritmo de Congestión TCP (CUBIC/BBR)" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Cambia el algoritmo de control de congestión de Windows"/>
+                                    <LineBreak/>
+                                    <Run Text="Optimiza cómo se envían los paquetes para no saturar los buffers"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleTcpCongestion"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnTcpCongestion_On_Click"
+                                              Unchecked="BtnTcpCongestion_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtTcpCongestionStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- Disable LSO -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Deshabilitar LSO (Large Send Offload)" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Evita micro-picos de ping (jitter)"/>
+                                    <LineBreak/>
+                                    <Run Text="Obliga a la tarjeta de red a enviar paquetes más pequeños y consistentes"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleDisableLSO"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnDisableLSO_On_Click"
+                                              Unchecked="BtnDisableLSO_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtDisableLSOStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- QoS DSCP -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Habilitar QoS DSCP (Prioridad)" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Fuerza a Windows a enviar etiquetas de prioridad en los paquetes"/>
+                                    <LineBreak/>
+                                    <Run Text="Permite que el tráfico de juegos salte la cola local de red"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <CheckBox x:Name="ToggleQosDscp"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnQosDscp_On_Click"
+                                              Unchecked="BtnQosDscp_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtQosDscpStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!-- TCP Auto-Tuning -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Restringir TCP Auto-Tuning" Style="{StaticResource SectionTitle}"/>
+                                    <TextBlock Style="{StaticResource Description}">
+                                    <Run Text="Limita el tamaño de ventana de recepción TCP"/>
+                                    <LineBreak/>
+                                    <Run Text="Previene el bufferbloat de bajada. (Puede reducir vel. máxima de descarga)"/>
+                                    </TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="APLICAR" 
+                                        Style="{StaticResource OnButton}" 
+                                        Background="#5865F2"
+                                        Width="90" 
+                                        Click="BtnTcpAutoTuning_Click"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1546,52 +1953,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnMTU_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnMTU_Off_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleMTU"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnMTU_On_Click"
+                                              Unchecked="BtnMTU_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
 
-                        <!-- QoS Configuration -->
-                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="QoS Configuration" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Style="{StaticResource Description}">
-                                    <Run Text="Prioriza tráfico de gaming, libera 20% ancho de banda"/>
-                                    <LineBreak/>
-                                    <Run Text="Paquetes priorizados, menor packet loss en congestión" FontWeight="Bold" Foreground="#0E7A0D"/>
-                                    </TextBlock>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnQoS_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnQoS_Off_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <!-- Auto-Tuning Level -->
-                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Auto-Tuning Level" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Style="{StaticResource Description}">
-                                    <Run Text="RSS, Chimney Offload, NetDMA, TCP Timestamps"/>
-                                    <LineBreak/>
-                                    <Run Text="Reduce uso de CPU -30%, mejor throughput" FontWeight="Bold" Foreground="#0E7A0D"/>
-                                    </TextBlock>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnAutoTuning_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnAutoTuning_Off_Click"/>
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtMTUStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1612,30 +1989,22 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnAdapterSettings_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnAdapterSettings_Off_Click"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
+                                    <!-- ModernToggleSwitch (CheckBox estilizado) -->
+                                    <CheckBox x:Name="ToggleAdapterSettings"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnAdapterSettings_On_Click"
+                                              Unchecked="BtnAdapterSettings_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"
+                                              ToolTip="Click para activar/desactivar tweak"/>
 
-                        <!-- Congestion Control -->
-                        <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Congestion Control (CTCP + ECN)" Style="{StaticResource SectionTitle}"/>
-                                    <TextBlock Style="{StaticResource Description}">
-                                    <Run Text="Compound TCP y Explicit Congestion Notification"/>
-                                    <LineBreak/>
-                                    <Run Text="Mejor rendimiento en alta latencia, menos packet loss" FontWeight="Bold" Foreground="#0E7A0D"/>
-                                    </TextBlock>
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnCongestionControl_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnCongestionControl_Off_Click"/>
+                                    <!-- Texto dinámico ON/OFF -->
+                                    <TextBlock x:Name="TxtAdapterSettingsStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1656,13 +2025,13 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                            VerticalAlignment="Center"/>
                                 </StackPanel>
 
-                                <TextBlock Text="MTU, QoS, Auto-Tuning, Adapter Settings y Congestion Control" 
+                                <TextBlock Text="MTU, QoS, Auto-Tuning, Adapter Settings y Bufferbloat" 
                                        FontSize="12" 
                                        Foreground="#7F8084" 
                                        Margin="0,0,0,10"/>
 
                                 <TextBlock Style="{StaticResource Description}" Margin="0,0,0,15">
-                                <Run Text="Aplica todas las optimizaciones avanzadas en un click."/>
+                                <Run Text="Aplica todas las optimizaciones avanzadas de red unificadas."/>
                                 <LineBreak/>
                                 <Run Text="Reducción estimada de latencia: -11 a -29ms" FontWeight="Bold" Foreground="#0E7A0D"/>
                                 <LineBreak/>
@@ -1724,8 +2093,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="system_profile"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnSystemProfile_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnSystemProfile_Off_Click"/>
+                                    <CheckBox x:Name="ToggleSystemProfile"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnSystemProfile_On_Click"
+                                              Unchecked="BtnSystemProfile_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtSystemProfileStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1742,8 +2121,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Elimina overlay, reduce input lag 5-15ms"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGameDVR_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGameDVR_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGameDVR"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGameDVR_On_Click"
+                                              Unchecked="BtnGameDVR_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGameDVRStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1771,8 +2160,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Click="ShowTweakInfo" 
                                         Tag="gpu_scheduling"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGpuScheduling_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGpuScheduling_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGpuScheduling"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGpuScheduling_On_Click"
+                                              Unchecked="BtnGpuScheduling_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGpuSchedulingStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1789,8 +2188,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="SystemResponsiveness: 0, NetworkThrottling OFF"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnSystemResponsiveness_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnSystemResponsiveness_Off_Click"/>
+                                    <CheckBox x:Name="ToggleSystemResponsiveness"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnSystemResponsiveness_On_Click"
+                                              Unchecked="BtnSystemResponsiveness_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtSystemResponsivenessStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1807,8 +2216,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="CPU siempre a máxima frecuencia"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnHighPerformance_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnHighPerformance_Off_Click"/>
+                                    <CheckBox x:Name="ToggleHighPerformance"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnHighPerformance_On_Click"
+                                              Unchecked="BtnHighPerformance_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtHighPerformanceStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1825,8 +2244,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Elimina throttling de apps en background"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnPowerThrottling_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnPowerThrottling_Off_Click"/>
+                                    <CheckBox x:Name="TogglePowerThrottling"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnPowerThrottling_On_Click"
+                                              Unchecked="BtnPowerThrottling_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtPowerThrottlingStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1843,8 +2272,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Mantiene todos los cores activos (crítico en Ryzen)"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnCoreParking_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnCoreParking_Off_Click"/>
+                                    <CheckBox x:Name="ToggleCoreParking"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnCoreParking_On_Click"
+                                              Unchecked="BtnCoreParking_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtCoreParkingStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1876,8 +2315,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGameMode_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGameMode_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGameMode"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGameMode_On_Click"
+                                              Unchecked="BtnGameMode_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGameModeStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1900,8 +2349,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnNTFSLastAccess_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnNTFSLastAccess_Off_Click"/>
+                                    <CheckBox x:Name="ToggleNTFSLastAccess"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnNTFSLastAccess_On_Click"
+                                              Unchecked="BtnNTFSLastAccess_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtNTFSLastAccessStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1924,8 +2383,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGamePriority_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGamePriority_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGamePriority"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGamePriority_On_Click"
+                                              Unchecked="BtnGamePriority_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGamePriorityStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2117,8 +2586,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Elimina hiberfil.sys (8-32GB)"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnHibernation_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnHibernation_Off_Click"/>
+                                    <CheckBox x:Name="ToggleHibernation"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnHibernation_On_Click"
+                                              Unchecked="BtnHibernation_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtHibernationStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2135,8 +2614,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Detiene indexación, libera 200-500MB RAM"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnWindowsSearch_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnWindowsSearch_Off_Click"/>
+                                    <CheckBox x:Name="ToggleWindowsSearch"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnWindowsSearch_On_Click"
+                                              Unchecked="BtnWindowsSearch_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtWindowsSearchStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2153,8 +2642,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Libera 1-3GB RAM, reduce uso de disco"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnSysMainService_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnSysMainService_Off_Click"/>
+                                    <CheckBox x:Name="ToggleSysMain"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnSysMainService_On_Click"
+                                              Unchecked="BtnSysMainService_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtSysMainStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2233,9 +2732,9 @@ Icon="{StaticResource GhostOptimizerIcon}">
                         <!-- ═══════════════════════════════════════ -->
                         <!-- ULTIMATE DEBLOAT -->
                         <!-- ═══════════════════════════════════════ -->
-                        
+
                         <TextBlock Text="💀 Ultimate Debloat" FontSize="20" FontWeight="Bold" Foreground="#FF0000" Margin="0,30,0,15"/>
-                        
+
                         <!-- Services Optimization -->
                         <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
                             <StackPanel>
@@ -2252,7 +2751,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <LineBreak/>
                                     <Run Text="⚠️ NO podrás imprimir" Foreground="#FFA500"/>
                                 </TextBlock>
-                                
+
                                 <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
                                     <Button Content="OPTIMIZAR SERVICIOS" 
                                             Click="BtnUltimateServices_On_Click"
@@ -2278,7 +2777,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <LineBreak/>
                                     <Run Text="✅ RAM: -50-100MB" Foreground="#0E7A0D"/>
                                 </TextBlock>
-                                
+
                                 <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
                                     <Button Content="REMOVER BLOATWARE" 
                                             Click="BtnUltimateBloat_On_Click"
@@ -2302,7 +2801,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <LineBreak/>
                                     <Run Text="✅ Disco: +15% | RAM: -300MB | Red: +20%" Foreground="#0E7A0D"/>
                                 </TextBlock>
-                                
+
                                 <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
                                     <Button Content="APLICAR TWEAKS" 
                                             Click="BtnUltimateSystem_On_Click"
@@ -2330,7 +2829,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                            Foreground="#FF0000"
                                            HorizontalAlignment="Center"
                                            Margin="0,0,0,10"/>
-                                
+
                                 <Button Content="⚡ APLICAR TODO ⚡"
                                         Click="BtnApplyAllUltimate_Click"
                                         Width="250"
@@ -2341,7 +2840,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                         Foreground="#FFFFFF"
                                         Cursor="Hand"
                                         HorizontalAlignment="Center"/>
-                                
+
                                 <TextBlock Text="RAM: -500MB | Disco: +15% | Red: +20%"
                                            Foreground="#00FF00"
                                            HorizontalAlignment="Center"
@@ -2375,8 +2874,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Latencia CPU -93%, C-States OFF, 0.1% low FPS +20%"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnUltimatePower_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnUltimatePower_Off_Click"/>
+                                    <CheckBox x:Name="ToggleUltimatePower"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnUltimatePower_On_Click"
+                                              Unchecked="BtnUltimatePower_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtUltimatePowerStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2393,8 +2902,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Input lag -50%, CPU libre +8%"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGameBar_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGameBar_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGameBar"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGameBar_On_Click"
+                                              Unchecked="BtnGameBar_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGameBarStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2415,8 +2934,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnCoreIsolation_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnCoreIsolation_Off_Click"/>
+                                    <CheckBox x:Name="ToggleCoreIsolation"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnCoreIsolation_On_Click"
+                                              Unchecked="BtnCoreIsolation_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtCoreIsolationStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2437,8 +2966,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnHPET_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnHPET_Off_Click"/>
+                                    <CheckBox x:Name="ToggleHPET"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnHPET_On_Click"
+                                              Unchecked="BtnHPET_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtHPETStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2462,8 +3001,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnMPOFix_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnMPOFix_Off_Click"/>
+                                    <CheckBox x:Name="ToggleMPOFix"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnMPOFix_On_Click"
+                                              Unchecked="BtnMPOFix_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtMPOFixStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2526,8 +3075,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     <TextBlock Style="{StaticResource Description}" Text="Reduce latencia GPU 2-5ms, REQUIERE REINICIO"/>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnHyperV_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnHyperV_Off_Click"/>
+                                    <CheckBox x:Name="ToggleHyperV"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnHyperV_On_Click"
+                                              Unchecked="BtnHyperV_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtHyperVStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2561,8 +3120,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnSpectreMeltdown_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnSpectreMeltdown_Off_Click"/>
+                                    <CheckBox x:Name="ToggleSpectreMeltdown"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnSpectreMeltdown_On_Click"
+                                              Unchecked="BtnSpectreMeltdown_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtSpectreMeltdownStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2577,14 +3146,24 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="Optimizar IRQ de GPU (Avanzado)" Style="{StaticResource SectionTitle}"/>
                                     <TextBlock Style="{StaticResource Description}">
-                                    <Run Text="[EN DESARROLLO] Asigna la interrupción de la GPU a un core específico."/>
+                                    <Run Text="Asigna la interrupción de la GPU a un core específico."/>
                                     <LineBreak/>
                                     <Run Text="Reduce DPC latency y mejora la consistencia de frame times."/>
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnGpuIRQ_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnGpuIRQ_Off_Click"/>
+                                    <CheckBox x:Name="ToggleGpuIRQ"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnGpuIRQ_On_Click"
+                                              Unchecked="BtnGpuIRQ_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtGpuIRQStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2617,8 +3196,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnOptimizeUSB_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnOptimizeUSB_Off_Click"/>
+                                    <CheckBox x:Name="ToggleOptimizeUSB"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnOptimizeUSB_On_Click"
+                                              Unchecked="BtnOptimizeUSB_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtOptimizeUSBStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2643,8 +3232,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnOptimizeInputQueues_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnOptimizeInputQueues_Off_Click"/>
+                                    <CheckBox x:Name="ToggleInputQueues"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnOptimizeInputQueues_On_Click"
+                                              Unchecked="BtnOptimizeInputQueues_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtInputQueuesStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -2667,8 +3266,18 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                     </TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Button Content="ON" Style="{StaticResource OnButton}" Width="70" Margin="0,0,8,0" Click="BtnDisableFTH_On_Click"/>
-                                    <Button Content="OFF" Style="{StaticResource OffButton}" Width="70" Click="BtnDisableFTH_Off_Click"/>
+                                    <CheckBox x:Name="ToggleDisableFTH"
+                                              Style="{StaticResource ModernToggleSwitch}"
+                                              Checked="BtnDisableFTH_On_Click"
+                                              Unchecked="BtnDisableFTH_Off_Click"
+                                              VerticalAlignment="Center"
+                                              Margin="0,0,15,0"/>
+                                    <TextBlock x:Name="TxtDisableFTHStatus"
+                                               Text="OFF"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="#E74C3C"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -3154,7 +3763,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                        FontWeight="Bold" 
                                        Foreground="#7F8C8D" 
                                        Margin="0,0,0,10"/>
-                                
+
                                 <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" LineHeight="18">
                                 <Run Text="1. " FontWeight="Bold"/>
                                 <Run Text="Monitorea temperaturas durante gaming intensivo"/>
@@ -3237,7 +3846,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                            Foreground="#FF0000" 
                                            VerticalAlignment="Center"/>
                                 </StackPanel>
-                                
+
                                 <TextBlock FontSize="12" Foreground="#FFB3B3" TextWrapping="Wrap" LineHeight="18">
                                 <Run Text="🔥 Este preset aplica optimizaciones EXTREMAS que pueden:"/>
                                 <LineBreak/>
@@ -3496,7 +4105,7 @@ Icon="{StaticResource GhostOptimizerIcon}">
                                        FontWeight="Bold" 
                                        Foreground="#7F8C8D" 
                                        Margin="0,0,0,10"/>
-                                
+
                                 <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" LineHeight="18">
                                 <Run Text="1. " FontWeight="Bold"/>
                                 <Run Text="Aplica el preset COMPLETO antes de una sesión competitiva"/>
@@ -3521,6 +4130,83 @@ Icon="{StaticResource GhostOptimizerIcon}">
                     </StackPanel>
                 </ScrollViewer>
 
+                <!-- Startup Manager Page -->
+                <ScrollViewer x:Name="StartupPage" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+                    <ScrollViewer.RenderTransform>
+                        <TranslateTransform/>
+                    </ScrollViewer.RenderTransform>
+                    <StackPanel Margin="40">
+                        <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="White" Margin="0,0,0,10">
+                        <Run Text="🚀"/>&#x0020;<Run Text="Startup Manager"/>
+                        </TextBlock>
+                        <TextBlock Text="Gestiona aplicaciones que arrancan con Windows para mejorar la velocidad de inicio." 
+                               FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30"/>
+
+                        <!-- Header Actions -->
+                        <Border Style="{DynamicResource NeonGlowCard}" Padding="20" Margin="0,0,0,20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Optimización de Inicio" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,5"/>
+                                    <TextBlock Text="Deshabilitar programas innecesarios puede liberar RAM y reducir el tiempo de carga del sistema." 
+                                           Foreground="#B9BBBE" FontSize="12"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Content="REFRESCAR LISTA" 
+                                        Style="{StaticResource OnButton}" 
+                                        Background="#5865F2"
+                                        Padding="20,10"
+                                        Command="{Binding RefreshStartupCommand}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Items List -->
+                        <ItemsControl x:Name="StartupItemsList" ItemsSource="{Binding StartupItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{DynamicResource NeonGlowCard}" Padding="15" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <!-- Icon Placeholder -->
+                                            <Border Grid.Column="0" Width="40" Height="40" Background="#2A2D31" CornerRadius="6" Margin="0,0,15,0">
+                                                <TextBlock Text="📦" FontFamily="Segoe UI Emoji" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="White" FontSize="14"/>
+                                                <TextBlock Text="{Binding Command}" Foreground="#7F8084" FontSize="11" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Source}" Foreground="#5865F2" FontSize="10" Margin="0,2,0,0"/>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2" Content="DESHABILITAR" 
+                                                    Style="{StaticResource OffButton}" 
+                                                    Padding="12,6"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding DataContext.DisableStartupCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty State -->
+                        <TextBlock x:Name="TxtNoStartupItems" 
+                               Text="No se encontraron elementos de inicio o la lista está optimizada." 
+                               Foreground="#7F8084" 
+                               HorizontalAlignment="Center" 
+                               Margin="0,50,0,0"
+                               Visibility="Collapsed"/>
+                    </StackPanel>
+                </ScrollViewer>
+
             </Grid>
             <!-- Cierre <Grid Grid.Column="1"> (Área de contenido) -->
         </Grid>
@@ -3536,8 +4222,8 @@ Icon="{StaticResource GhostOptimizerIcon}">
             Margin="0,45,20,0"
             Panel.ZIndex="9999"
             Grid.Row="1"
-            Grid.ColumnSpan="3"/>
-        
+            Grid.ColumnSpan="2" Grid.Column="3"/>
+
     </Grid>
     <!-- Cierre Grid Rows (TitleBar + Content) -->
 </Window>

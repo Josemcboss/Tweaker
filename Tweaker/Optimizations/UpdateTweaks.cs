@@ -1,12 +1,13 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
     /// Tweaks de Windows Update para evitar lag spikes durante gaming
-    /// Desactiva descargas autom·ticas y P2P delivery que causan stuttering
+    /// Desactiva descargas autom√°ticas y P2P delivery que causan stuttering
     /// </summary>
     public static class UpdateTweaks
     {
@@ -14,7 +15,7 @@ namespace Tweaker.Optimizations
         private const string DELIVERY_OPTIMIZATION_KEY = @"SYSTEM\CurrentControlSet\Services\DoSvc";
 
         /// <summary>
-        /// Desactiva Windows Update autom·tico para evitar descargas durante gaming
+        /// Desactiva Windows Update autom√°tico para evitar descargas durante gaming
         /// Previene lag spikes causados por descargas en segundo plano
         /// </summary>
         public static bool DisableAutomaticUpdates()
@@ -25,7 +26,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("DISABLING AUTOMATIC WINDOWS UPDATES");
                 Debug.WriteLine("???????????????????????????????????????????????????????????");
 
-                // Crear clave de polÌticas si no existe
+                // Crear clave de pol√≠ticas si no existe
                 using (var key = Registry.LocalMachine.CreateSubKey(WINDOWS_UPDATE_KEY))
                 {
                     if (key == null)
@@ -34,7 +35,7 @@ namespace Tweaker.Optimizations
                         return false;
                     }
 
-                    // NoAutoUpdate = 1 (Desactiva actualizaciones autom·ticas)
+                    // NoAutoUpdate = 1 (Desactiva actualizaciones autom√°ticas)
                     key.SetValue("NoAutoUpdate", 1, RegistryValueKind.DWord);
                     Debug.WriteLine("? NoAutoUpdate = 1 (Automatic updates disabled)");
 
@@ -42,17 +43,17 @@ namespace Tweaker.Optimizations
                     key.SetValue("AUOptions", 2, RegistryValueKind.DWord);
                     Debug.WriteLine("? AUOptions = 2 (Notify before download)");
 
-                    // ScheduledInstallDay = 0 (Sin dÌa programado)
+                    // ScheduledInstallDay = 0 (Sin d√≠a programado)
                     key.SetValue("ScheduledInstallDay", 0, RegistryValueKind.DWord);
                     Debug.WriteLine("? ScheduledInstallDay = 0 (No scheduled day)");
                 }
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS GAMING:");
-                Debug.WriteLine("   ï EliminaciÛn de lag spikes por descargas");
-                Debug.WriteLine("   ï Sin interrupciones durante partidas competitivas");
-                Debug.WriteLine("   ï Ancho de banda dedicado al gaming");
-                Debug.WriteLine("   ï Control manual de cu·ndo actualizar");
+                Debug.WriteLine("   ‚Ä¢ Eliminaci√≥n de lag spikes por descargas");
+                Debug.WriteLine("   ‚Ä¢ Sin interrupciones durante partidas competitivas");
+                Debug.WriteLine("   ‚Ä¢ Ancho de banda dedicado al gaming");
+                Debug.WriteLine("   ‚Ä¢ Control manual de cu√°ndo actualizar");
                 Debug.WriteLine("");
 
                 return true;
@@ -71,9 +72,9 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// Desactiva Delivery Optimization (P2P) que consume ancho de banda para compartir updates
-        /// Evita que el PC act˙e como servidor de updates para otros dispositivos
+        /// Evita que el PC act√∫e como servidor de updates para otros dispositivos
         /// 
-        /// SEGURIDAD v2.1: Ahora usa ServiceSafetyWrapper para validaciÛn
+        /// SEGURIDAD v2.1: Ahora usa ServiceSafetyWrapper para validaci√≥n
         /// </summary>
         public static bool DisableDeliveryOptimization()
         {
@@ -85,7 +86,7 @@ namespace Tweaker.Optimizations
 
                 // SEGURIDAD v2.1: Usar ServiceSafetyWrapper en vez de modificar registro directamente
                 bool serviceDisabled = ServiceSafetyWrapper.SafeDisableService("DoSvc", "Delivery Optimization");
-                
+
                 if (!serviceDisabled)
                 {
                     Debug.WriteLine("?? WARNING: No se pudo desactivar DoSvc de forma segura");
@@ -110,10 +111,10 @@ namespace Tweaker.Optimizations
 
                 Debug.WriteLine("");
                 Debug.WriteLine("?? BENEFICIOS DE RED:");
-                Debug.WriteLine("   ï Ancho de banda completo para gaming");
-                Debug.WriteLine("   ï Sin uploads de updates a otros PCs");
-                Debug.WriteLine("   ï Ping m·s estable y consistente");
-                Debug.WriteLine("   ï Menor uso de CPU por P2P");
+                Debug.WriteLine("   ‚Ä¢ Ancho de banda completo para gaming");
+                Debug.WriteLine("   ‚Ä¢ Sin uploads de updates a otros PCs");
+                Debug.WriteLine("   ‚Ä¢ Ping m√°s estable y consistente");
+                Debug.WriteLine("   ‚Ä¢ Menor uso de CPU por P2P");
                 Debug.WriteLine("");
 
                 return true;
@@ -131,7 +132,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Restaura configuraciÛn autom·tica de Windows Update
+        /// Restaura configuraci√≥n autom√°tica de Windows Update
         /// </summary>
         public static bool EnableAutomaticUpdates()
         {
@@ -149,12 +150,12 @@ namespace Tweaker.Optimizations
                         key.DeleteValue("NoAutoUpdate", false);
                         key.DeleteValue("AUOptions", false);
                         key.DeleteValue("ScheduledInstallDay", false);
-                        
-                        Debug.WriteLine("? ConfiguraciÛn de Windows Update restaurada");
+
+                        Debug.WriteLine("? Configuraci√≥n de Windows Update restaurada");
                     }
                 }
 
-                Debug.WriteLine("?? Windows Update volver· a descargar e instalar autom·ticamente");
+                Debug.WriteLine("?? Windows Update volver√° a descargar e instalar autom√°ticamente");
                 return true;
             }
             catch (Exception ex)
@@ -194,11 +195,11 @@ namespace Tweaker.Optimizations
                     {
                         key.DeleteValue("DODownloadMode", false);
                         key.DeleteValue("DownloadMode", false);
-                        Debug.WriteLine("? Delivery Optimization configuraciÛn restaurada");
+                        Debug.WriteLine("? Delivery Optimization configuraci√≥n restaurada");
                     }
                 }
 
-                Debug.WriteLine("?? P2P sharing de updates restaurado a configuraciÛn por defecto");
+                Debug.WriteLine("?? P2P sharing de updates restaurado a configuraci√≥n por defecto");
                 return true;
             }
             catch (Exception ex)
@@ -209,17 +210,17 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DiagnÛstico completo del estado de Windows Update
+        /// Diagn√≥stico completo del estado de Windows Update
         /// </summary>
         public static string DiagnoseUpdateSettings()
         {
             try
             {
                 var diagnosis = "???????????????????????????????????????????????????????????\n";
-                diagnosis += "DIAGN”STICO WINDOWS UPDATE & DELIVERY OPTIMIZATION\n";
+                diagnosis += "DIAGN√ìSTICO WINDOWS UPDATE & DELIVERY OPTIMIZATION\n";
                 diagnosis += "???????????????????????????????????????????????????????????\n\n";
 
-                // Verificar configuraciÛn de Windows Update
+                // Verificar configuraci√≥n de Windows Update
                 using (var key = Registry.LocalMachine.OpenSubKey(WINDOWS_UPDATE_KEY))
                 {
                     diagnosis += "?? WINDOWS UPDATE:\n";
@@ -230,17 +231,17 @@ namespace Tweaker.Optimizations
 
                         if (noAutoUpdate != null && (int)noAutoUpdate == 1)
                         {
-                            diagnosis += "   ? Updates autom·ticos: DESACTIVADOS (Gaming optimized)\n";
+                            diagnosis += "   ? Updates autom√°ticos: DESACTIVADOS (Gaming optimized)\n";
                             diagnosis += $"   ?? AUOptions: {auOptions ?? "Default"}\n";
                         }
                         else
                         {
-                            diagnosis += "   ?? Updates autom·ticos: ACTIVOS (Puede causar lag)\n";
+                            diagnosis += "   ?? Updates autom√°ticos: ACTIVOS (Puede causar lag)\n";
                         }
                     }
                     else
                     {
-                        diagnosis += "   ?? ConfiguraciÛn por defecto (Updates autom·ticos activos)\n";
+                        diagnosis += "   ?? Configuraci√≥n por defecto (Updates autom√°ticos activos)\n";
                     }
                 }
 
@@ -263,7 +264,7 @@ namespace Tweaker.Optimizations
                                     diagnosis += "   ?? Servicio DoSvc: MANUAL (P2P puede activarse)\n";
                                     break;
                                 case 2:
-                                    diagnosis += "   ?? Servicio DoSvc: AUTOM¡TICO (P2P activo)\n";
+                                    diagnosis += "   ?? Servicio DoSvc: AUTOM√ÅTICO (P2P activo)\n";
                                     break;
                                 default:
                                     diagnosis += $"   ?? Servicio DoSvc: Start={startType}\n";
@@ -274,24 +275,24 @@ namespace Tweaker.Optimizations
                 }
 
                 diagnosis += "\n?? RECOMENDACIONES GAMING:\n";
-                diagnosis += "   ï Desactivar updates autom·ticos durante sesiones gaming\n";
-                diagnosis += "   ï Desactivar Delivery Optimization para m·ximo ancho de banda\n";
-                diagnosis += "   ï Programar updates manualmente fuera del horario gaming\n";
-                diagnosis += "   ï Monitorear uso de ancho de banda durante partidas\n";
+                diagnosis += "   ‚Ä¢ Desactivar updates autom√°ticos durante sesiones gaming\n";
+                diagnosis += "   ‚Ä¢ Desactivar Delivery Optimization para m√°ximo ancho de banda\n";
+                diagnosis += "   ‚Ä¢ Programar updates manualmente fuera del horario gaming\n";
+                diagnosis += "   ‚Ä¢ Monitorear uso de ancho de banda durante partidas\n";
 
                 Debug.WriteLine(diagnosis);
                 return diagnosis;
             }
             catch (Exception ex)
             {
-                var error = $"? ERROR en diagnÛstico: {ex.Message}";
+                var error = $"? ERROR en diagn√≥stico: {ex.Message}";
                 Debug.WriteLine(error);
                 return error;
             }
         }
 
         /// <summary>
-        /// DiagnÛstico completo del estado del sistema (alias para DiagnoseUpdateSettings)
+        /// Diagn√≥stico completo del estado del sistema (alias para DiagnoseUpdateSettings)
         /// </summary>
         public static string DiagnoseSystemState()
         {

@@ -1,6 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
+
 using Tweaker.Optimizations.Base;
 using Tweaker.Utilities;
 
@@ -15,28 +17,28 @@ namespace Tweaker.Optimizations
         private static readonly MouseOptimizationImpl _impl = new MouseOptimizationImpl();
 
         /// <summary>
-        /// Deshabilita aceleración del mouse
+        /// Deshabilita aceleraciÃ³n del mouse
         /// </summary>
         public static bool DisableAcceleration() => _impl.DisableAcceleration();
 
         /// <summary>
-        /// Habilita aceleración del mouse
+        /// Habilita aceleraciÃ³n del mouse
         /// </summary>
         public static bool EnableAcceleration() => _impl.EnableAcceleration();
 
         /// <summary>
-        /// Verifica si la aceleración está deshabilitada
+        /// Verifica si la aceleraciÃ³n estÃ¡ deshabilitada
         /// </summary>
         public static bool IsAccelerationDisabled() => _impl.IsAccelerationDisabled();
 
         /// <summary>
-        /// Obtiene información sobre la configuración actual
+        /// Obtiene informaciÃ³n sobre la configuraciÃ³n actual
         /// </summary>
         public static string GetInfo() => _impl.GetInfo();
     }
 
     /// <summary>
-    /// Implementación interna usando BaseOptimization para eliminar redundancia
+    /// ImplementaciÃ³n interna usando BaseOptimization para eliminar redundancia
     /// </summary>
     internal class MouseOptimizationImpl : BaseOptimization
     {
@@ -46,17 +48,12 @@ namespace Tweaker.Optimizations
 
         public bool DisableAcceleration()
         {
-            var operations = new[]
+            bool result = ApplyRegistryTransaction("Deshabilitar aceleraciÃ³n del mouse", transaction =>
             {
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseSpeed, "0", "Deshabilitar aceleración del mouse"),
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseThreshold1, "0", "Establecer threshold 1 a 0"),
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseThreshold2, "0", "Establecer threshold 2 a 0")
-            };
-
-            bool result = ExecuteRegistryOperations("Deshabilitar aceleración del mouse", operations);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseSpeed, "0", RegistryValueKind.String);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseThreshold1, "0", RegistryValueKind.String);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseThreshold2, "0", RegistryValueKind.String);
+            });
 
             if (result)
             {
@@ -64,7 +61,7 @@ namespace Tweaker.Optimizations
                     "Aim 1:1 pixel perfect tracking",
                     "Movimientos predecibles y consistentes",
                     "Mejor muscle memory",
-                    "Precisión mejorada en gaming competitivo"
+                    "PrecisiÃ³n mejorada en gaming competitivo"
                 );
             }
 
@@ -73,17 +70,12 @@ namespace Tweaker.Optimizations
 
         public bool EnableAcceleration()
         {
-            var operations = new[]
+            return ApplyRegistryTransaction("Habilitar aceleraciÃ³n del mouse", transaction =>
             {
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseSpeed, "1", "Habilitar aceleración del mouse"),
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseThreshold1, "6", "Restaurar threshold 1 por defecto"),
-                RegistryOperation.SetString(Registry.CurrentUser, RegistryPaths.UserInput.Mouse, 
-                    RegistryValues.MouseThreshold2, "10", "Restaurar threshold 2 por defecto")
-            };
-
-            return ExecuteRegistryOperations("Habilitar aceleración del mouse", operations);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseSpeed, "1", RegistryValueKind.String);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseThreshold1, "6", RegistryValueKind.String);
+                transaction.SetValue(@"HKEY_CURRENT_USER\" + RegistryPaths.UserInput.Mouse, RegistryValues.MouseThreshold2, "10", RegistryValueKind.String);
+            });
         }
 
         public bool IsAccelerationDisabled()
@@ -106,11 +98,11 @@ namespace Tweaker.Optimizations
         {
             if (IsAccelerationDisabled())
             {
-                return "? Aceleración DESACTIVADA (Óptimo para gaming)";
+                return "? AceleraciÃ³n DESACTIVADA (Ã“ptimo para gaming)";
             }
             else
             {
-                return "?? Aceleración ACTIVA (Afecta precisión del aim)";
+                return "?? AceleraciÃ³n ACTIVA (Afecta precisiÃ³n del aim)";
             }
         }
     }

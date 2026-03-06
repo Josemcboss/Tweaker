@@ -1,24 +1,25 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 
+using Microsoft.Win32;
+
 namespace Tweaker.Utilities
 {
     /// <summary>
     /// SISTEMA DE BACKUPS Y ROLLBACK
     /// 
-    /// ¿Por qué existe esta clase?
+    /// Â¿Por quÃ© existe esta clase?
     /// ????????????????????????????????????????????????????????????????
-    /// Esta aplicación modifica el REGISTRO de Windows y configuraciones BCD.
+    /// Esta aplicaciÃ³n modifica el REGISTRO de Windows y configuraciones BCD.
     /// Si algo sale mal, el usuario puede quedar con un sistema inestable.
     /// 
-    /// SOLUCIÓN: Backup automático antes de cada cambio
+    /// SOLUCIÃ“N: Backup automÃ¡tico antes de cada cambio
     /// ????????????????????????????????????????????????????????????????
     /// - Guarda valores originales del registro en JSON
-    /// - Permite deshacer cambios con un botón
+    /// - Permite deshacer cambios con un botÃ³n
     /// - Backup persistente (sobrevive reinicios)
     /// 
     /// FLUJO DE USO:
@@ -35,8 +36,8 @@ namespace Tweaker.Utilities
     /// ????????????????????????????????????????????????????????????????
     /// Se guarda en: %APPDATA%\Tweaker\backups\
     /// Archivos:
-    ///   - current_session.json   (Sesión actual)
-    ///   - last_session.json      (Última sesión completada)
+    ///   - current_session.json   (SesiÃ³n actual)
+    ///   - last_session.json      (Ãšltima sesiÃ³n completada)
     ///   - backup_history.json    (Historial de todas las sesiones)
     /// </summary>
     public static class OptimizationBackup
@@ -44,7 +45,7 @@ namespace Tweaker.Utilities
         // ???????????????????????????????????????????????????????????????
         // PATHS DE BACKUP
         // ???????????????????????????????????????????????????????????????
-        
+
         private static readonly string BackupDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "Tweaker",
@@ -64,43 +65,43 @@ namespace Tweaker.Utilities
         /// </summary>
         public class RegistryBackupEntry
         {
-            public string KeyPath { get; set; }          // HKLM\SYSTEM\...
-            public string ValueName { get; set; }        // Nombre del valor (ej: "Start")
-            public object OriginalValue { get; set; }    // Valor original
-            public string ValueKind { get; set; }        // DWord, String, etc.
-            public DateTime BackupTime { get; set; }     // Cuándo se hizo el backup
-            public bool Restored { get; set; }           // Si ya se restauró
+            public string? KeyPath { get; set; }          // HKLM\SYSTEM\...
+            public string? ValueName { get; set; }        // Nombre del valor (ej: "Start")
+            public object? OriginalValue { get; set; }    // Valor original
+            public string? ValueKind { get; set; }        // DWord, String, etc.
+            public DateTime BackupTime { get; set; }     // CuÃ¡ndo se hizo el backup
+            public bool Restored { get; set; }           // Si ya se restaurÃ³
         }
 
         /// <summary>
-        /// Representa una sesión de optimización completa
+        /// Representa una sesiÃ³n de optimizaciÃ³n completa
         /// </summary>
         public class BackupSession
         {
-            public string SessionId { get; set; }                       // ID único de sesión
-            public DateTime StartTime { get; set; }                     // Inicio de sesión
-            public DateTime? EndTime { get; set; }                      // Fin de sesión
+            public string? SessionId { get; set; }                       // ID Ãºnico de sesiÃ³n
+            public DateTime StartTime { get; set; }                     // Inicio de sesiÃ³n
+            public DateTime? EndTime { get; set; }                      // Fin de sesiÃ³n
             public List<RegistryBackupEntry> RegistryBackups { get; set; } = new List<RegistryBackupEntry>();
             public List<string> BcdCommands { get; set; } = new List<string>(); // Comandos BCD ejecutados
         }
 
-        // Sesión actual en memoria
-        private static BackupSession _currentSession;
+        // SesiÃ³n actual en memoria
+        private static BackupSession? _currentSession;
 
         // ???????????????????????????????????????????????????????????????
-        // INICIALIZACIÓN
+        // INICIALIZACIÃ“N
         // ???????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// INICIAR NUEVA SESIÓN DE BACKUP
+        /// INICIAR NUEVA SESIÃ“N DE BACKUP
         /// ????????????????????????????????????????????????????????????????
-        /// Llama a este método al inicio de cada sesión de optimización.
+        /// Llama a este mÃ©todo al inicio de cada sesiÃ³n de optimizaciÃ³n.
         /// 
         /// FUNCIONES:
         /// - Crea directorio de backups si no existe
-        /// - Guarda sesión anterior como "last_session.json"
-        /// - Crea nueva sesión en memoria
-        /// - Crea punto de restauración de Windows
+        /// - Guarda sesiÃ³n anterior como "last_session.json"
+        /// - Crea nueva sesiÃ³n en memoria
+        /// - Crea punto de restauraciÃ³n de Windows
         /// </summary>
         public static void StartSession()
         {
@@ -113,14 +114,14 @@ namespace Tweaker.Utilities
                     Debug.WriteLine($"?? Directorio de backups creado: {BackupDirectory}");
                 }
 
-                // Si hay sesión previa, guardarla como last_session
+                // Si hay sesiÃ³n previa, guardarla como last_session
                 if (File.Exists(CurrentSessionFile))
                 {
                     File.Copy(CurrentSessionFile, LastSessionFile, overwrite: true);
-                    Debug.WriteLine("?? Sesión anterior guardada como last_session.json");
+                    Debug.WriteLine("?? SesiÃ³n anterior guardada como last_session.json");
                 }
 
-                // Crear nueva sesión
+                // Crear nueva sesiÃ³n
                 _currentSession = new BackupSession
                 {
                     SessionId = Guid.NewGuid().ToString("N").Substring(0, 8),
@@ -130,23 +131,23 @@ namespace Tweaker.Utilities
                 SaveCurrentSession();
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"?? NUEVA SESIÓN DE BACKUP INICIADA: {_currentSession.SessionId}");
+                Debug.WriteLine($"?? NUEVA SESIÃ“N DE BACKUP INICIADA: {_currentSession.SessionId}");
                 Debug.WriteLine($"?? Inicio: {_currentSession.StartTime:yyyy-MM-dd HH:mm:ss}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
-                // Crear punto de restauración de Windows
+                // Crear punto de restauraciÃ³n de Windows
                 CreateSystemRestorePoint();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"?? Error iniciando sesión de backup: {ex.Message}");
+                Debug.WriteLine($"?? Error iniciando sesiÃ³n de backup: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// FINALIZAR SESIÓN DE BACKUP
+        /// FINALIZAR SESIÃ“N DE BACKUP
         /// ????????????????????????????????????????????????????????????????
-        /// Llama a este método al terminar todas las optimizaciones.
+        /// Llama a este mÃ©todo al terminar todas las optimizaciones.
         /// </summary>
         public static void EndSession()
         {
@@ -160,14 +161,14 @@ namespace Tweaker.Utilities
                 AddToHistory(_currentSession);
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"? SESIÓN DE BACKUP FINALIZADA: {_currentSession.SessionId}");
+                Debug.WriteLine($"? SESIÃ“N DE BACKUP FINALIZADA: {_currentSession.SessionId}");
                 Debug.WriteLine($"?? Total de backups: {_currentSession.RegistryBackups.Count}");
-                Debug.WriteLine($"?? Duración: {(_currentSession.EndTime.Value - _currentSession.StartTime).TotalSeconds:F1}s");
+                Debug.WriteLine($"?? DuraciÃ³n: {(_currentSession.EndTime.Value - _currentSession.StartTime).TotalSeconds:F1}s");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"?? Error finalizando sesión: {ex.Message}");
+                Debug.WriteLine($"?? Error finalizando sesiÃ³n: {ex.Message}");
             }
         }
 
@@ -190,16 +191,21 @@ namespace Tweaker.Utilities
         {
             if (_currentSession == null)
             {
-                Debug.WriteLine("?? No hay sesión activa. Llama a StartSession() primero.");
+                Debug.WriteLine("?? No hay sesiÃ³n activa. Llama a StartSession() primero.");
                 StartSession(); // Auto-iniciar si no existe
+                if (_currentSession == null) // Check if StartSession() failed
+                {
+                    Debug.WriteLine("?? Fallo al iniciar sesiÃ³n de backup. No se puede realizar el backup.");
+                    return false;
+                }
             }
 
             try
             {
                 // Verificar si ya existe backup de este valor
-                if (_currentSession.RegistryBackups.Exists(b => 
-                    b.KeyPath.Equals(keyPath, StringComparison.OrdinalIgnoreCase) && 
-                    b.ValueName.Equals(valueName, StringComparison.OrdinalIgnoreCase)))
+                if (_currentSession.RegistryBackups.Exists(b =>
+                    (b.KeyPath != null && b.KeyPath.Equals(keyPath, StringComparison.OrdinalIgnoreCase)) &&
+                    (b.ValueName != null && b.ValueName.Equals(valueName, StringComparison.OrdinalIgnoreCase))))
                 {
                     Debug.WriteLine($"?? Ya existe backup de: {keyPath}\\{valueName}");
                     return true;
@@ -254,7 +260,7 @@ namespace Tweaker.Utilities
         /// <summary>
         /// REGISTRAR COMANDO BCD EJECUTADO
         /// ????????????????????????????????????????????????????????????????
-        /// Para poder mostrar al usuario qué comandos se ejecutaron.
+        /// Para poder mostrar al usuario quÃ© comandos se ejecutaron.
         /// </summary>
         public static void LogBcdCommand(string command)
         {
@@ -266,13 +272,13 @@ namespace Tweaker.Utilities
         }
 
         // ???????????????????????????????????????????????????????????????
-        // RESTAURACIÓN
+        // RESTAURACIÃ“N
         // ???????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// RESTAURAR TODOS LOS BACKUPS DE LA SESIÓN ACTUAL
+        /// RESTAURAR TODOS LOS BACKUPS DE LA SESIÃ“N ACTUAL
         /// ????????????????????????????????????????????????????????????????
-        /// Revierte TODOS los cambios de la sesión actual.
+        /// Revierte TODOS los cambios de la sesiÃ³n actual.
         /// </summary>
         public static int RestoreAllBackups()
         {
@@ -280,9 +286,9 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// RESTAURAR BACKUPS DE LA ÚLTIMA SESIÓN
+        /// RESTAURAR BACKUPS DE LA ÃšLTIMA SESIÃ“N
         /// ????????????????????????????????????????????????????????????????
-        /// Útil si la app crasheó y se reinició.
+        /// Ãštil si la app crasheÃ³ y se reiniciÃ³.
         /// </summary>
         public static int RestoreLastSession()
         {
@@ -290,7 +296,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// RESTAURAR SESIÓN DESDE ARCHIVO
+        /// RESTAURAR SESIÃ“N DESDE ARCHIVO
         /// </summary>
         private static int RestoreSession(string sessionFile)
         {
@@ -298,21 +304,21 @@ namespace Tweaker.Utilities
             {
                 if (!File.Exists(sessionFile))
                 {
-                    Debug.WriteLine($"?? No se encontró archivo de backup: {sessionFile}");
+                    Debug.WriteLine($"?? No se encontrÃ³ archivo de backup: {sessionFile}");
                     return 0;
                 }
 
                 string json = File.ReadAllText(sessionFile);
                 BackupSession session = JsonSerializer.Deserialize<BackupSession>(json);
 
-                if (session == null || session.RegistryBackups.Count == 0)
+                if (session == null || session.RegistryBackups == null || session.RegistryBackups.Count == 0)
                 {
                     Debug.WriteLine("?? No hay backups para restaurar");
                     return 0;
                 }
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"?? RESTAURANDO BACKUPS DE SESIÓN: {session.SessionId}");
+                Debug.WriteLine($"?? RESTAURANDO BACKUPS DE SESIÃ“N: {session.SessionId}");
                 Debug.WriteLine($"?? Total de cambios a revertir: {session.RegistryBackups.Count}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
@@ -330,11 +336,11 @@ namespace Tweaker.Utilities
                     }
                 }
 
-                // Guardar sesión actualizada
+                // Guardar sesiÃ³n actualizada
                 File.WriteAllText(sessionFile, JsonSerializer.Serialize(session, new JsonSerializerOptions { WriteIndented = true }));
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"? RESTAURACIÓN COMPLETADA: {restored}/{session.RegistryBackups.Count} valores");
+                Debug.WriteLine($"? RESTAURACIÃ“N COMPLETADA: {restored}/{session.RegistryBackups.Count} valores");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
                 return restored;
@@ -388,7 +394,7 @@ namespace Tweaker.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"?? Error guardando sesión: {ex.Message}");
+                Debug.WriteLine($"?? Error guardando sesiÃ³n: {ex.Message}");
             }
         }
 
@@ -406,7 +412,7 @@ namespace Tweaker.Utilities
 
                 history.Add(session);
 
-                // Mantener solo últimas 10 sesiones
+                // Mantener solo Ãºltimas 10 sesiones
                 if (history.Count > 10)
                     history.RemoveRange(0, history.Count - 10);
 
@@ -419,21 +425,21 @@ namespace Tweaker.Utilities
         }
 
         // ???????????????????????????????????????????????????????????????
-        // PUNTO DE RESTAURACIÓN DE WINDOWS
+        // PUNTO DE RESTAURACIÃ“N DE WINDOWS
         // ???????????????????????????????????????????????????????????????
 
         private static void CreateSystemRestorePoint()
         {
             try
             {
-                Debug.WriteLine("?? Creando punto de restauración del sistema...");
+                Debug.WriteLine("?? Creando punto de restauraciÃ³n del sistema...");
                 SystemRestore.CreateRestorePoint($"Tweaker Backup - {DateTime.Now:yyyy-MM-dd HH:mm}");
-                Debug.WriteLine("? Punto de restauración creado (procesando en background)");
+                Debug.WriteLine("? Punto de restauraciÃ³n creado (procesando en background)");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"?? No se pudo crear punto de restauración: {ex.Message}");
-                Debug.WriteLine("   La aplicación continuará sin punto de restauración");
+                Debug.WriteLine($"?? No se pudo crear punto de restauraciÃ³n: {ex.Message}");
+                Debug.WriteLine("   La aplicaciÃ³n continuarÃ¡ sin punto de restauraciÃ³n");
             }
         }
 
@@ -442,14 +448,14 @@ namespace Tweaker.Utilities
         // ???????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// OBTENER INFORMACIÓN DE LA SESIÓN ACTUAL
+        /// OBTENER INFORMACIÃ“N DE LA SESIÃ“N ACTUAL
         /// </summary>
         public static string GetCurrentSessionInfo()
         {
             if (_currentSession == null)
-                return "No hay sesión activa";
+                return "No hay sesiÃ³n activa";
 
-            return $"Sesión: {_currentSession.SessionId}\n" +
+            return $"SesiÃ³n: {_currentSession.SessionId}\n" +
                    $"Inicio: {_currentSession.StartTime:yyyy-MM-dd HH:mm:ss}\n" +
                    $"Backups: {_currentSession.RegistryBackups.Count}\n" +
                    $"Comandos BCD: {_currentSession.BcdCommands.Count}";

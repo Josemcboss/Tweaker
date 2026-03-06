@@ -6,7 +6,7 @@ namespace Tweaker.Utilities
 {
     /// <summary>
     /// Limpieza de memoria RAM mediante vaciado del Working Set de procesos
-    /// Libera memoria fÌsica no esencial para mejorar rendimiento en juegos
+    /// Libera memoria f√≠sica no esencial para mejorar rendimiento en juegos
     /// </summary>
     public static class MemoryCleaner
     {
@@ -14,21 +14,21 @@ namespace Tweaker.Utilities
         [DllImport("psapi.dll", SetLastError = true)]
         private static extern bool EmptyWorkingSet(IntPtr hProcess);
 
-        // P/Invoke para SetProcessWorkingSetSize - Alternativa m·s agresiva
+        // P/Invoke para SetProcessWorkingSetSize - Alternativa m√°s agresiva
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, IntPtr dwMinimumWorkingSetSize, IntPtr dwMaximumWorkingSetSize);
 
         /// <summary>
-        /// Limpia memoria de todos los procesos del usuario (excepto crÌticos y el actual)
+        /// Limpia memoria de todos los procesos del usuario (excepto cr√≠ticos y el actual)
         /// </summary>
-        /// <returns>Tuple con (Èxito, MB liberados, procesos procesados)</returns>
+        /// <returns>Tuple con (√©xito, MB liberados, procesos procesados)</returns>
         public static (bool success, long mbCleaned, int processesProcessed) FlushMemory()
         {
             try
             {
                 var currentProcess = Process.GetCurrentProcess();
                 var currentProcessId = currentProcess.Id;
-                
+
                 long totalMemoryBefore = 0;
                 long totalMemoryAfter = 0;
                 int processesProcessed = 0;
@@ -39,8 +39,8 @@ namespace Tweaker.Utilities
                 // Obtener todos los procesos del sistema
                 var processes = Process.GetProcesses();
 
-                // Lista de procesos crÌticos que NO se deben tocar
-                string[] criticalProcesses = 
+                // Lista de procesos cr√≠ticos que NO se deben tocar
+                string[] criticalProcesses =
                 {
                     "system",
                     "csrss",
@@ -55,7 +55,7 @@ namespace Tweaker.Utilities
                     "conhost",
                     "fontdrvhost",
                     "wininit",
-                    "ghost optimizer", // Nuestra propia aplicaciÛn
+                    "ghost optimizer", // Nuestra propia aplicaci√≥n
                     "tweaker"
                 };
 
@@ -73,7 +73,7 @@ namespace Tweaker.Utilities
 
                         var processName = process.ProcessName.ToLower();
 
-                        // Saltar procesos crÌticos
+                        // Saltar procesos cr√≠ticos
                         bool isCritical = false;
                         foreach (var critical in criticalProcesses)
                         {
@@ -99,17 +99,17 @@ namespace Tweaker.Utilities
                             continue; // Sin acceso al proceso
                         }
 
-                        // Solo limpiar si usa m·s de 50MB
+                        // Solo limpiar si usa m√°s de 50MB
                         if (memoryBefore < 50)
                             continue;
 
                         // Intentar vaciar el Working Set
                         bool success = EmptyWorkingSet(process.Handle);
-                        
+
                         if (success)
                         {
                             processesProcessed++;
-                            
+
                             // Esperar un momento para que se libere la memoria
                             System.Threading.Thread.Sleep(5);
 
@@ -118,9 +118,9 @@ namespace Tweaker.Utilities
                                 process.Refresh();
                                 long memoryAfter = process.WorkingSet64 / 1024 / 1024; // MB
                                 totalMemoryAfter += memoryAfter;
-                                
+
                                 long freed = memoryBefore - memoryAfter;
-                                if (freed > 10) // Solo loggear si liberÛ m·s de 10MB
+                                if (freed > 10) // Solo loggear si liber√≥ m√°s de 10MB
                                 {
                                     Debug.WriteLine($"   ? {process.ProcessName}: {freed}MB liberados");
                                     successCount++;
@@ -134,7 +134,7 @@ namespace Tweaker.Utilities
                     }
                     catch (Exception ex)
                     {
-                        // Error procesando este proceso especÌfico, continuar con el siguiente
+                        // Error procesando este proceso espec√≠fico, continuar con el siguiente
                         Debug.WriteLine($"   ?? Error procesando {process.ProcessName}: {ex.Message}");
                     }
                     finally
@@ -160,7 +160,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Limpia memoria de un proceso especÌfico
+        /// Limpia memoria de un proceso espec√≠fico
         /// </summary>
         public static bool FlushProcessMemory(Process process)
         {
@@ -194,7 +194,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene informaciÛn de memoria del sistema
+        /// Obtiene informaci√≥n de memoria del sistema
         /// </summary>
         public static (long totalMB, long availableMB, int percentUsed) GetSystemMemoryInfo()
         {
@@ -202,11 +202,11 @@ namespace Tweaker.Utilities
             {
                 // Usar Performance Counter como alternativa multiplataforma
                 var totalMemory = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024;
-                
+
                 // Obtener memoria disponible del sistema
                 var pc = new PerformanceCounter("Memory", "Available MBytes");
                 long availableMB = (long)pc.NextValue();
-                
+
                 long totalMB = totalMemory;
                 int percentUsed = totalMB > 0 ? (int)((totalMB - availableMB) * 100 / totalMB) : 0;
 
@@ -228,7 +228,7 @@ namespace Tweaker.Utilities
                 if (process == null || process.HasExited)
                     return false;
 
-                // Forzar Working Set mÌnimo (-1 = dejar que Windows decida)
+                // Forzar Working Set m√≠nimo (-1 = dejar que Windows decida)
                 IntPtr minWorkingSet = new IntPtr(-1);
                 IntPtr maxWorkingSet = new IntPtr(-1);
 

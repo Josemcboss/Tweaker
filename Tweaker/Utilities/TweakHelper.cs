@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
-using System.Windows;
+using System.Windows; // Keep this for MessageBoxResult if ShowPrompt is intended to use it. If not, remove.
 
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Helpers para simplificar la ejecuciÛn de tweaks con notificaciones y telemetrÌa
+    /// Helpers para simplificar la ejecucin de tweaks con notificaciones y telemetra
     /// </summary>
     public class TweakHelper
     {
@@ -23,69 +23,68 @@ namespace Tweaker.Utilities
             _stateManager = stateManager;
             _telemetry = telemetry;
             _notifications = notifications;
-            
+
             // Inicializar servicio de backup de registro
             RegistryBackupService.Initialize();
         }
 
         /// <summary>
-        /// Ejecuta un tweak y maneja notificaciones/telemetrÌa autom·ticamente
-        /// Crea punto de restauraciÛn autom·tico si es necesario
+        /// Ejecuta un tweak y maneja notificaciones/telemetra automticamente
+        /// Crea punto de restauracin automtico si es necesario
         /// </summary>
         public void ExecuteTweak(
             string tweakId,
             string category,
             Func<bool> action,
             string successMessage,
-            string errorMessage = null,
+            string? errorMessage = null,
             bool requiresRestart = false,
-            bool createRestorePoint = false)
+            bool createRestorePoint = false,
+            bool showNotification = true) // Nuevo parmetro
         {
             try
             {
-                // VALIDAR LÕMITE DE TWEAKS ACTIVOS
+                // VALIDAR LMITE DE TWEAKS ACTIVOS
                 var currentLicense = License.LicenseManager.CurrentLicense;
                 if (currentLicense != null && currentLicense.MaxTweaks != -1)
                 {
                     int activeTweaksCount = _stateManager.ActiveTweaksCount;
-                    
-                    // Verificar si ya est· activado (no cuenta para el lÌmite si es una reactivaciÛn)
+
+                    // Verificar si ya est activado (no cuenta para el lmite si es una reactivacin)
                     bool isAlreadyActive = _stateManager.IsTweakEnabled(tweakId);
-                    
+
                     if (!isAlreadyActive && activeTweaksCount >= currentLicense.MaxTweaks)
                     {
-                        // Se alcanzÛ el lÌmite
-                        string limitMessage = $"?? LÕMITE DE TWEAKS ALCANZADO\n\n" +
-                                            $"Tu licencia permite un m·ximo de {currentLicense.MaxTweaks} optimizaciones activas.\n\n" +
-                                            $"Tweaks activos actualmente: {activeTweaksCount}/{currentLicense.MaxTweaks}\n\n" +
-                                            $"Para activar m·s tweaks:\n" +
-                                            $"ï Desactiva alg˙n tweak existente\n" +
-                                            $"ï O actualiza tu licencia para obtener m·s optimizaciones\n\n" +
-                                            $"?? Tip: Desactiva los tweaks que no uses para liberar espacio.";
-                        
-                        MessageBox.Show(
-                            limitMessage,
-                            "LÌmite de Tweaks Alcanzado",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
-                        
-                        Debug.WriteLine($"?? LÌmite de tweaks alcanzado: {activeTweaksCount}/{currentLicense.MaxTweaks}");
-                        return; // No continuar con la activaciÛn
+                        if (showNotification) // Solo mostrar advertencia si las notificaciones estn habilitadas
+                        {
+                            // Se alcanz el lmite
+                            string limitMessage = $"‚ö†Ô∏è LMITE DE TWEAKS ALCANZADO\n\n" +
+                                                $"Tu licencia permite un mximo de {currentLicense.MaxTweaks} optimizaciones activas.\n\n" +
+                                                $"Tweaks activos actualmente: {activeTweaksCount}/{currentLicense.MaxTweaks}\n\n" +
+                                                $"Para activar ms tweaks:\n" +
+                                                $"‚Ä¢ Desactiva algn tweak existente\n" +
+                                                $"‚Ä¢ O actualiza tu licencia para obtener ms optimizaciones\n\n" +
+                                                $"üí° Tip: Desactiva los tweaks que no uses para liberar espacio.";
+
+                            _notifications.ShowWarning(limitMessage, "Lmite de Tweaks Alcanzado");
+                        }
+                        Debug.WriteLine($"‚ö†Ô∏è Lmite de tweaks alcanzado: {activeTweaksCount}/{currentLicense.MaxTweaks}");
+                        return; // No continuar con la activacin
                     }
                 }
-                
-                // Crear punto de restauraciÛn si es necesario y no se ha creado uno recientemente
+
+                // Crear punto de restauracin si es necesario y no se ha creado uno recientemente
                 if (createRestorePoint && ShouldCreateRestorePoint())
                 {
-                    Debug.WriteLine($"?? Creando punto de restauraciÛn antes de aplicar: {tweakId}");
+                    Debug.WriteLine($"‚ÑπÔ∏è Creando punto de restauracin antes de aplicar: {tweakId}");
                     SystemRestore.CreateRestorePoint($"Tweaker - Antes de {tweakId}");
                     _lastRestorePointCreated = DateTime.Now;
                 }
 
                 // SEGURIDAD: Crear backup del estado actual del registro antes de aplicar el tweak
-                // Esto no hace backup de valores especÌficos aquÌ, sino que se hace en cada optimizaciÛn
+                // Esto no hace backup de valores especficos aqu, sino que se hace en cada optimizacin
                 // que modifica el registro. Ver BaseOptimization.SetRegistryValue()
-                Debug.WriteLine($"??? Sistema de backup activo para: {tweakId}");
+                Debug.WriteLine($"üîß Sistema de backup activo para: {tweakId}");
 
                 bool success = action();
 
@@ -93,34 +92,44 @@ namespace Tweaker.Utilities
                 {
                     // Actualizar estado
                     _stateManager.SetTweakEnabled(tweakId, category);
-                    
-                    // Trackear telemetrÌa
+
+                    // Trackear telemetra
                     _telemetry.TrackTweakEnabled(tweakId, category);
 
-                    // Mostrar notificaciÛn
-                    if (requiresRestart)
+                    // Mostrar notificacin solo si showNotification es true
+                    if (showNotification)
                     {
-                        _notifications.ShowRestartRequired(GetTweakFriendlyName(tweakId));
-                    }
-                    else
-                    {
-                        _notifications.ShowSuccess(successMessage, "Tweak Activado");
+                        if (requiresRestart)
+                        {
+                            _notifications.ShowRestartRequired(GetTweakFriendlyName(tweakId));
+                        }
+                        else
+                        {
+                            _notifications.ShowSuccess(successMessage, "Tweak Activado");
+                        }
                     }
                 }
-                else
+                else // if (!success)
                 {
-                    string message = errorMessage ?? "Error al aplicar el tweak. Verifica los permisos de administrador.";
-                    _notifications.ShowError(message);
+                    if (showNotification)
+                    {
+                        string message = errorMessage ?? "Error al aplicar el tweak. Verifica los permisos de administrador.";
+                        _notifications.ShowError(message);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _notifications.ShowError($"ExcepciÛn: {ex.Message}");
+                // Mostrar notificacin de excepcin solo si showNotification es true
+                if (showNotification)
+                {
+                    _notifications.ShowError($"Excepcin: {ex.Message}");
+                }
             }
         }
 
         /// <summary>
-        /// Verifica si se debe crear un punto de restauraciÛn
+        /// Verifica si se debe crear un punto de restauracin
         /// Windows solo permite uno cada 24 horas
         /// </summary>
         private bool ShouldCreateRestorePoint()
@@ -130,15 +139,16 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Ejecuta la desactivaciÛn de un tweak
+        /// Ejecuta la desactivacin de un tweak
         /// </summary>
         public void ExecuteTweakRevert(
             string tweakId,
             string category,
             Func<bool> action,
             string successMessage,
-            string errorMessage = null,
-            bool requiresRestart = false)
+            string? errorMessage = null,
+            bool requiresRestart = false,
+            bool showNotification = true) // Nuevo parmetro
         {
             try
             {
@@ -148,39 +158,51 @@ namespace Tweaker.Utilities
                 {
                     // Actualizar estado
                     _stateManager.SetTweakDisabled(tweakId);
-                    
-                    // Trackear telemetrÌa
+
+                    // Trackear telemetra
                     _telemetry.TrackTweakDisabled(tweakId, category);
 
-                    // Mostrar notificaciÛn
-                    if (requiresRestart)
+                    // Mostrar notificacin solo si showNotification es true
+                    if (showNotification)
                     {
-                        _notifications.ShowRestartRequired(GetTweakFriendlyName(tweakId));
-                    }
-                    else
-                    {
-                        _notifications.ShowInfo(successMessage, "Tweak Revertido");
+                        if (requiresRestart)
+                        {
+                            _notifications.ShowRestartRequired(GetTweakFriendlyName(tweakId));
+                        }
+                        else
+                        {
+                            _notifications.ShowInfo(successMessage, "Tweak Revertido");
+                        }
                     }
                 }
                 else
                 {
-                    string message = errorMessage ?? "Error al revertir el tweak. Verifica los permisos de administrador.";
-                    _notifications.ShowError(message);
+                    // Mostrar notificaci√≥n de error solo si showNotification es true
+                    if (showNotification)
+                    {
+                        string message = errorMessage ?? "Error al revertir el tweak. Verifica los permisos de administrador.";
+                        _notifications.ShowError(message);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _notifications.ShowError($"ExcepciÛn: {ex.Message}");
+                // Mostrar notificacin de excepcin solo si showNotification es true
+                if (showNotification)
+                {
+                    _notifications.ShowError($"Excepcin: {ex.Message}");
+                }
             }
         }
 
         /// <summary>
-        /// Ejecuta una acciÛn simple (sin estado) con notificaciÛn
+        /// Ejecuta una accin simple (sin estado) con notificacin
         /// </summary>
         public void ExecuteAction(
             Func<bool> action,
             string successMessage,
-            string errorMessage = null)
+            string? errorMessage = null,
+            bool showNotification = true) // Nuevo parmetro
         {
             try
             {
@@ -188,17 +210,29 @@ namespace Tweaker.Utilities
 
                 if (success)
                 {
-                    _notifications.ShowSuccess(successMessage);
+                    // Mostrar notificacin solo si showNotification es true
+                    if (showNotification)
+                    {
+                        _notifications.ShowSuccess(successMessage);
+                    }
                 }
                 else
                 {
-                    string message = errorMessage ?? "Error al ejecutar la acciÛn.";
-                    _notifications.ShowError(message);
+                    // Mostrar notificacin de error solo si showNotification es true
+                    if (showNotification)
+                    {
+                        string message = errorMessage ?? "Error al ejecutar la accin.";
+                        _notifications.ShowError(message);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _notifications.ShowError($"ExcepciÛn: {ex.Message}");
+                // Mostrar notificacin de excepcin solo si showNotification es true
+                if (showNotification)
+                {
+                    _notifications.ShowError($"Excepcin: {ex.Message}");
+                }
             }
         }
 
@@ -206,15 +240,15 @@ namespace Tweaker.Utilities
         {
             var names = new System.Collections.Generic.Dictionary<string, string>
             {
-                {"MouseAcceleration", "AceleraciÛn del Mouse"},
-                {"Keyboard", "OptimizaciÛn de Teclado"},
+                {"MouseAcceleration", "Aceleracin del Mouse"},
+                {"Keyboard", "Optimizacin de Teclado"},
                 {"VisualEffects", "Efectos Visuales"},
-                {"MemoryOptimization", "OptimizaciÛn de RAM"},
+                {"MemoryOptimization", "Optimizacin de RAM"},
                 {"NetworkOptimization", "TCP/IP Optimization"},
                 {"DnsCloudflare", "DNS Cloudflare"},
                 {"DnsGoogle", "DNS Google"},
-                {"DnsCache", "CachÈ DNS"},
-                {"NetworkPower", "Ahorro de EnergÌa de Red"},
+                {"DnsCache", "Cach DNS"},
+                {"NetworkPower", "Ahorro de Energa de Red"},
                 {"NetBios", "NetBIOS over TCP/IP"},
                 {"SystemProfile", "System Profile Games"},
                 {"GameDVR", "GameDVR / Xbox Game Bar"},
@@ -223,7 +257,7 @@ namespace Tweaker.Utilities
                 {"HighPerformance", "Plan Alto Rendimiento"},
                 {"PowerThrottling", "Power Throttling"},
                 {"CoreParking", "Core Parking"},
-                {"Hibernation", "HibernaciÛn"},
+                {"Hibernation", "Hibernacin"},
                 {"WindowsSearch", "Windows Search"},
                 {"SysMain", "SysMain (SuperFetch)"},
                 {"DiagTrack", "Telemetry (DiagTrack)"},
@@ -240,4 +274,3 @@ namespace Tweaker.Utilities
         }
     }
 }
-

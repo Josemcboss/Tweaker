@@ -4,27 +4,32 @@ using System.Reflection;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Helper para manejo de versiones de la aplicaci髇
+    /// Helper para manejo de versiones de la aplicaci贸n
     /// </summary>
     public static class VersionHelper
     {
         /// <summary>
-        /// Versi髇 actual de la aplicaci髇
+        /// Versi贸n actual de la aplicaci贸n
         /// </summary>
         public static string CurrentVersion => "2.4.0";
 
         /// <summary>
-        /// Versi髇 completa con build
+        /// Versi贸n completa con build
         /// </summary>
-        public static string FullVersion 
-        { 
+        public static string FullVersion
+        {
             get
             {
                 try
                 {
                     var assembly = Assembly.GetExecutingAssembly();
-                    var version = assembly.GetName().Version;
-                    return $"{version.Major}.{version.Minor}.{version.Build}";
+                    var assemblyName = assembly.GetName();
+                    var version = assemblyName.Version;
+                    if (version != null)
+                    {
+                        return $"{version.Major}.{version.Minor}.{version.Build}";
+                    }
+                    return CurrentVersion; // Fallback if version is null
                 }
                 catch
                 {
@@ -73,7 +78,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si hay una nueva versi髇 disponible
+        /// Verifica si hay una nueva versi贸n disponible
         /// </summary>
         public static bool IsNewerVersion(string remoteVersion)
         {
@@ -81,7 +86,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene informaci髇 de versi髇 para mostrar al usuario
+        /// Obtiene informaci贸n de versi贸n para mostrar al usuario
         /// </summary>
         public static string GetVersionDisplayString()
         {
@@ -89,7 +94,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si la versi髇 actual cumple con el m韓imo requerido
+        /// Verifica si la versi贸n actual cumple con el m铆nimo requerido
         /// </summary>
         public static bool MeetsMinimumVersion(string minimumVersion)
         {

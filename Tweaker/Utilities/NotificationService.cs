@@ -8,13 +8,13 @@ using System.Windows.Threading;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Servicio de notificaciones tipo toast (modernas y no intrusivas)
+    /// Servicio de notificaciones tipo toast (modernas y no intrusivas) y gestor de prompts (MessageBox)
     /// </summary>
     public class NotificationService
     {
-        private static NotificationService _instance;
-        private Grid _notificationContainer;
-        private DispatcherTimer _autoHideTimer;
+        private static NotificationService? _instance;
+        private Grid? _notificationContainer;
+        private DispatcherTimer? _autoHideTimer;
 
         public static NotificationService Instance
         {
@@ -33,56 +33,59 @@ namespace Tweaker.Utilities
         /// </summary>
         public void Initialize(Grid mainGrid)
         {
-            _notificationContainer = new Grid
+            if (_notificationContainer == null)
             {
-                VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                Margin = new Thickness(0, 50, 20, 0),
-                IsHitTestVisible = false
-            };
+                _notificationContainer = new Grid
+                {
+                    VerticalAlignment = VerticalAlignment.Top,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Margin = new Thickness(0, 50, 20, 0),
+                    IsHitTestVisible = false // Permite clicks a travs del Grid
+                };
 
-            // Agregar al Grid principal (˙ltimo elemento para que estÈ encima)
-            mainGrid.Children.Add(_notificationContainer);
-            Grid.SetRowSpan(_notificationContainer, 2);
-            Grid.SetColumnSpan(_notificationContainer, 2);
+                // Agregar al Grid principal (ltimo elemento para que est encima)
+                mainGrid.Children.Add(_notificationContainer);
+                Grid.SetRowSpan(_notificationContainer, 2);
+                Grid.SetColumnSpan(_notificationContainer, 2);
 
-            _autoHideTimer = new DispatcherTimer
-            {
-                Interval = TimeSpan.FromSeconds(5)
-            };
-            _autoHideTimer.Tick += AutoHideTimer_Tick;
+                _autoHideTimer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(5)
+                };
+                _autoHideTimer.Tick += AutoHideTimer_Tick;
+            }
         }
 
         /// <summary>
-        /// Muestra una notificaciÛn de Èxito
+        /// Muestra una notificacin de xito
         /// </summary>
         public void ShowSuccess(string message, string title = "Tweak Activado", int durationSeconds = 5)
         {
-            ShowNotification(message, "? " + title, "#0E7A0D", durationSeconds);
+            ShowNotification(message, "‚úÖ " + title, "#0E7A0D", durationSeconds);
         }
 
         /// <summary>
-        /// Muestra una notificaciÛn de error
+        /// Muestra una notificacin de error
         /// </summary>
         public void ShowError(string message, string title = "Error", int durationSeconds = 7)
         {
-            ShowNotification(message, "? " + title, "#C42B1C", durationSeconds);
+            ShowNotification(message, "‚ùå " + title, "#C42B1C", durationSeconds);
         }
 
         /// <summary>
-        /// Muestra una notificaciÛn de advertencia
+        /// Muestra una notificacin de advertencia
         /// </summary>
         public void ShowWarning(string message, string title = "Advertencia", int durationSeconds = 6)
         {
-            ShowNotification(message, "?? " + title, "#FFC107", durationSeconds);
+            ShowNotification(message, "‚ö†Ô∏è " + title, "#FFC107", durationSeconds);
         }
 
         /// <summary>
-        /// Muestra una notificaciÛn informativa
+        /// Muestra una notificacin informativa
         /// </summary>
-        public void ShowInfo(string message, string title = "Informacion", int durationSeconds = 5)
+        public void ShowInfo(string message, string title = "Informaci√≥n", int durationSeconds = 5)
         {
-            ShowNotification(message, "?? " + title, "#5865F2", durationSeconds);
+            ShowNotification(message, "‚ÑπÔ∏è " + title, "#5865F2", durationSeconds);
         }
 
         /// <summary>
@@ -92,10 +95,36 @@ namespace Tweaker.Utilities
         {
             ShowNotification(
                 $"El tweak '{tweakName}' requiere reiniciar Windows para aplicarse completamente.",
-                "?? Reinicio Necesario",
+                "‚ö†Ô∏è Reinicio Necesario",
                 "#9B59B6",
                 8
             );
+        }
+
+        /// <summary>
+        /// Muestra un dilogo de pregunta al usuario (equivalente a MessageBox.Show con Yes/No, etc.)
+        /// </summary>
+        /// <returns>Resultado del dilogo</returns>
+        public MessageBoxResult ShowPrompt(string message, string title, MessageBoxButton buttons, MessageBoxImage icon)
+        {
+            // Detener timer de notificaciones para evitar que se oculte mientras el prompt est abierto
+            _autoHideTimer?.Stop();
+
+            // Si hay una notificacin visible, ocultarla antes de mostrar el prompt
+            if (_notificationContainer != null && _notificationContainer.Children.Count > 0)
+            {
+                AnimateNotificationOut(true); // Ocultar rpidamente sin esperar
+            }
+
+            MessageBoxResult result = MessageBox.Show(message, title, buttons, icon);
+
+            // Reiniciar timer si es necesario
+            if (_notificationContainer != null && _notificationContainer.Children.Count > 0 && _autoHideTimer != null)
+            {
+                _autoHideTimer.Start();
+            }
+
+            return result;
         }
 
         private void ShowNotification(string message, string title, string accentColor, int durationSeconds)
@@ -103,17 +132,17 @@ namespace Tweaker.Utilities
             if (_notificationContainer == null)
                 return;
 
-            // Crear el border de la notificaciÛn
+            // Crear el border de la notificacin
             var notification = CreateNotificationBorder(title, message, accentColor);
 
             // Agregar al contenedor
-            _notificationContainer.Children.Clear(); // Solo una notificaciÛn a la vez
+            _notificationContainer.Children.Clear(); // Solo una notificacin a la vez
             _notificationContainer.Children.Add(notification);
 
-            // AnimaciÛn de entrada
+            // Animacin de entrada
             AnimateNotificationIn(notification);
 
-            // Timer para ocultar autom·ticamente
+            // Timer para ocultar automticamente
             _autoHideTimer.Interval = TimeSpan.FromSeconds(durationSeconds);
             _autoHideTimer.Stop();
             _autoHideTimer.Start();
@@ -190,7 +219,7 @@ namespace Tweaker.Utilities
             ((TranslateTransform)notification.RenderTransform).BeginAnimation(TranslateTransform.XProperty, slideIn);
         }
 
-        private void AnimateNotificationOut()
+        private void AnimateNotificationOut(bool instant = false)
         {
             if (_notificationContainer.Children.Count == 0)
                 return;
@@ -198,6 +227,12 @@ namespace Tweaker.Utilities
             var notification = _notificationContainer.Children[0] as Border;
             if (notification == null)
                 return;
+
+            if (instant)
+            {
+                _notificationContainer.Children.Clear();
+                return;
+            }
 
             var fadeOut = new DoubleAnimation
             {

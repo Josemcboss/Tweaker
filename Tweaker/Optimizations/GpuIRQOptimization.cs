@@ -1,4 +1,3 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,10 +5,12 @@ using System.Linq;
 using System.Management;
 using System.Runtime.InteropServices;
 
+using Microsoft.Win32;
+
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// GPU IRQ Optimization - Asigna interrupciones de GPU a cores especÌficos
+    /// GPU IRQ Optimization - Asigna interrupciones de GPU a cores espec√≠ficos
     /// Reduce DPC latency y mejora consistencia de frame times en gaming
     /// </summary>
     public static class GpuIRQOptimization
@@ -17,16 +18,16 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
         // WINDOWS API IMPORTS
         // ???????????????????????????????????????????????????????????????????
-        
+
         [DllImport("kernel32.dll")]
         private static extern IntPtr GetCurrentProcess();
-        
+
         [DllImport("kernel32.dll")]
         private static extern bool SetProcessAffinityMask(IntPtr hProcess, UIntPtr dwProcessAffinityMask);
-        
+
         [DllImport("kernel32.dll")]
         private static extern bool GetSystemInfo(out SYSTEM_INFO lpSystemInfo);
-        
+
         [StructLayout(LayoutKind.Sequential)]
         private struct SYSTEM_INFO
         {
@@ -48,7 +49,7 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Aplica optimizaciÛn de IRQ para GPU - Asigna GPU al ˙ltimo core
+        /// Aplica optimizaci√≥n de IRQ para GPU - Asigna GPU al √∫ltimo core
         /// </summary>
         public static bool EnableGpuIRQOptimization()
         {
@@ -56,20 +57,20 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("?? INICIANDO GPU IRQ OPTIMIZATION");
                 Debug.WriteLine("?????????????????????????????????????");
-                
-                // Obtener informaciÛn del sistema
+
+                // Obtener informaci√≥n del sistema
                 GetSystemInfo(out SYSTEM_INFO sysInfo);
                 int coreCount = (int)sysInfo.numberOfProcessors;
-                
+
                 Debug.WriteLine($"?? Cores detectados: {coreCount}");
                 Debug.WriteLine($"?? Arquitectura: {sysInfo.processorArchitecture}");
-                
+
                 if (coreCount < 4)
                 {
-                    Debug.WriteLine("?? Se requieren al menos 4 cores para optimizaciÛn segura");
+                    Debug.WriteLine("?? Se requieren al menos 4 cores para optimizaci√≥n segura");
                     return false;
                 }
-                
+
                 // Detectar GPU primaria
                 var gpuInfo = DetectPrimaryGPU();
                 if (gpuInfo == null)
@@ -77,25 +78,25 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine("? No se pudo detectar GPU primaria");
                     return false;
                 }
-                
+
                 Debug.WriteLine($"?? GPU detectada: {gpuInfo.Name}");
                 Debug.WriteLine($"?? PCI ID: {gpuInfo.PciId}");
                 Debug.WriteLine($"?? IRQ: {gpuInfo.IRQ}");
-                
-                // Configurar afinidad de GPU al ˙ltimo core
+
+                // Configurar afinidad de GPU al √∫ltimo core
                 bool irqConfigured = ConfigureGpuIRQAffinity(gpuInfo, coreCount);
-                
+
                 if (irqConfigured)
                 {
                     // Aplicar configuraciones adicionales en registro
                     ApplyRegistryOptimizations();
-                    
+
                     Debug.WriteLine("? GPU IRQ OPTIMIZATION APLICADA");
                     Debug.WriteLine($"   ? GPU asignada al Core {coreCount - 1}");
                     Debug.WriteLine($"   ? DPC latency reducida");
-                    Debug.WriteLine($"   ? Frame times m·s consistentes");
-                    Debug.WriteLine($"   ? Mejor separaciÛn de workloads");
-                    
+                    Debug.WriteLine($"   ? Frame times m√°s consistentes");
+                    Debug.WriteLine($"   ? Mejor separaci√≥n de workloads");
+
                     return true;
                 }
                 else
@@ -112,7 +113,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Deshabilita optimizaciÛn de IRQ - Restaura distribuciÛn autom·tica
+        /// Deshabilita optimizaci√≥n de IRQ - Restaura distribuci√≥n autom√°tica
         /// </summary>
         public static bool DisableGpuIRQOptimization()
         {
@@ -120,26 +121,26 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("?? DESHABILITANDO GPU IRQ OPTIMIZATION");
                 Debug.WriteLine("?????????????????????????????????????");
-                
+
                 var gpuInfo = DetectPrimaryGPU();
                 if (gpuInfo == null)
                 {
-                    Debug.WriteLine("?? No se pudo detectar GPU para restauraciÛn");
+                    Debug.WriteLine("?? No se pudo detectar GPU para restauraci√≥n");
                     return false;
                 }
-                
-                // Restaurar afinidad autom·tica
+
+                // Restaurar afinidad autom√°tica
                 bool restored = RestoreDefaultIRQDistribution(gpuInfo);
-                
+
                 if (restored)
                 {
                     // Limpiar configuraciones de registro
                     RemoveRegistryOptimizations();
-                    
+
                     Debug.WriteLine("? GPU IRQ OPTIMIZATION DESHABILITADA");
-                    Debug.WriteLine("   ? DistribuciÛn autom·tica de IRQ restaurada");
-                    Debug.WriteLine("   ? Windows maneja interrupciones autom·ticamente");
-                    
+                    Debug.WriteLine("   ? Distribuci√≥n autom√°tica de IRQ restaurada");
+                    Debug.WriteLine("   ? Windows maneja interrupciones autom√°ticamente");
+
                     return true;
                 }
                 else
@@ -167,21 +168,21 @@ namespace Tweaker.Optimizations
                 {
                     return (false, "No se pudo detectar GPU primaria", null);
                 }
-                
-                // Verificar si hay configuraciones especÌficas aplicadas
+
+                // Verificar si hay configuraciones espec√≠ficas aplicadas
                 bool hasRegistryOpts = CheckRegistryOptimizations();
-                
+
                 GetSystemInfo(out SYSTEM_INFO sysInfo);
                 int coreCount = (int)sysInfo.numberOfProcessors;
-                
+
                 string details = $"GPU: {gpuInfo.Name}\n" +
                                $"IRQ: {gpuInfo.IRQ}\n" +
                                $"PCI ID: {gpuInfo.PciId}\n" +
                                $"Cores disponibles: {coreCount}\n" +
                                $"Optimizaciones de registro: {(hasRegistryOpts ? "APLICADAS" : "NO APLICADAS")}";
-                
+
                 Debug.WriteLine($"?? Estado GPU IRQ: {(hasRegistryOpts ? "OPTIMIZADO" : "DEFAULT")}");
-                
+
                 return (hasRegistryOpts, details, gpuInfo);
             }
             catch (Exception ex)
@@ -204,35 +205,35 @@ namespace Tweaker.Optimizations
             try
             {
                 Debug.WriteLine("?? Detectando GPU primaria...");
-                
+
                 // Buscar GPU usando WMI
                 ManagementObjectSearcher searcher = new ManagementObjectSearcher(
                     "SELECT * FROM Win32_VideoController WHERE Availability = 3"); // 3 = Running/Full Power
-                
+
                 foreach (ManagementObject obj in searcher.Get())
                 {
                     string name = obj["Name"]?.ToString();
                     string pciId = obj["PNPDeviceID"]?.ToString();
-                    
+
                     if (!string.IsNullOrEmpty(name) && !string.IsNullOrEmpty(pciId))
                     {
                         // Buscar IRQ asociada
                         uint irq = GetGpuIRQ(pciId);
-                        
+
                         var gpu = new GPUInfo
                         {
                             Name = name,
                             PciId = pciId,
                             IRQ = irq
                         };
-                        
+
                         Debug.WriteLine($"   ?? GPU encontrada: {name}");
                         Debug.WriteLine($"   ?? IRQ: {irq}");
-                        
+
                         return gpu;
                     }
                 }
-                
+
                 return null;
             }
             catch (Exception ex)
@@ -251,12 +252,12 @@ namespace Tweaker.Optimizations
             {
                 // Buscar en el registro del sistema el IRQ asignado
                 string deviceKey = $@"SYSTEM\CurrentControlSet\Enum\{pciId}";
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(deviceKey, false))
                 {
                     if (key != null)
                     {
-                        // Buscar subkeys para encontrar configuraciÛn
+                        // Buscar subkeys para encontrar configuraci√≥n
                         foreach (string subKeyName in key.GetSubKeyNames())
                         {
                             using (var subKey = key.OpenSubKey($"{subKeyName}\\LogConf"))
@@ -266,8 +267,8 @@ namespace Tweaker.Optimizations
                                     var bootConfig = subKey.GetValue("BootConfig");
                                     if (bootConfig is byte[] configData && configData.Length > 8)
                                     {
-                                        // Extraer IRQ de los datos de configuraciÛn
-                                        // (Esto es una simplificaciÛn - IRQs est·n en estructuras complejas)
+                                        // Extraer IRQ de los datos de configuraci√≥n
+                                        // (Esto es una simplificaci√≥n - IRQs est√°n en estructuras complejas)
                                         return (uint)(configData[8] & 0xFF);
                                     }
                                 }
@@ -275,9 +276,9 @@ namespace Tweaker.Optimizations
                         }
                     }
                 }
-                
-                // Fallback: usar un IRQ tÌpico para GPUs
-                return 16; // IRQ com˙n para dispositivos PCIe
+
+                // Fallback: usar un IRQ t√≠pico para GPUs
+                return 16; // IRQ com√∫n para dispositivos PCIe
             }
             catch
             {
@@ -286,30 +287,30 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Configura la afinidad de IRQ de GPU a un core especÌfico
+        /// Configura la afinidad de IRQ de GPU a un core espec√≠fico
         /// </summary>
         private static bool ConfigureGpuIRQAffinity(GPUInfo gpu, int coreCount)
         {
             try
             {
                 Debug.WriteLine($"?? Configurando afinidad de GPU IRQ {gpu.IRQ}...");
-                
-                // Calcular core objetivo (˙ltimo core disponible)
+
+                // Calcular core objetivo (√∫ltimo core disponible)
                 int targetCore = coreCount - 1;
                 ulong affinityMask = 1UL << targetCore;
-                
+
                 Debug.WriteLine($"   ? Core objetivo: {targetCore}");
-                Debug.WriteLine($"   ? M·scara de afinidad: 0x{affinityMask:X}");
-                
+                Debug.WriteLine($"   ? M√°scara de afinidad: 0x{affinityMask:X}");
+
                 bool success = false;
-                
-                // M…TODO 1: Configurar MSI (Message Signaled Interrupts) en el registro
-                // Este es el mÈtodo m·s efectivo y persistente
+
+                // M√âTODO 1: Configurar MSI (Message Signaled Interrupts) en el registro
+                // Este es el m√©todo m√°s efectivo y persistente
                 string devicePath = FindGpuDeviceRegistryPath(gpu.PciId);
                 if (!string.IsNullOrEmpty(devicePath))
                 {
                     Debug.WriteLine($"   ? Ruta del dispositivo: {devicePath}");
-                    
+
                     try
                     {
                         // Configurar MSI Affinity Policy
@@ -318,15 +319,15 @@ namespace Tweaker.Optimizations
                         {
                             if (key != null)
                             {
-                                // DevicePolicy = 4: IRQ en core especÌfico (IrqPolicySpecifiedProcessors)
+                                // DevicePolicy = 4: IRQ en core espec√≠fico (IrqPolicySpecifiedProcessors)
                                 key.SetValue("DevicePolicy", 4, RegistryValueKind.DWord);
-                                // AssignmentSetOverride: m·scara de bits del core
+                                // AssignmentSetOverride: m√°scara de bits del core
                                 key.SetValue("AssignmentSetOverride", affinityMask, RegistryValueKind.QWord);
                                 Debug.WriteLine($"   ? MSI Affinity Policy configurada (GPU -> Core {targetCore})");
                                 success = true;
                             }
                         }
-                        
+
                         // Configurar MSI message support
                         string messageNumberLimit = $"{devicePath}\\Device Parameters\\Interrupt Management\\MessageSignaledInterruptProperties";
                         using (var key = Registry.LocalMachine.CreateSubKey(messageNumberLimit))
@@ -348,8 +349,8 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine("   ?? No se pudo encontrar la ruta del dispositivo GPU");
                 }
-                
-                // M…TODO 2: Configurar prioridades globales de interrupciones
+
+                // M√âTODO 2: Configurar prioridades globales de interrupciones
                 try
                 {
                     string priorityControl = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
@@ -368,7 +369,7 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine($"   ?? Error configurando prioridades: {ex.Message}");
                 }
-                
+
                 if (success)
                 {
                     Debug.WriteLine($"? IRQ {gpu.IRQ} configurada exitosamente");
@@ -376,9 +377,9 @@ namespace Tweaker.Optimizations
                 }
                 else
                 {
-                    Debug.WriteLine("?? ConfiguraciÛn parcial aplicada");
+                    Debug.WriteLine("?? Configuraci√≥n parcial aplicada");
                 }
-                
+
                 return success;
             }
             catch (Exception ex)
@@ -389,17 +390,17 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Restaura la distribuciÛn autom·tica de IRQ
+        /// Restaura la distribuci√≥n autom√°tica de IRQ
         /// </summary>
         private static bool RestoreDefaultIRQDistribution(GPUInfo gpu)
         {
             try
             {
-                Debug.WriteLine($"?? Restaurando distribuciÛn autom·tica de IRQ...");
-                
+                Debug.WriteLine($"?? Restaurando distribuci√≥n autom√°tica de IRQ...");
+
                 bool success = false;
-                
-                // M…TODO 1: Restaurar configuraciÛn MSI del dispositivo
+
+                // M√âTODO 1: Restaurar configuraci√≥n MSI del dispositivo
                 string devicePath = FindGpuDeviceRegistryPath(gpu.PciId);
                 if (!string.IsNullOrEmpty(devicePath))
                 {
@@ -423,8 +424,8 @@ namespace Tweaker.Optimizations
                         Debug.WriteLine($"   ?? Error eliminando MSI policy: {regEx.Message}");
                     }
                 }
-                
-                // M…TODO 2: Restaurar prioridades predeterminadas
+
+                // M√âTODO 2: Restaurar prioridades predeterminadas
                 try
                 {
                     string priorityControl = @"SYSTEM\CurrentControlSet\Control\PriorityControl";
@@ -442,18 +443,18 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine($"   ?? Error restaurando prioridades: {ex.Message}");
                 }
-                
+
                 if (success)
                 {
-                    Debug.WriteLine("? DistribuciÛn autom·tica restaurada");
+                    Debug.WriteLine("? Distribuci√≥n autom√°tica restaurada");
                     Debug.WriteLine("   ?? REINICIAR el sistema para aplicar cambios completamente");
                 }
-                
+
                 return success;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error restaurando distribuciÛn: {ex.Message}");
+                Debug.WriteLine($"? Error restaurando distribuci√≥n: {ex.Message}");
                 return false;
             }
         }
@@ -470,31 +471,31 @@ namespace Tweaker.Optimizations
             try
             {
                 Debug.WriteLine("?? Aplicando optimizaciones de registro...");
-                
+
                 // Optimizaciones de DPC y latencia
                 using (var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\PriorityControl"))
                 {
-                    // ConfiguraciÛn de DPC timeout m·s agresiva
+                    // Configuraci√≥n de DPC timeout m√°s agresiva
                     key.SetValue("ConvertSharedInterrupts", 1, RegistryValueKind.DWord);
                     Debug.WriteLine("   ? ConvertSharedInterrupts habilitado");
-                    
+
                     // Prioridad de threads de DPC
                     key.SetValue("IRQ8Priority", 1, RegistryValueKind.DWord);
                     Debug.WriteLine("   ? IRQ8Priority configurado");
-                    
-                    // Marker para indicar que GPU IRQ est· optimizado
+
+                    // Marker para indicar que GPU IRQ est√° optimizado
                     key.SetValue("GpuIRQOptimized", 1, RegistryValueKind.DWord);
-                    Debug.WriteLine("   ? Marker de optimizaciÛn aplicado");
+                    Debug.WriteLine("   ? Marker de optimizaci√≥n aplicado");
                 }
-                
-                // Configuraciones especÌficas de GPU en registro de sistema
+
+                // Configuraciones espec√≠ficas de GPU en registro de sistema
                 using (var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers"))
                 {
                     // Deshabilitar preemption para mejor consistencia
                     key.SetValue("TdrLevel", 0, RegistryValueKind.DWord);
                     Debug.WriteLine("   ? TDR Level configurado para menor latencia");
                 }
-                
+
                 Debug.WriteLine("?? Optimizaciones de registro aplicadas");
             }
             catch (Exception ex)
@@ -511,7 +512,7 @@ namespace Tweaker.Optimizations
             try
             {
                 Debug.WriteLine("?? Limpiando optimizaciones de registro...");
-                
+
                 using (var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\PriorityControl"))
                 {
                     key.DeleteValue("ConvertSharedInterrupts", false);
@@ -519,12 +520,12 @@ namespace Tweaker.Optimizations
                     key.DeleteValue("GpuIRQOptimized", false);
                     key.DeleteValue("IRQToCoreMapping", false);
                 }
-                
+
                 using (var key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers"))
                 {
                     key.DeleteValue("TdrLevel", false);
                 }
-                
+
                 Debug.WriteLine("? Optimizaciones de registro limpiadas");
             }
             catch (Exception ex)
@@ -534,7 +535,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si las optimizaciones de registro est·n aplicadas
+        /// Verifica si las optimizaciones de registro est√°n aplicadas
         /// </summary>
         private static bool CheckRegistryOptimizations()
         {
@@ -569,12 +570,12 @@ namespace Tweaker.Optimizations
             {
                 if (string.IsNullOrEmpty(pciId))
                     return null;
-                
+
                 // El PCI ID viene en formato: PCI\VEN_10DE&DEV_2206&...
                 // Necesitamos buscar en: SYSTEM\CurrentControlSet\Enum\PCI\...
-                
+
                 string enumPath = @"SYSTEM\CurrentControlSet\Enum\" + pciId;
-                
+
                 using (var key = Registry.LocalMachine.OpenSubKey(enumPath, false))
                 {
                     if (key != null)
@@ -589,8 +590,8 @@ namespace Tweaker.Optimizations
                         }
                     }
                 }
-                
-                Debug.WriteLine($"   ?? No se encontrÛ el dispositivo en: {enumPath}");
+
+                Debug.WriteLine($"   ?? No se encontr√≥ el dispositivo en: {enumPath}");
                 return null;
             }
             catch (Exception ex)
@@ -619,10 +620,14 @@ namespace Tweaker.Optimizations
 
                 using (Process process = Process.Start(psi))
                 {
+                    if (process == null) // Check for null
+                    {
+                        return "ERROR: Failed to start PowerShell process.";
+                    }
                     string output = process.StandardOutput.ReadToEnd();
                     string error = process.StandardError.ReadToEnd();
                     process.WaitForExit();
-                    
+
                     return !string.IsNullOrEmpty(output) ? output : error;
                 }
             }
@@ -633,25 +638,25 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// DiagnÛstico completo de GPU IRQ
+        /// Diagn√≥stico completo de GPU IRQ
         /// </summary>
         public static string DiagnoseGpuIRQ()
         {
             try
             {
                 var report = new System.Text.StringBuilder();
-                report.AppendLine("?? DIAGN”STICO GPU IRQ OPTIMIZATION");
+                report.AppendLine("?? DIAGN√ìSTICO GPU IRQ OPTIMIZATION");
                 report.AppendLine("???????????????????????????????????");
-                
-                // InformaciÛn del sistema
+
+                // Informaci√≥n del sistema
                 GetSystemInfo(out SYSTEM_INFO sysInfo);
                 int coreCount = (int)sysInfo.numberOfProcessors;
-                
+
                 report.AppendLine($"?? Sistema:");
                 report.AppendLine($"   Cores: {coreCount}");
                 report.AppendLine($"   Arquitectura: {sysInfo.processorArchitecture}");
-                report.AppendLine($"   Recomendado: {(coreCount >= 4 ? "? SÕ" : "? Requiere 4+ cores")}");
-                
+                report.AppendLine($"   Recomendado: {(coreCount >= 4 ? "? S√ç" : "? Requiere 4+ cores")}");
+
                 // Estado de GPU
                 var (isOptimized, details, gpuInfo) = GetGpuIRQStatus();
                 report.AppendLine($"\n?? GPU Primaria:");
@@ -665,12 +670,12 @@ namespace Tweaker.Optimizations
                 {
                     report.AppendLine("   ? No detectada");
                 }
-                
+
                 // Recomendaciones
                 report.AppendLine($"\n?? Recomendaciones:");
                 if (coreCount < 4)
                 {
-                    report.AppendLine("   ?? Se requieren al menos 4 cores CPU para optimizaciÛn segura");
+                    report.AppendLine("   ?? Se requieren al menos 4 cores CPU para optimizaci√≥n segura");
                 }
                 else if (!isOptimized)
                 {
@@ -678,16 +683,16 @@ namespace Tweaker.Optimizations
                 }
                 else
                 {
-                    report.AppendLine("   ? GPU IRQ est· optimizada correctamente");
+                    report.AppendLine("   ? GPU IRQ est√° optimizada correctamente");
                 }
-                
+
                 string finalReport = report.ToString();
                 Debug.WriteLine(finalReport);
                 return finalReport;
             }
             catch (Exception ex)
             {
-                string error = $"? Error en diagnÛstico: {ex.Message}";
+                string error = $"? Error en diagn√≥stico: {ex.Message}";
                 Debug.WriteLine(error);
                 return error;
             }
@@ -695,12 +700,12 @@ namespace Tweaker.Optimizations
     }
 
     /// <summary>
-    /// InformaciÛn de GPU para IRQ optimization
+    /// Informaci√≥n de GPU para IRQ optimization
     /// </summary>
     public class GPUInfo
     {
-        public string Name { get; set; }
-        public string PciId { get; set; }
+        public string? Name { get; set; }
+        public string? PciId { get; set; }
         public uint IRQ { get; set; }
     }
 }

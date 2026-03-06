@@ -7,12 +7,12 @@ using System.Text.Json;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Servicio de telemetrÌa interna (NO envÌa datos externos)
-    /// Trackea uso de tweaks para mostrar estadÌsticas y recomendaciones
+    /// Servicio de telemetr√≠a interna (NO env√≠a datos externos)
+    /// Trackea uso de tweaks para mostrar estad√≠sticas y recomendaciones
     /// </summary>
     public class TelemetryService
     {
-        private static TelemetryService _instance;
+        private static TelemetryService? _instance;
         private readonly string _telemetryFilePath;
         private TelemetryData _data;
 
@@ -94,7 +94,7 @@ namespace Tweaker.Utilities
             };
             _data.TweakHistory.Add(logEntry);
 
-            // Limitar historial a ˙ltimos 1000 entries
+            // Limitar historial a √∫ltimos 1000 entries
             if (_data.TweakHistory.Count > 1000)
             {
                 _data.TweakHistory.RemoveRange(0, 100);
@@ -107,7 +107,7 @@ namespace Tweaker.Utilities
             }
             _data.TweakUsageCount[tweakId]++;
 
-            // Incrementar contador de categorÌa
+            // Incrementar contador de categor√≠a
             if (!_data.CategoryUsageCount.ContainsKey(category))
             {
                 _data.CategoryUsageCount[category] = 0;
@@ -142,7 +142,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Registra apertura de la aplicaciÛn
+        /// Registra apertura de la aplicaci√≥n
         /// </summary>
         public void TrackAppLaunch()
         {
@@ -153,7 +153,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Registra navegaciÛn entre p·ginas
+        /// Registra navegaci√≥n entre p√°ginas
         /// </summary>
         public void TrackPageVisit(string pageName)
         {
@@ -166,7 +166,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Registra cuando se crea un punto de restauraciÛn
+        /// Registra cuando se crea un punto de restauraci√≥n
         /// </summary>
         public void TrackRestorePointCreated()
         {
@@ -175,7 +175,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene los tweaks m·s usados
+        /// Obtiene los tweaks m√°s usados
         /// </summary>
         public List<TweakUsageStats> GetMostUsedTweaks(int count = 10)
         {
@@ -191,7 +191,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene las categorÌas m·s usadas
+        /// Obtiene las categor√≠as m√°s usadas
         /// </summary>
         public List<CategoryUsageStats> GetCategoryUsage()
         {
@@ -217,7 +217,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene estadÌsticas generales
+        /// Obtiene estad√≠sticas generales
         /// </summary>
         public AppStatistics GetAppStatistics()
         {
@@ -229,8 +229,8 @@ namespace Tweaker.Utilities
                 FirstLaunchDate = _data.FirstLaunchDate,
                 LastLaunchDate = _data.LastLaunchDate,
                 LastActivityDate = _data.LastActivityDate,
-                DaysSinceFirstUse = _data.FirstLaunchDate.HasValue 
-                    ? (DateTime.Now - _data.FirstLaunchDate.Value).Days 
+                DaysSinceFirstUse = _data.FirstLaunchDate.HasValue
+                    ? (DateTime.Now - _data.FirstLaunchDate.Value).Days
                     : 0
             };
 
@@ -238,7 +238,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene la p·gina m·s visitada
+        /// Obtiene la p√°gina m√°s visitada
         /// </summary>
         public string GetMostVisitedPage()
         {
@@ -249,7 +249,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Resetea toda la telemetrÌa (˙til para testing)
+        /// Resetea toda la telemetr√≠a (√∫til para testing)
         /// </summary>
         public void ResetTelemetry()
         {
@@ -258,7 +258,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Exporta telemetrÌa a archivo (para debug/support)
+        /// Exporta telemetr√≠a a archivo (para debug/support)
         /// </summary>
         public bool ExportTelemetry(string destinationPath)
         {
@@ -299,21 +299,21 @@ namespace Tweaker.Utilities
 
     public class TweakLogEntry
     {
-        public string TweakId { get; set; }
-        public string Category { get; set; }
-        public string Action { get; set; } // "Enabled" or "Disabled"
+        public string? TweakId { get; set; }
+        public string? Category { get; set; }
+        public string? Action { get; set; } // "Enabled" or "Disabled"
         public DateTime Timestamp { get; set; }
     }
 
     public class TweakUsageStats
     {
-        public string TweakId { get; set; }
+        public string? TweakId { get; set; }
         public int UsageCount { get; set; }
     }
 
     public class CategoryUsageStats
     {
-        public string CategoryName { get; set; }
+        public string? CategoryName { get; set; }
         public int UsageCount { get; set; }
     }
 

@@ -1,4 +1,3 @@
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,11 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
+using Microsoft.Win32;
+
 namespace Tweaker.Optimizations
 {
     /// <summary>
-    /// Optimizaciones específicas para Windows Game Mode y prioridad de procesos
-    /// OPTIMIZADO: Game Mode separado de GameDVR, detección automática, verificación de estado
+    /// Optimizaciones especÃ­ficas para Windows Game Mode y prioridad de procesos
+    /// OPTIMIZADO: Game Mode separado de GameDVR, detecciÃ³n automÃ¡tica, verificaciÃ³n de estado
     /// </summary>
     public static class GameModeTweaks
     {
@@ -26,13 +27,13 @@ namespace Tweaker.Optimizations
             try
             {
                 bool success = false;
-                
+
                 Debug.WriteLine("?? HABILITANDO WINDOWS GAME MODE (SOLO)");
                 Debug.WriteLine("???????????????????????????????????????");
 
                 // Solo habilitar Game Mode puro, NO tocar GameDVR
                 const string gameModePath = @"SOFTWARE\Microsoft\GameBar";
-                
+
                 using (var key = Registry.CurrentUser.CreateSubKey(gameModePath))
                 {
                     if (key != null)
@@ -40,31 +41,31 @@ namespace Tweaker.Optimizations
                         // Habilitar Game Mode
                         key.SetValue("AllowAutoGameMode", 1, RegistryValueKind.DWord);
                         key.SetValue("AutoGameModeEnabled", 1, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Game Mode habilitado");
                         success = true;
                     }
                 }
 
-                // Configurar Game Mode en configuración del sistema
+                // Configurar Game Mode en configuraciÃ³n del sistema
                 const string gameModeSettingsPath = @"Software\Microsoft\Windows\CurrentVersion\GameDVR";
-                
+
                 using (var key = Registry.CurrentUser.CreateSubKey(gameModeSettingsPath))
                 {
                     if (key != null)
                     {
-                        // Solo configuraciones específicas de Game Mode, NO GameDVR
+                        // Solo configuraciones especÃ­ficas de Game Mode, NO GameDVR
                         key.SetValue("GameDVR_FSEBehaviorMode", 2, RegistryValueKind.DWord);
                         key.SetValue("GameDVR_HonorUserFSEBehaviorMode", 1, RegistryValueKind.DWord);
                         key.SetValue("GameDVR_DXGIHonorFSEWindowsCompatible", 1, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Game Mode settings configurados");
                     }
                 }
 
                 Debug.WriteLine($"?? Windows Game Mode: {(success ? "HABILITADO" : "ERROR")}");
-                Debug.WriteLine("?? GameDVR NO modificado (usar botón separado)");
-                
+                Debug.WriteLine("?? GameDVR NO modificado (usar botÃ³n separado)");
+
                 return success;
             }
             catch (Exception ex)
@@ -82,10 +83,10 @@ namespace Tweaker.Optimizations
             try
             {
                 bool success = false;
-                
+
                 Debug.WriteLine("?? DESHABILITANDO WINDOWS GAME MODE");
                 Debug.WriteLine("??????????????????????????????????????");
-                
+
                 const string gameModePath = @"SOFTWARE\Microsoft\GameBar";
 
                 using (var key = Registry.CurrentUser.CreateSubKey(gameModePath))
@@ -95,7 +96,7 @@ namespace Tweaker.Optimizations
                         // Deshabilitar Game Mode
                         key.SetValue("AllowAutoGameMode", 0, RegistryValueKind.DWord);
                         key.SetValue("AutoGameModeEnabled", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Game Mode deshabilitado");
                         success = true;
                     }
@@ -121,26 +122,26 @@ namespace Tweaker.Optimizations
                 const string gameModePath = @"SOFTWARE\Microsoft\GameBar";
                 bool autoGameMode = false;
                 bool allowAutoGameMode = false;
-                
+
                 using (var key = Registry.CurrentUser.OpenSubKey(gameModePath))
                 {
                     if (key != null)
                     {
                         var autoValue = key.GetValue("AutoGameModeEnabled");
                         var allowValue = key.GetValue("AllowAutoGameMode");
-                        
+
                         autoGameMode = autoValue != null && (int)autoValue == 1;
                         allowAutoGameMode = allowValue != null && (int)allowValue == 1;
                     }
                 }
-                
+
                 bool isEnabled = autoGameMode && allowAutoGameMode;
                 string status = isEnabled ? "HABILITADO" : "DESHABILITADO";
-                
+
                 string details = $"Game Mode: {status}\n" +
                                $"AutoGameModeEnabled: {autoGameMode}\n" +
                                $"AllowAutoGameMode: {allowAutoGameMode}";
-                
+
                 Debug.WriteLine($"?? Estado Game Mode: {status}");
                 return (isEnabled, details);
             }
@@ -153,7 +154,7 @@ namespace Tweaker.Optimizations
         }
 
         // ???????????????????????????????????????????????????????????????????
-        // NTFS LAST ACCESS TIME (Optimización de disco)
+        // NTFS LAST ACCESS TIME (OptimizaciÃ³n de disco)
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
@@ -176,8 +177,13 @@ namespace Tweaker.Optimizations
 
                 using (Process process = Process.Start(psi))
                 {
+                    if (process == null) // Check for null
+                    {
+                        Debug.WriteLine("?? Error: No se pudo iniciar el proceso fsutil.");
+                        return false;
+                    }
                     process.WaitForExit();
-                    
+
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine("? NTFS Last Access Time deshabilitado");
@@ -216,8 +222,13 @@ namespace Tweaker.Optimizations
 
                 using (Process process = Process.Start(psi))
                 {
+                    if (process == null) // Check for null
+                    {
+                        Debug.WriteLine("?? Error: No se pudo iniciar el proceso fsutil.");
+                        return false;
+                    }
                     process.WaitForExit();
-                    
+
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine("? NTFS Last Access Time habilitado");
@@ -256,15 +267,20 @@ namespace Tweaker.Optimizations
 
                 using (Process process = Process.Start(psi))
                 {
+                    if (process == null) // Check for null
+                    {
+                        Debug.WriteLine("?? Error: No se pudo iniciar el proceso fsutil.");
+                        return (true, "ERROR: No se pudo iniciar el proceso fsutil.");
+                    }
                     string output = process.StandardOutput.ReadToEnd();
                     process.WaitForExit();
-                    
+
                     bool isDisabled = output.Contains("DisableLastAccess = 1");
                     bool isEnabled = !isDisabled;
-                    
+
                     string status = isEnabled ? "HABILITADO (lento)" : "DESHABILITADO (optimizado)";
                     string details = $"NTFS Last Access Time: {status}\nOutput: {output.Trim()}";
-                    
+
                     Debug.WriteLine($"?? Estado NTFS Last Access: {status}");
                     return (isEnabled, details);
                 }
@@ -283,7 +299,7 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// Configura prioridad alta para procesos de juegos conocidos
-        /// OPTIMIZADO: Detección automática de juegos instalados
+        /// OPTIMIZADO: DetecciÃ³n automÃ¡tica de juegos instalados
         /// </summary>
         public static bool EnableHighPriorityForGames()
         {
@@ -291,7 +307,7 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("?? CONFIGURANDO PRIORIDAD ALTA PARA JUEGOS");
                 Debug.WriteLine("???????????????????????????????????????????");
-                
+
                 // Lista extendida de ejecutables de juegos populares
                 var gameExecutables = new Dictionary<string, string>
                 {
@@ -340,10 +356,10 @@ namespace Tweaker.Optimizations
                     {"Genshin Impact.exe", "Genshin Impact"},
                     {"YuanShen.exe", "Genshin Impact (CN)"}
                 };
-                
+
                 // Detectar juegos instalados
                 var installedGames = DetectInstalledGames(gameExecutables);
-                
+
                 const string imagePath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 int successCount = 0;
                 int attemptedCount = 0;
@@ -352,23 +368,23 @@ namespace Tweaker.Optimizations
                 {
                     string exe = game.Key;
                     string gameName = game.Value;
-                    
+
                     try
                     {
                         string keyPath = $"{imagePath}\\{exe}\\PerfOptions";
-                        
+
                         using (var key = Registry.LocalMachine.CreateSubKey(keyPath))
                         {
                             if (key != null)
                             {
                                 // CpuPriorityClass: 3 = High Priority
                                 key.SetValue("CpuPriorityClass", 3, RegistryValueKind.DWord);
-                                
+
                                 // IoPriority: 3 = High
                                 key.SetValue("IoPriority", 3, RegistryValueKind.DWord);
-                                
+
                                 successCount++;
-                                
+
                                 string status = installedGames.Contains(exe) ? "[DETECTADO]" : "[PREVENTIVO]";
                                 Debug.WriteLine($"? {gameName} {status}");
                             }
@@ -386,7 +402,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine($"   Configurados: {successCount}/{attemptedCount}");
                 Debug.WriteLine($"   Detectados instalados: {installedGames.Count}");
                 Debug.WriteLine($"   Preventivos: {successCount - installedGames.Count}");
-                
+
                 return successCount > 0;
             }
             catch (Exception ex)
@@ -395,15 +411,15 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Detecta juegos instalados en el sistema
         /// </summary>
         private static List<string> DetectInstalledGames(Dictionary<string, string> gameExecutables)
         {
             var installedGames = new List<string>();
-            
-            // Rutas comunes de instalación de juegos
+
+            // Rutas comunes de instalaciÃ³n de juegos
             var commonPaths = new List<string>
             {
                 @"C:\Program Files\Epic Games",
@@ -418,9 +434,9 @@ namespace Tweaker.Optimizations
                 @"D:\Games",
                 @"E:\Games"
             };
-            
+
             Debug.WriteLine("?? Detectando juegos instalados...");
-            
+
             foreach (var exe in gameExecutables.Keys)
             {
                 foreach (var basePath in commonPaths)
@@ -444,12 +460,12 @@ namespace Tweaker.Optimizations
                     }
                 }
             }
-            
+
             if (installedGames.Count == 0)
             {
-                Debug.WriteLine("   ?? No se detectaron juegos (aplicando configuración preventiva)");
+                Debug.WriteLine("   ?? No se detectaron juegos (aplicando configuraciÃ³n preventiva)");
             }
-            
+
             return installedGames;
         }
 
@@ -463,7 +479,7 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("?? RESTAURANDO PRIORIDAD NORMAL PARA JUEGOS");
                 Debug.WriteLine("???????????????????????????????????????????");
-                
+
                 const string imagePath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
 
                 // Lista completa de ejecutables (misma que EnableHighPriorityForGames)
@@ -512,27 +528,27 @@ namespace Tweaker.Optimizations
                     try
                     {
                         string keyPath = $"{imagePath}\\{exe}";
-                        
-                        // Eliminar toda la clave de configuración del juego
+
+                        // Eliminar toda la clave de configuraciÃ³n del juego
                         Registry.LocalMachine.DeleteSubKeyTree(keyPath, false);
                         successCount++;
-                        
+
                         Debug.WriteLine($"? {exe} - Prioridad restaurada");
                     }
                     catch (Exception ex)
                     {
-                        // No es crítico si la clave no existe
+                        // No es crÃ­tico si la clave no existe
                         Debug.WriteLine($"?? {exe} - Ya estaba en default o error: {ex.Message}");
                     }
                     totalCount++;
                 }
 
-                Debug.WriteLine($"?? RESUMEN RESTAURACIÓN:");
+                Debug.WriteLine($"?? RESUMEN RESTAURACIÃ“N:");
                 Debug.WriteLine($"   Procesados: {totalCount}");
                 Debug.WriteLine($"   Restaurados: {successCount}");
                 Debug.WriteLine($"   Ya en default: {totalCount - successCount}");
-                
-                return successCount >= 0; // Éxito incluso si no había nada que restaurar
+
+                return successCount >= 0; // Ã‰xito incluso si no habÃ­a nada que restaurar
             }
             catch (Exception ex)
             {
@@ -540,7 +556,7 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Verifica el estado actual de prioridad de juegos
         /// </summary>
@@ -550,7 +566,7 @@ namespace Tweaker.Optimizations
             {
                 const string imagePath = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 var configuredGames = new List<string>();
-                
+
                 // Lista de juegos a verificar
                 var gameExecutables = new Dictionary<string, string>
                 {
@@ -566,20 +582,20 @@ namespace Tweaker.Optimizations
                     {"FiveM.exe", "FiveM"},
                     {"RocketLeague.exe", "Rocket League"}
                 };
-                
+
                 foreach (var game in gameExecutables)
                 {
                     try
                     {
                         string keyPath = $"{imagePath}\\{game.Key}\\PerfOptions";
-                        
+
                         using (var key = Registry.LocalMachine.OpenSubKey(keyPath))
                         {
                             if (key != null)
                             {
                                 var cpuPriority = key.GetValue("CpuPriorityClass");
                                 var ioPriority = key.GetValue("IoPriority");
-                                
+
                                 if (cpuPriority != null && (int)cpuPriority == 3)
                                 {
                                     configuredGames.Add(game.Value);
@@ -592,13 +608,13 @@ namespace Tweaker.Optimizations
                         // Ignorar errores de acceso
                     }
                 }
-                
-                string details = configuredGames.Count > 0 
+
+                string details = configuredGames.Count > 0
                     ? $"Juegos con prioridad alta:\n{string.Join(", ", configuredGames)}"
-                    : "Ningún juego configurado con prioridad alta";
-                
+                    : "NingÃºn juego configurado con prioridad alta";
+
                 Debug.WriteLine($"?? Estado Game Priority: {configuredGames.Count} juegos configurados");
-                
+
                 return (configuredGames.Count, configuredGames, details);
             }
             catch (Exception ex)
@@ -610,30 +626,30 @@ namespace Tweaker.Optimizations
         }
 
         // ???????????????????????????????????????????????????????????????????
-        // TRANSPARENCY (OPTIMIZADO CON ACTUALIZACIÓN INMEDIATA)
+        // TRANSPARENCY (OPTIMIZADO CON ACTUALIZACIÃ“N INMEDIATA)
         // ???????????????????????????????????????????????????????????????????
-        
-        // Import para actualización inmediata de configuración del sistema
+
+        // Import para actualizaciÃ³n inmediata de configuraciÃ³n del sistema
         [DllImport("user32.dll", SetLastError = true)]
         private static extern bool SystemParametersInfo(uint uiAction, uint uiParam, IntPtr pvParam, uint fWinIni);
-        
+
         private const uint SPI_SETDRAGFULLWINDOWS = 0x0025;
         private const uint SPIF_UPDATEINIFILE = 0x01;
         private const uint SPIF_SENDCHANGE = 0x02;
 
         /// <summary>
         /// Deshabilita transparencia de Windows para mejor rendimiento
-        /// OPTIMIZADO: Actualización inmediata sin reinicio
+        /// OPTIMIZADO: ActualizaciÃ³n inmediata sin reinicio
         /// </summary>
         public static bool DisableTransparency()
         {
             try
             {
                 bool success = false;
-                
+
                 Debug.WriteLine("?? DESHABILITANDO TRANSPARENCIA DE WINDOWS");
                 Debug.WriteLine("???????????????????????????????????????????");
-                
+
                 const string personalPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
                 using (var key = Registry.CurrentUser.CreateSubKey(personalPath))
@@ -642,33 +658,33 @@ namespace Tweaker.Optimizations
                     {
                         // Deshabilitar transparencia
                         key.SetValue("EnableTransparency", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Registro actualizado: EnableTransparency = 0");
                         success = true;
                     }
                 }
-                
-                // Forzar actualización inmediata del tema
+
+                // Forzar actualizaciÃ³n inmediata del tema
                 try
                 {
-                    // Notificar a Windows que la configuración cambió
-                    SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, 0, IntPtr.Zero, 
+                    // Notificar a Windows que la configuraciÃ³n cambiÃ³
+                    SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, 0, IntPtr.Zero,
                                        SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-                    
-                    // Forzar actualización del explorador
+
+                    // Forzar actualizaciÃ³n del explorador
                     RefreshDesktop();
-                    
-                    Debug.WriteLine("? Configuración aplicada inmediatamente");
+
+                    Debug.WriteLine("? ConfiguraciÃ³n aplicada inmediatamente");
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"?? Aplicado en registro, actualización inmediata falló: {ex.Message}");
-                    // No es crítico, el cambio se aplicará en el próximo reinicio
+                    Debug.WriteLine($"?? Aplicado en registro, actualizaciÃ³n inmediata fallÃ³: {ex.Message}");
+                    // No es crÃ­tico, el cambio se aplicarÃ¡ en el prÃ³ximo reinicio
                 }
 
                 Debug.WriteLine("?? Transparencia de Windows: DESHABILITADA");
                 Debug.WriteLine("?? Nota: Reinicia aplicaciones para efecto completo");
-                
+
                 return success;
             }
             catch (Exception ex)
@@ -680,17 +696,17 @@ namespace Tweaker.Optimizations
 
         /// <summary>
         /// Habilita transparencia de Windows
-        /// OPTIMIZADO: Actualización inmediata sin reinicio
+        /// OPTIMIZADO: ActualizaciÃ³n inmediata sin reinicio
         /// </summary>
         public static bool EnableTransparency()
         {
             try
             {
                 bool success = false;
-                
+
                 Debug.WriteLine("?? HABILITANDO TRANSPARENCIA DE WINDOWS");
                 Debug.WriteLine("??????????????????????????????????????");
-                
+
                 const string personalPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize";
 
                 using (var key = Registry.CurrentUser.CreateSubKey(personalPath))
@@ -699,25 +715,25 @@ namespace Tweaker.Optimizations
                     {
                         // Habilitar transparencia
                         key.SetValue("EnableTransparency", 1, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Registro actualizado: EnableTransparency = 1");
                         success = true;
                     }
                 }
-                
-                // Forzar actualización inmediata del tema
+
+                // Forzar actualizaciÃ³n inmediata del tema
                 try
                 {
-                    SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, 1, IntPtr.Zero, 
+                    SystemParametersInfo(SPI_SETDRAGFULLWINDOWS, 1, IntPtr.Zero,
                                        SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
-                    
+
                     RefreshDesktop();
-                    
-                    Debug.WriteLine("? Configuración aplicada inmediatamente");
+
+                    Debug.WriteLine("? ConfiguraciÃ³n aplicada inmediatamente");
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"?? Aplicado en registro, actualización inmediata falló: {ex.Message}");
+                    Debug.WriteLine($"?? Aplicado en registro, actualizaciÃ³n inmediata fallÃ³: {ex.Message}");
                 }
 
                 Debug.WriteLine("?? Transparencia de Windows: HABILITADA");
@@ -729,7 +745,7 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Verifica el estado actual de transparencia
         /// </summary>
@@ -739,7 +755,7 @@ namespace Tweaker.Optimizations
             {
                 const string personalPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize";
                 bool isEnabled = true; // Default de Windows
-                
+
                 using (var key = Registry.CurrentUser.OpenSubKey(personalPath))
                 {
                     if (key != null)
@@ -751,10 +767,10 @@ namespace Tweaker.Optimizations
                         }
                     }
                 }
-                
+
                 string status = isEnabled ? "HABILITADA" : "DESHABILITADA";
                 string details = $"Transparencia de Windows: {status}";
-                
+
                 Debug.WriteLine($"?? Estado Transparency: {status}");
                 return (isEnabled, details);
             }
@@ -765,7 +781,7 @@ namespace Tweaker.Optimizations
                 return (true, error); // Asumir habilitado por defecto
             }
         }
-        
+
         /// <summary>
         /// Refresca el escritorio para aplicar cambios de tema
         /// </summary>
@@ -773,7 +789,7 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                // Forzar actualización del explorador
+                // Forzar actualizaciÃ³n del explorador
                 var explorerProcesses = Process.GetProcessesByName("explorer");
                 if (explorerProcesses.Length > 0)
                 {
@@ -790,87 +806,87 @@ namespace Tweaker.Optimizations
             }
             catch
             {
-                // Ignorar errores, no es crítico
+                // Ignorar errores, no es crÃ­tico
             }
         }
 
-        
+
         // ???????????????????????????????????????????????????????????????????
-        // DIAGNÓSTICO Y VERIFICACIÓN GENERAL
+        // DIAGNÃ“STICO Y VERIFICACIÃ“N GENERAL
         // ???????????????????????????????????????????????????????????????????
-        
+
         /// <summary>
-        /// Diagnóstico completo de todos los tweaks de Game Mode
+        /// DiagnÃ³stico completo de todos los tweaks de Game Mode
         /// </summary>
         public static string DiagnoseAllGameModeTweaks()
         {
             try
             {
-                Debug.WriteLine("?? INICIANDO DIAGNÓSTICO COMPLETO DE GAME MODE");
+                Debug.WriteLine("?? INICIANDO DIAGNÃ“STICO COMPLETO DE GAME MODE");
                 Debug.WriteLine("????????????????????????????????????????????");
-                
+
                 var report = new System.Text.StringBuilder();
-                report.AppendLine("?? DIAGNÓSTICO COMPLETO - GAME MODE TWEAKS");
+                report.AppendLine("?? DIAGNÃ“STICO COMPLETO - GAME MODE TWEAKS");
                 report.AppendLine("????????????????????????????????????????????\n");
-                
+
                 // 1. Windows Game Mode
                 var (gameModeEnabled, gameModeDetails) = GetGameModeStatus();
                 report.AppendLine("1?? WINDOWS GAME MODE:");
                 report.AppendLine($"   Estado: {(gameModeEnabled ? "? HABILITADO" : "? DESHABILITADO")}");
                 report.AppendLine($"   {gameModeDetails}\n");
-                
+
                 // 2. NTFS Last Access
                 var (ntfsEnabled, ntfsDetails) = GetNTFSLastAccessStatus();
                 report.AppendLine("2?? NTFS LAST ACCESS TIME:");
                 report.AppendLine($"   Estado: {(ntfsEnabled ? "? HABILITADO (lento)" : "? DESHABILITADO (optimizado)")}");
                 report.AppendLine($"   {ntfsDetails}\n");
-                
+
                 // 3. Game Priority
                 var (priorityCount, priorityGames, priorityDetails) = GetGamePriorityStatus();
                 report.AppendLine("3?? PRIORIDAD ALTA PARA JUEGOS:");
                 report.AppendLine($"   Juegos configurados: {priorityCount}");
                 report.AppendLine($"   {priorityDetails}\n");
-                
+
                 // 4. Transparency
                 var (transparencyEnabled, transparencyDetails) = GetTransparencyStatus();
                 report.AppendLine("4?? TRANSPARENCIA DE WINDOWS:");
                 report.AppendLine($"   Estado: {(transparencyEnabled ? "? HABILITADA (consume recursos)" : "? DESHABILITADA (mejor rendimiento)")}");
                 report.AppendLine($"   {transparencyDetails}\n");
-                
+
                 // 5. Resumen y recomendaciones
                 report.AppendLine("?? RESUMEN Y RECOMENDACIONES:");
                 report.AppendLine("?????????????????????????????????????");
-                
+
                 if (gameModeEnabled && !ntfsEnabled && priorityCount > 0 && !transparencyEnabled)
                 {
-                    report.AppendLine("? CONFIGURACIÓN ÓPTIMA DETECTADA");
-                    report.AppendLine("   Todos los tweaks están configurados correctamente.");
+                    report.AppendLine("? CONFIGURACIÃ“N Ã“PTIMA DETECTADA");
+                    report.AppendLine("   Todos los tweaks estÃ¡n configurados correctamente.");
                 }
                 else
                 {
                     report.AppendLine("?? OPTIMIZACIONES PENDIENTES:");
-                    
+
                     if (!gameModeEnabled)
-                        report.AppendLine("   • Habilitar Windows Game Mode");
-                    
+                        report.AppendLine("   â€¢ Habilitar Windows Game Mode");
+
                     if (ntfsEnabled)
-                        report.AppendLine("   • Deshabilitar NTFS Last Access Time");
-                    
+                        report.AppendLine("   â€¢ Deshabilitar NTFS Last Access Time");
+
                     if (priorityCount == 0)
-                        report.AppendLine("   • Configurar prioridad alta para juegos");
-                    
+                        report.AppendLine("   â€¢ Configurar prioridad alta para juegos");
+
                     if (transparencyEnabled)
-                        report.AppendLine("   • Deshabilitar transparencia de Windows");
+                        report.AppendLine("   â€¢ Deshabilitar transparencia de Windows");
                 }
-                
+
                 string finalReport = report.ToString();
                 Debug.WriteLine(finalReport);
-                
+
                 return finalReport;
             }
             catch (Exception ex)
             {
-                string error = $"? Error en diagnóstico: {ex.Message}";
+                string error = $"? Error en diagnÃ³stico: {ex.Message}";
                 Debug.WriteLine(error);
                 return error;
             }

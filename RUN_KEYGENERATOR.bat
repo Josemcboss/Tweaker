@@ -5,9 +5,9 @@ echo    Herramienta Administrativa
 echo ????????????????????????????????????????????????????????
 echo.
 
-REM Verificar si el KeyGenerator est· compilado
+REM Verificar si el KeyGenerator estÔøΩ compilado
 if not exist "KeyGenerator\bin\Debug\net10.0-windows\KeyGenerator.exe" (
-    echo ?? KeyGenerator no est· compilado. Compilando...
+    echo ?? KeyGenerator no estÔøΩ compilado. Compilando...
     echo.
     dotnet build KeyGenerator\KeyGenerator.csproj --configuration Debug
     if errorlevel 1 (
@@ -19,10 +19,10 @@ if not exist "KeyGenerator\bin\Debug\net10.0-windows\KeyGenerator.exe" (
 )
 
 echo.
-echo ?? Iniciando KeyGenerator...
+echo üîç Iniciando KeyGenerator...
 echo.
 
-REM Ejecutar KeyGenerator
-dotnet run --project KeyGenerator --no-build
+REM Ejecutar KeyGenerator (se compila autom√°ticamente si hay cambios)
+dotnet run --project KeyGenerator
 
 pause

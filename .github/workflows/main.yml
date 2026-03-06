@@ -1,0 +1,231 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8.0 SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    # Phase 2: Build and Test
+    - name: Restore dependencies
+      run: dotnet restore Tweaker.slnx
+
+    - name: Build solution
+      run: dotnet build Tweaker.slnx --configuration Release --no-restore
+
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build
+
+    - name: Publish Tweaker application
+      run: |
+        dotnet publish Tweaker/Tweaker.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:PublishTrimmed=false `
+          -p:EnableCompressionInSingleFile=true `
+          -p:DebugType=none `
+          -p:DebugSymbols=false `
+          -p:PublishReadyToRun=true `
+          -o release/Tweaker
+
+    - name: Publish KeyGenerator
+      run: |
+        dotnet publish KeyGenerator/KeyGenerator.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:EnableCompressionInSingleFile=true `
+          -o release/KeyGenerator
+
+    - name: Set APP_VERSION variable
+      run: |
+        echo "APP_VERSION=2.5.0" >> $GITHUB_ENV
+
+    - name: Prepare release directory structure
+      run: |
+        New-Item -ItemType Directory -Force -Path "release/GhostOptimizer_v${{ env.APP_VERSION }}"
+        New-Item -ItemType Directory -Force -Path "release/GhostOptimizer_v${{ env.APP_VERSION }}/Docs"
+        New-Item -ItemType Directory -Force -Path "release/GhostOptimizer_v${{ env.APP_VERSION }}/Scripts"
+
+    - name: Copy documentation files
+      run: |
+        Copy-Item -Path "*.md" -Destination "release/GhostOptimizer_v${{ env.APP_VERSION }}/Docs" -Force -Recurse -ErrorAction SilentlyContinue
+
+    - name: Copy script files
+      run: |
+        Copy-Item -Path "*.bat" -Destination "release/GhostOptimizer_v${{ env.APP_VERSION }}/Scripts" -Force -Recurse -ErrorAction SilentlyContinue
+        Copy-Item -Path "Scripts/*.ps1" -Destination "release/GhostOptimizer_v${{ env.APP_VERSION }}/Scripts" -Force -Recurse -ErrorAction SilentlyContinue
+
+    - name: Generate README.txt
+      run: |
+        @"
+        ====================================================
+           GHOST OPTIMIZER v${{ env.APP_VERSION }}
+        ====================================================
+
+        ## INSTALACION
+
+        1. Extrae todos los archivos en una carpeta
+        2. Ejecuta Tweaker.exe como ADMINISTRADOR
+           (Click derecho -> Ejecutar como administrador)
+
+        ## REQUISITOS DEL SISTEMA
+
+        - Windows 10/11 (64 bits)
+        - Permisos de Administrador
+        - 100 MB de espacio en disco
+
+        ## CARACTERISTICAS PRINCIPALES
+
+        ### Optimizaciones de Sistema
+        - Optimizacion de CPU y GPU
+        - Ajustes de latencia y red
+        - Mejoras de energia y rendimiento
+        - Optimizacion de mouse y perifericos
+
+        ### Debloat de Windows
+        - Elimina aplicaciones innecesarias
+        - Desactiva servicios no criticos
+        - Limpia telemetria y rastreadores
+
+        ### Game Booster Inteligente
+        - Deteccion automatica de juegos
+        - Optimizacion dinamica de recursos
+        - Limpieza de memoria en tiempo real
+
+        ### Sistema de Seguridad
+        - Indicadores de nivel de riesgo
+        - Backup automatico de cambios
+        - Validacion de servicios criticos
+        - Sistema de restauracion integrado
+
+        ## DOCUMENTACION ADICIONAL
+
+        Revisa la carpeta Docs\ para mas informacion:
+        - Guias de uso
+        - Notas de la version
+        - Scripts de diagnostico en Scripts\
+
+        ## SOPORTE Y ACTUALIZACIONES
+
+        - GitHub: https://github.com/Josemcboss/Tweaker
+        - Actualizaciones automaticas incluidas
+
+        ## LICENCIA
+
+        Ghost Optimizer v${{ env.APP_VERSION }}
+        Copyright (c) 2024 DaddyGhost
+        Todos los derechos reservados.
+
+        ====================================================
+           IMPORTANTE - LEER ANTES DE USAR
+        ====================================================
+
+        - SIEMPRE crea un punto de restauracion de Windows
+          antes de aplicar optimizaciones
+        - Lee los indicadores de nivel de riesgo de cada tweak
+        - El programa crea backups automaticos de cambios
+        - Si experimentas problemas, usa las herramientas
+          de restauracion incluidas
+
+        ====================================================
+        "@ | Out-File -FilePath "release/GhostOptimizer_v${{ env.APP_VERSION }}/README.txt" -Encoding utf8
+
+    - name: Generate BUILD_INFO.txt
+      run: |
+        $exePath = "release/Tweaker/Tweaker.exe"
+        $exeSize = (Get-Item $exePath).Length
+        $exeSizeMB = [math]::Round($exeSize / 1MB, 2)
+        
+        @"
+        ====================================================
+        GHOST OPTIMIZER - BUILD INFORMATION
+        ====================================================
+
+        VERSION:        ${{ env.APP_VERSION }}
+        BUILD DATE:     $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")
+        BUILD TYPE:     Release
+        TARGET:         Windows x64
+        .NET VERSION:   .NET 8.0
+        
+        EXECUTABLE:     Tweaker.exe
+        FILE SIZE:      $($exeSizeMB) MB
+        SINGLE FILE:    Yes
+        SELF-CONTAINED: Yes
+        READY TO RUN:   Yes
+        COMPRESSED:     Yes
+
+        ====================================================
+        CHARACTERISTICS
+        ====================================================
+
+        * Single executable file (no external dependencies)
+        * Self-contained runtime (.NET 8.0 included)
+        * Optimized for performance (ReadyToRun)
+        * Compressed for smaller size
+        * Administrator privileges required
+
+        ====================================================
+        FEATURES
+        ====================================================
+
+        * ServiceGuard: Protección de servicios críticos
+        * OptimizationBackup: Backup automático de cambios
+        * Validación de comandos BCD
+        * Script de Rescate automático
+        * 58 tweaks de optimización disponibles
+
+        ====================================================
+        INSTALLATION
+        ====================================================
+
+        1. Ejecutar Tweaker.exe COMO ADMINISTRADOR
+        2. Seguir instrucciones del Dashboard
+        3. Crear punto de restauración recomendado
+        4. Aplicar optimizaciones deseadas
+        5. Reiniciar si es necesario
+
+        ====================================================
+        "@ | Out-File -FilePath "release/GhostOptimizer_v${{ env.APP_VERSION }}/BUILD_INFO.txt" -Encoding utf8
+
+    - name: Create release ZIP archive
+      run: |
+        Compress-Archive -Path "release/GhostOptimizer_v${{ env.APP_VERSION }}/*" -DestinationPath "release/GhostOptimizer_v${{ env.APP_VERSION }}_Windows_x64.zip" -CompressionLevel Optimal
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        tag_name: v${{ env.APP_VERSION }}
+        release_name: Release v${{ env.APP_VERSION }}
+        draft: true
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: release/GhostOptimizer_v${{ env.APP_VERSION }}_Windows_x64.zip
+        asset_name: GhostOptimizer_v${{ env.APP_VERSION }}_Windows_x64.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

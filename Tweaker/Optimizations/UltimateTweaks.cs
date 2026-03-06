@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
@@ -19,21 +20,21 @@ namespace Tweaker.Optimizations
         /// Optimiza servicios innecesarios para gaming
         /// 
         /// SERVICIOS DESHABILITADOS:
-        /// ï Spooler (Print Spooler): Servicio de impresiÛn
-        /// ï Fax: Servicio de fax (obsoleto)
-        /// ï WerSvc (Windows Error Reporting): Reportes de errores
-        /// ï MapsBroker: Servicio de mapas de Windows
+        /// ‚Ä¢ Spooler (Print Spooler): Servicio de impresi√≥n
+        /// ‚Ä¢ Fax: Servicio de fax (obsoleto)
+        /// ‚Ä¢ WerSvc (Windows Error Reporting): Reportes de errores
+        /// ‚Ä¢ MapsBroker: Servicio de mapas de Windows
         /// 
         /// IMPACTO:
         /// ? Reduce RAM usage en ~100-200MB
         /// ? Reduce procesos en background
         /// ? Menos overhead de CPU
-        /// ? Boot time m·s r·pido
+        /// ? Boot time m√°s r√°pido
         /// 
         /// ADVERTENCIAS:
-        /// ?? No podr·s imprimir (reactivar Spooler si necesitas)
-        /// ?? No se enviar·n reportes de crashes a Microsoft
-        /// ?? Mapas de Windows no funcionar·n
+        /// ?? No podr√°s imprimir (reactivar Spooler si necesitas)
+        /// ?? No se enviar√°n reportes de crashes a Microsoft
+        /// ?? Mapas de Windows no funcionar√°n
         /// </summary>
         public static bool OptimizeServices()
         {
@@ -43,7 +44,7 @@ namespace Tweaker.Optimizations
 
                 string[] servicesToDisable = new[]
                 {
-                    "Spooler",      // Print Spooler (impresiÛn)
+                    "Spooler",      // Print Spooler (impresi√≥n)
                     "Fax",          // Servicio de Fax
                     "WerSvc",       // Windows Error Reporting
                     "MapsBroker"    // Downloaded Maps Manager
@@ -58,9 +59,9 @@ namespace Tweaker.Optimizations
                         using (ServiceController service = new ServiceController(serviceName))
                         {
                             // Verificar que el servicio existe
-                            var status = service.Status; // Lanza excepciÛn si no existe
+                            var status = service.Status; // Lanza excepci√≥n si no existe
 
-                            // Detener el servicio si est· corriendo
+                            // Detener el servicio si est√° corriendo
                             if (status != ServiceControllerStatus.Stopped)
                             {
                                 Debug.WriteLine($"   ? Deteniendo {serviceName}...");
@@ -88,8 +89,8 @@ namespace Tweaker.Optimizations
                     }
                     catch (System.ServiceProcess.TimeoutException)
                     {
-                        Debug.WriteLine($"?? Timeout deteniendo {serviceName}. Se deshabilitar· en prÛximo reinicio.");
-                        
+                        Debug.WriteLine($"?? Timeout deteniendo {serviceName}. Se deshabilitar√° en pr√≥ximo reinicio.");
+
                         // Aunque el timeout, marcar como deshabilitado en registro
                         string regPath = $@"SYSTEM\CurrentControlSet\Services\{serviceName}";
                         using (var key = Registry.LocalMachine.OpenSubKey(regPath, true))
@@ -134,7 +135,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Restaura los servicios a su configuraciÛn por defecto
+        /// Restaura los servicios a su configuraci√≥n por defecto
         /// </summary>
         public static bool RevertServices()
         {
@@ -200,21 +201,21 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Elimina bloatware de Windows 11/10
         /// 
-        /// CARACTERÕSTICAS DESHABILITADAS:
-        /// ï Bing Search en Start Menu
-        /// ï Windows Copilot (AI Assistant)
-        /// ï News & Interests (Widgets)
+        /// CARACTER√çSTICAS DESHABILITADAS:
+        /// ‚Ä¢ Bing Search en Start Menu
+        /// ‚Ä¢ Windows Copilot (AI Assistant)
+        /// ‚Ä¢ News & Interests (Widgets)
         /// 
         /// IMPACTO:
-        /// ? Start Menu m·s r·pido y limpio
-        /// ? Sin b˙squedas web no deseadas
+        /// ? Start Menu m√°s r√°pido y limpio
+        /// ? Sin b√∫squedas web no deseadas
         /// ? Sin widgets consumiendo recursos
-        /// ? Reduce telemetrÌa
+        /// ? Reduce telemetr√≠a
         /// ? RAM liberada: ~50-100MB
         /// 
         /// COMPATIBILIDAD:
-        /// ï Windows 10: Bing Search, News & Interests
-        /// ï Windows 11: Todo lo anterior + Copilot
+        /// ‚Ä¢ Windows 10: Bing Search, News & Interests
+        /// ‚Ä¢ Windows 11: Todo lo anterior + Copilot
         /// </summary>
         public static bool RemoveWindowsBloat()
         {
@@ -230,12 +231,12 @@ namespace Tweaker.Optimizations
                 try
                 {
                     string explorerPolicies = @"Software\Policies\Microsoft\Windows\Explorer";
-                    
+
                     using (var key = Registry.CurrentUser.CreateSubKey(explorerPolicies))
                     {
                         if (key != null)
                         {
-                            // Deshabilita b˙squedas web en Start Menu
+                            // Deshabilita b√∫squedas web en Start Menu
                             key.SetValue("DisableSearchBoxSuggestions", 1, RegistryValueKind.DWord);
                             Debug.WriteLine("? Bing Search deshabilitado en Start Menu");
                             tweaksApplied++;
@@ -253,7 +254,7 @@ namespace Tweaker.Optimizations
                 try
                 {
                     string copilotPolicies = @"Software\Policies\Microsoft\Windows\WindowsCopilot";
-                    
+
                     using (var key = Registry.CurrentUser.CreateSubKey(copilotPolicies))
                     {
                         if (key != null)
@@ -276,7 +277,7 @@ namespace Tweaker.Optimizations
                 try
                 {
                     string dshPolicies = @"SOFTWARE\Policies\Microsoft\Dsh";
-                    
+
                     using (var key = Registry.LocalMachine.CreateSubKey(dshPolicies))
                     {
                         if (key != null)
@@ -296,8 +297,8 @@ namespace Tweaker.Optimizations
                 if (tweaksApplied > 0)
                 {
                     Debug.WriteLine($"? {tweaksApplied} bloatware(s) removido(s)");
-                    Debug.WriteLine("   ? Start Menu m·s limpio");
-                    Debug.WriteLine("   ? Sin b˙squedas web no deseadas");
+                    Debug.WriteLine("   ? Start Menu m√°s limpio");
+                    Debug.WriteLine("   ? Sin b√∫squedas web no deseadas");
                     Debug.WriteLine("   ? RAM liberada: ~50-100MB");
                     Debug.WriteLine("   ?? REINICIO/LOGOUT requerido para efecto completo");
                     return true;
@@ -327,7 +328,7 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("?? Restaurando caracterÌsticas de Windows...");
+                Debug.WriteLine("?? Restaurando caracter√≠sticas de Windows...");
 
                 int tweaksReverted = 0;
 
@@ -372,7 +373,7 @@ namespace Tweaker.Optimizations
 
                 if (tweaksReverted > 0)
                 {
-                    Debug.WriteLine($"? {tweaksReverted} caracterÌstica(s) restaurada(s)");
+                    Debug.WriteLine($"? {tweaksReverted} caracter√≠stica(s) restaurada(s)");
                     return true;
                 }
 
@@ -396,13 +397,13 @@ namespace Tweaker.Optimizations
         /// 
         /// 1. NTFS Last Access Time OFF
         ///    ? Reduce escrituras a disco en ~30%
-        ///    ? Alarga vida ˙til de SSD
+        ///    ? Alarga vida √∫til de SSD
         ///    ? Mejora rendimiento de disco
         /// 
         /// 2. Background Apps OFF
         ///    ? Apps no se ejecutan en segundo plano
         ///    ? Ahorra RAM y CPU
-        ///    ? Mejora duraciÛn de baterÌa
+        ///    ? Mejora duraci√≥n de bater√≠a
         /// 
         /// 3. QoS Limit 0%
         ///    ? Windows no reserva ancho de banda
@@ -413,7 +414,7 @@ namespace Tweaker.Optimizations
         /// ? Disco: +5-15% performance
         /// ? RAM: -100-300MB usage
         /// ? Red: +20% ancho de banda
-        /// ? SSD: Vida ˙til +2-3 aÒos
+        /// ? SSD: Vida √∫til +2-3 a√±os
         /// </summary>
         public static bool OptimizeSystem()
         {
@@ -438,7 +439,7 @@ namespace Tweaker.Optimizations
                             key.SetValue("NtfsDisableLastAccessUpdate", 1, RegistryValueKind.DWord);
                             Debug.WriteLine("? NTFS Last Access Time deshabilitado");
                             Debug.WriteLine("   ? Escrituras a disco reducidas ~30%");
-                            Debug.WriteLine("   ? Vida ˙til de SSD extendida");
+                            Debug.WriteLine("   ? Vida √∫til de SSD extendida");
                             optimizationsApplied++;
                         }
                     }
@@ -478,7 +479,7 @@ namespace Tweaker.Optimizations
                 try
                 {
                     string qosPolicies = @"SOFTWARE\Policies\Microsoft\Windows\Psched";
-                    
+
                     using (var key = Registry.LocalMachine.CreateSubKey(qosPolicies))
                     {
                         if (key != null)
@@ -500,7 +501,7 @@ namespace Tweaker.Optimizations
                 if (optimizationsApplied > 0)
                 {
                     Debug.WriteLine("???????????????????????????????????????");
-                    Debug.WriteLine($"? {optimizationsApplied} optimizaciÛn(es) aplicada(s)");
+                    Debug.WriteLine($"? {optimizationsApplied} optimizaci√≥n(es) aplicada(s)");
                     Debug.WriteLine("   ?? Disco: Rendimiento mejorado");
                     Debug.WriteLine("   ?? RAM: Liberada para gaming");
                     Debug.WriteLine("   ?? Red: Ancho de banda completo");
@@ -595,7 +596,7 @@ namespace Tweaker.Optimizations
 
                 if (optimizationsReverted > 0)
                 {
-                    Debug.WriteLine($"? {optimizationsReverted} optimizaciÛn(es) revertida(s)");
+                    Debug.WriteLine($"? {optimizationsReverted} optimizaci√≥n(es) revertida(s)");
                     Debug.WriteLine("   ?? REINICIO REQUERIDO para efecto completo");
                     return true;
                 }
@@ -633,11 +634,11 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("? TODAS LAS OPTIMIZACIONES EXTREMAS APLICADAS");
                 Debug.WriteLine("");
                 Debug.WriteLine("IMPACTO TOTAL:");
-                Debug.WriteLine("ï RAM liberada: ~250-600MB");
-                Debug.WriteLine("ï Disco: +5-15% rendimiento");
-                Debug.WriteLine("ï Red: +20% ancho de banda");
-                Debug.WriteLine("ï SSD: Vida ˙til extendida");
-                Debug.WriteLine("ï Boot time: -5-10 segundos");
+                Debug.WriteLine("‚Ä¢ RAM liberada: ~250-600MB");
+                Debug.WriteLine("‚Ä¢ Disco: +5-15% rendimiento");
+                Debug.WriteLine("‚Ä¢ Red: +20% ancho de banda");
+                Debug.WriteLine("‚Ä¢ SSD: Vida √∫til extendida");
+                Debug.WriteLine("‚Ä¢ Boot time: -5-10 segundos");
                 Debug.WriteLine("");
                 Debug.WriteLine("???? REINICIA Windows AHORA para aplicar todos los cambios ????");
             }

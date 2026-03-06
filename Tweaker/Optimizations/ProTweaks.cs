@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
@@ -542,6 +543,76 @@ namespace Tweaker.Optimizations
             Debug.WriteLine("═══════════════════════════════════════");
 
             return success;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TIMER RESOLUTION PERSISTENCE (NEW)
+        // ═══════════════════════════════════════════════════════════════════
+
+        private const string TIMER_RUN_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+        private const string TIMER_RUN_VALUE = "GhostOptimizerTimerResolution";
+
+        /// <summary>
+        /// Persiste el Timer Resolution de 0.5ms al inicio de sesión creando
+        /// una entrada en el registro Run que re-aplica la resolución al reiniciar.
+        /// Usa un VBScript mínimo para llamar a NtSetTimerResolution sin ventana.
+        /// </summary>
+        public static bool PersistTimerResolution()
+        {
+            try
+            {
+                // El script aplica 0.5ms via powershell al iniciar sesión
+                // NtSetTimerResolution no persiste entre reinicios, pero
+                // con el Run key + powershell podemos re-aplicarlo.
+                string psCommand =
+                    "Add-Type -TypeDefinition 'using System;using System.Runtime.InteropServices;" +
+                    "public class NtTimer{" +
+                    "[DllImport(\"ntdll.dll\")]public static extern int NtSetTimerResolution(uint d,bool s,out uint c);}' ;" +
+                    "$c=0u;[NtTimer]::NtSetTimerResolution(5000,$true,[ref]$c)";
+
+                string runValue = $"powershell.exe -WindowStyle Hidden -NonInteractive -Command \"{psCommand}\"";
+
+                using var key = Registry.CurrentUser.OpenSubKey(TIMER_RUN_KEY, writable: true);
+                key?.SetValue(TIMER_RUN_VALUE, runValue, RegistryValueKind.String);
+
+                Debug.WriteLine("✅ Timer Resolution 0.5ms persistido en Run key");
+                Debug.WriteLine("   → Se aplicará automáticamente al iniciar sesión");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ ERROR PersistTimerResolution: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Elimina la entrada de persistencia del Timer Resolution.
+        /// </summary>
+        public static bool RemoveTimerResolutionPersistence()
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(TIMER_RUN_KEY, writable: true);
+                key?.DeleteValue(TIMER_RUN_VALUE, throwOnMissingValue: false);
+                Debug.WriteLine("✅ Timer Resolution persistence eliminada");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ ERROR RemoveTimerResolutionPersistence: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Aplica Timer Resolution 0.5ms ahora Y lo persiste para el próximo reinicio.
+        /// </summary>
+        public static bool SetMaxTimerResolutionPersistent()
+        {
+            bool applied = SetMaxTimerResolution();
+            bool persisted = PersistTimerResolution();
+            return applied && persisted;
         }
     }
 }

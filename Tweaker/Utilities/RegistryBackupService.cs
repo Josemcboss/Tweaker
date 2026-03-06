@@ -1,14 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
-using System.Diagnostics;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Servicio de backup automático de valores del registro
+    /// Servicio de backup automÃ¡tico de valores del registro
     /// Guarda los valores originales antes de modificarlos para poder restaurarlos
     /// </summary>
     public static class RegistryBackupService
@@ -36,7 +37,7 @@ namespace Tweaker.Utilities
 
             public RegistryBackupEntry() { }
 
-            public RegistryBackupEntry(string keyPath, string valueName, object originalValue, 
+            public RegistryBackupEntry(string keyPath, string valueName, object originalValue,
                                       RegistryValueKind valueKind, string tweakId)
             {
                 KeyPath = keyPath;
@@ -99,7 +100,7 @@ namespace Tweaker.Utilities
                     if (!_isInitialized)
                         Initialize();
 
-                    // Generar clave única para este valor
+                    // Generar clave Ãºnica para este valor
                     string backupKey = $"{keyPath}\\{valueName}";
 
                     // Si ya existe un backup, no sobrescribir (queremos el valor original)
@@ -114,8 +115,8 @@ namespace Tweaker.Utilities
 
                     if (!exists)
                     {
-                        Debug.WriteLine($"   ?? Valor no existe en registro (se guardará como null): {backupKey}");
-                        // Guardar null para indicar que el valor no existía
+                        Debug.WriteLine($"   ?? Valor no existe en registro (se guardarÃ¡ como null): {backupKey}");
+                        // Guardar null para indicar que el valor no existÃ­a
                         value = null;
                         valueKind = RegistryValueKind.Unknown;
                     }
@@ -215,7 +216,7 @@ namespace Tweaker.Utilities
         /// <summary>
         /// Restaura TODOS los valores del registro a sus valores originales
         /// </summary>
-        /// <returns>Número de valores restaurados exitosamente</returns>
+        /// <returns>NÃºmero de valores restaurados exitosamente</returns>
         public static int RestoreAll()
         {
             lock (_lock)
@@ -250,17 +251,17 @@ namespace Tweaker.Utilities
                     catch (Exception ex)
                     {
                         failed++;
-                        Debug.WriteLine($"      ? Excepción: {ex.Message}");
+                        Debug.WriteLine($"      ? ExcepciÃ³n: {ex.Message}");
                     }
                 }
 
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
-                Debug.WriteLine($"? Restauración completada:");
-                Debug.WriteLine($"   • Exitosos: {restored}");
-                Debug.WriteLine($"   • Fallidos: {failed}");
+                Debug.WriteLine($"? RestauraciÃ³n completada:");
+                Debug.WriteLine($"   â€¢ Exitosos: {restored}");
+                Debug.WriteLine($"   â€¢ Fallidos: {failed}");
                 Debug.WriteLine("???????????????????????????????????????????????????????????????");
 
-                // Limpiar backups después de restaurar
+                // Limpiar backups despuÃ©s de restaurar
                 _backups.Clear();
                 SaveToDisk();
 
@@ -308,13 +309,13 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Restaura el valor a una clave específica
+        /// Restaura el valor a una clave especÃ­fica
         /// </summary>
         private static void RestoreValueToKey(RegistryKey key, RegistryBackupEntry entry)
         {
             if (entry.OriginalValue == null)
             {
-                // El valor no existía originalmente, eliminarlo
+                // El valor no existÃ­a originalmente, eliminarlo
                 try
                 {
                     key.DeleteValue(entry.ValueName, false);
@@ -340,9 +341,9 @@ namespace Tweaker.Utilities
             {
                 try
                 {
-                    var json = JsonSerializer.Serialize(_backups, new JsonSerializerOptions 
-                    { 
-                        WriteIndented = true 
+                    var json = JsonSerializer.Serialize(_backups, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
                     });
 
                     File.WriteAllText(BackupFilePath, json);
@@ -366,12 +367,12 @@ namespace Tweaker.Utilities
                 {
                     if (!File.Exists(BackupFilePath))
                     {
-                        Debug.WriteLine("   ?? No se encontró archivo de backups previo");
+                        Debug.WriteLine("   ?? No se encontrÃ³ archivo de backups previo");
                         return;
                     }
 
                     var json = File.ReadAllText(BackupFilePath);
-                    _backups = JsonSerializer.Deserialize<Dictionary<string, RegistryBackupEntry>>(json) 
+                    _backups = JsonSerializer.Deserialize<Dictionary<string, RegistryBackupEntry>>(json)
                               ?? new Dictionary<string, RegistryBackupEntry>();
 
                     Debug.WriteLine($"   ?? Backups cargados desde disco: {_backups.Count} entradas");
@@ -385,7 +386,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene el número de backups almacenados
+        /// Obtiene el nÃºmero de backups almacenados
         /// </summary>
         public static int GetBackupCount()
         {
@@ -409,7 +410,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene información sobre los backups almacenados
+        /// Obtiene informaciÃ³n sobre los backups almacenados
         /// </summary>
         public static string GetBackupInfo()
         {
@@ -425,7 +426,7 @@ namespace Tweaker.Utilities
                 foreach (var kvp in _backups)
                 {
                     var entry = kvp.Value;
-                    info.AppendLine($"• {entry.KeyPath}\\{entry.ValueName}");
+                    info.AppendLine($"â€¢ {entry.KeyPath}\\{entry.ValueName}");
                     info.AppendLine($"  Valor original: {entry.OriginalValue ?? "null"}");
                     info.AppendLine($"  Fecha: {entry.BackupDate:yyyy-MM-dd HH:mm:ss}");
                     info.AppendLine($"  Tweak ID: {entry.TweakId}");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+
 using Microsoft.Win32;
+
 using Tweaker.Utilities;
 
 namespace Tweaker.Services
@@ -204,7 +206,7 @@ namespace Tweaker.Services
             Debug.WriteLine("🎮 GAME BOOSTER - Iniciando monitoreo...");
             _isMonitoring = true;
             _monitoringTimer?.Start();
-            
+
             OnGameModeChanged(false, "Monitoreando...", "Esperando detección de juego");
         }
 
@@ -217,7 +219,7 @@ namespace Tweaker.Services
                 return;
 
             Debug.WriteLine("🛑 GAME BOOSTER - Deteniendo monitoreo...");
-            
+
             _monitoringTimer?.Stop();
             _isMonitoring = false;
 
@@ -243,13 +245,13 @@ namespace Tweaker.Services
                 if (foregroundProcess != null)
                 {
                     var processName = foregroundProcess.ProcessName.ToLower();
-                    
+
                     // DEBUG: Log del proceso actual
                     Debug.WriteLine($"🔍 Proceso en foreground: {processName}");
 
                     // Verificar si es un juego conocido
                     bool isGame = IsKnownGame(processName);
-                    
+
                     if (isGame)
                     {
                         Debug.WriteLine($"✅ Es un juego conocido: {processName}");
@@ -321,13 +323,13 @@ namespace Tweaker.Services
         {
             // Normalizar el nombre del proceso (quitar guiones, puntos, etc.)
             var normalizedProcess = processName.Replace("-", "").Replace("_", "").Replace(".", "").ToLower();
-            
+
             foreach (var game in _knownGames)
             {
                 var normalizedGame = game.Replace("-", "").Replace("_", "").Replace(" ", "").ToLower();
-                
+
                 // Verificar si el proceso contiene el juego O si el juego contiene el proceso
-                if (processName.Contains(game.ToLower()) || 
+                if (processName.Contains(game.ToLower()) ||
                     normalizedProcess.Contains(normalizedGame) ||
                     game.ToLower().Contains(processName))
                 {
@@ -353,7 +355,7 @@ namespace Tweaker.Services
             try
             {
                 Debug.WriteLine($"⚡ ACTIVANDO GAME MODE para {gameProcess.ProcessName}");
-                
+
                 _currentGameProcess = gameProcess;
                 _currentGameName = gameProcess.ProcessName;
                 _isGameModeActive = true;
@@ -441,7 +443,7 @@ namespace Tweaker.Services
             try
             {
                 _windowsUpdateService = new ServiceController("wuauserv");
-                
+
                 if (_windowsUpdateService.Status == ServiceControllerStatus.Running)
                 {
                     _windowsUpdateService.Stop();

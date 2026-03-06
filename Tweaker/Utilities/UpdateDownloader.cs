@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+
 using Tweaker.Models;
 
 namespace Tweaker.Utilities
@@ -15,7 +16,7 @@ namespace Tweaker.Utilities
     {
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly UpdateInfo _updateInfo;
-        
+
         public event EventHandler<DownloadProgressEventArgs> DownloadProgressChanged;
         public event EventHandler<string> StatusChanged;
 
@@ -31,7 +32,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Descarga la actualización
+        /// Descarga la actualizaciÃ³n
         /// </summary>
         /// <returns>Ruta del archivo descargado</returns>
         public async Task<string> DownloadUpdateAsync()
@@ -39,7 +40,7 @@ namespace Tweaker.Utilities
             try
             {
                 RaiseStatusChanged("Preparando descarga...");
-                Debug.WriteLine($"?? Descargando actualización desde: {_updateInfo.DownloadUrl}");
+                Debug.WriteLine($"?? Descargando actualizaciÃ³n desde: {_updateInfo.DownloadUrl}");
 
                 // Crear directorio temporal
                 var tempDir = Path.Combine(Path.GetTempPath(), "GhostOptimizer_Update");
@@ -54,8 +55,8 @@ namespace Tweaker.Utilities
                     File.Delete(filePath);
                 }
 
-                RaiseStatusChanged("Descargando actualización...");
-                
+                RaiseStatusChanged("Descargando actualizaciÃ³n...");
+
                 // Descargar con progress
                 using (var response = await _httpClient.GetAsync(_updateInfo.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
                 {
@@ -89,7 +90,7 @@ namespace Tweaker.Utilities
                     if (!VerifyFileIntegrity(filePath, _updateInfo.Sha256Hash))
                     {
                         File.Delete(filePath);
-                        throw new InvalidDataException("El archivo descargado está corrupto o ha sido modificado.");
+                        throw new InvalidDataException("El archivo descargado estÃ¡ corrupto o ha sido modificado.");
                     }
 
                     Debug.WriteLine("   ? Integridad verificada");
@@ -100,7 +101,7 @@ namespace Tweaker.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"   ? Error descargando actualización: {ex.Message}");
+                Debug.WriteLine($"   ? Error descargando actualizaciÃ³n: {ex.Message}");
                 RaiseStatusChanged($"Error: {ex.Message}");
                 throw;
             }
@@ -118,7 +119,7 @@ namespace Tweaker.Utilities
                 {
                     var hash = sha256.ComputeHash(stream);
                     var hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-                    
+
                     Debug.WriteLine($"   ?? Hash calculado: {hashString}");
                     Debug.WriteLine($"   ?? Hash esperado:  {expectedHash.ToLowerInvariant()}");
 
@@ -199,7 +200,7 @@ namespace Tweaker.Utilities
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = bytes;
             int order = 0;
-            
+
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;

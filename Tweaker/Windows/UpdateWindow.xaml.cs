@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows;
+
 using Tweaker.Models;
 using Tweaker.Utilities;
 
@@ -16,18 +17,18 @@ namespace Tweaker.Windows
         {
             InitializeComponent();
             _updateInfo = updateInfo ?? throw new ArgumentNullException(nameof(updateInfo));
-            
+
             LoadUpdateInfo();
         }
 
         private void LoadUpdateInfo()
         {
-            // Título y versión
-            TxtVersionInfo.Text = $"Versión {_updateInfo.Version} disponible";
+            // TÃ­tulo y versiÃ³n
+            TxtVersionInfo.Text = $"VersiÃ³n {_updateInfo.Version} disponible";
 
             // Changelog
-            TxtChangelog.Text = string.IsNullOrEmpty(_updateInfo.Changelog) 
-                ? "No hay changelog disponible." 
+            TxtChangelog.Text = string.IsNullOrEmpty(_updateInfo.Changelog)
+                ? "No hay changelog disponible."
                 : _updateInfo.Changelog;
 
             // Release Notes
@@ -41,7 +42,7 @@ namespace Tweaker.Windows
             if (_updateInfo.IsCritical)
             {
                 BorderCriticalWarning.Visibility = Visibility.Visible;
-                BtnLater.IsEnabled = false; // No permitir posponer actualizaciones críticas
+                BtnLater.IsEnabled = false; // No permitir posponer actualizaciones crÃ­ticas
             }
 
             // File size
@@ -72,19 +73,19 @@ namespace Tweaker.Windows
                 _downloader.DownloadProgressChanged += Downloader_ProgressChanged;
                 _downloader.StatusChanged += Downloader_StatusChanged;
 
-                Debug.WriteLine("?? Iniciando descarga de actualización...");
+                Debug.WriteLine("?? Iniciando descarga de actualizaciÃ³n...");
 
-                // Descargar actualización
+                // Descargar actualizaciÃ³n
                 var installerPath = await _downloader.DownloadUpdateAsync();
 
                 Debug.WriteLine($"? Descarga completada: {installerPath}");
 
                 // Preguntar si desea instalar ahora
                 var result = MessageBox.Show(
-                    "? Actualización descargada exitosamente.\n\n" +
-                    "¿Deseas instalar la actualización ahora?\n\n" +
-                    "La aplicación se cerrará y se ejecutará el instalador.",
-                    "Actualización Lista",
+                    "? ActualizaciÃ³n descargada exitosamente.\n\n" +
+                    "Â¿Deseas instalar la actualizaciÃ³n ahora?\n\n" +
+                    "La aplicaciÃ³n se cerrarÃ¡ y se ejecutarÃ¡ el instalador.",
+                    "ActualizaciÃ³n Lista",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
 
@@ -93,7 +94,7 @@ namespace Tweaker.Windows
                     // Ejecutar instalador
                     if (UpdateDownloader.ExecuteInstaller(installerPath))
                     {
-                        // Cerrar la aplicación
+                        // Cerrar la aplicaciÃ³n
                         Application.Current.Shutdown();
                     }
                     else
@@ -110,8 +111,8 @@ namespace Tweaker.Windows
                 {
                     MessageBox.Show(
                         $"El instalador ha sido descargado en:\n{installerPath}\n\n" +
-                        "Puedes ejecutarlo más tarde para actualizar.",
-                        "Actualización Descargada",
+                        "Puedes ejecutarlo mÃ¡s tarde para actualizar.",
+                        "ActualizaciÃ³n Descargada",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
 
@@ -120,11 +121,11 @@ namespace Tweaker.Windows
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error durante la actualización: {ex.Message}");
-                
+                Debug.WriteLine($"? Error durante la actualizaciÃ³n: {ex.Message}");
+
                 MessageBox.Show(
-                    $"Error al descargar la actualización:\n\n{ex.Message}\n\n" +
-                    "Por favor, intenta más tarde o descarga la actualización manualmente desde GitHub.",
+                    $"Error al descargar la actualizaciÃ³n:\n\n{ex.Message}\n\n" +
+                    "Por favor, intenta mÃ¡s tarde o descarga la actualizaciÃ³n manualmente desde GitHub.",
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
@@ -164,9 +165,9 @@ namespace Tweaker.Windows
             if (_updateInfo.IsCritical)
             {
                 var result = MessageBox.Show(
-                    "Esta es una actualización crítica que corrige problemas importantes.\n\n" +
-                    "¿Estás seguro de que deseas cerrar sin actualizar?",
-                    "Actualización Crítica",
+                    "Esta es una actualizaciÃ³n crÃ­tica que corrige problemas importantes.\n\n" +
+                    "Â¿EstÃ¡s seguro de que deseas cerrar sin actualizar?",
+                    "ActualizaciÃ³n CrÃ­tica",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Warning);
 
@@ -182,7 +183,7 @@ namespace Tweaker.Windows
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = bytes;
             int order = 0;
-            
+
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;

@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -86,7 +87,7 @@ namespace Tweaker.Optimizations
                             var dhcpIp = interfaceKey.GetValue("DhcpIPAddress")?.ToString();
                             var staticIp = interfaceKey.GetValue("IPAddress");
 
-                            bool isActive = !string.IsNullOrEmpty(dhcpIp) || 
+                            bool isActive = !string.IsNullOrEmpty(dhcpIp) ||
                                           (staticIp != null && staticIp.ToString() != "0.0.0.0");
 
                             if (isActive)

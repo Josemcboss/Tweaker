@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -127,7 +128,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 1: Ajustar para mejor rendimiento
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(VISUAL_EFFECTS_KEY))
                 {
                     if (key != null)
@@ -147,7 +148,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: Deshabilitar Aero Peek
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(DWM_KEY))
                 {
                     if (key != null)
@@ -242,7 +243,7 @@ namespace Tweaker.Optimizations
                     {
                         object value = key.GetValue("VisualFXSetting");
                         string setting = value?.ToString() ?? "No configurado";
-                        
+
                         string interpretation = setting switch
                         {
                             "0" => "Dejar que Windows elija (Auto)",
@@ -322,17 +323,17 @@ namespace Tweaker.Optimizations
             try
             {
                 bool success = false;
-                
+
                 // Registry path para efectos de transparencia
                 string personalizeKey = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(personalizeKey))
                 {
                     if (key != null)
                     {
                         // EnableTransparency = 0 (Deshabilita transparencia)
                         key.SetValue("EnableTransparency", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("✅ TRANSPARENCIA DE WINDOWS DESHABILITADA");
                         Debug.WriteLine($"   Clave: HKCU\\{personalizeKey}");
                         Debug.WriteLine("   EnableTransparency: 0");
@@ -340,7 +341,7 @@ namespace Tweaker.Optimizations
                         Debug.WriteLine("   GPU usage: -3-8%");
                         Debug.WriteLine("   Compositor optimizado");
                         Debug.WriteLine("🔄 EFECTO INMEDIATO (sin reinicio)");
-                        
+
                         success = true;
                     }
                 }
@@ -396,21 +397,21 @@ namespace Tweaker.Optimizations
             try
             {
                 bool success = false;
-                
+
                 string personalizeKey = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(personalizeKey))
                 {
                     if (key != null)
                     {
                         // EnableTransparency = 1 (Habilitado)
                         key.SetValue("EnableTransparency", 1, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("✅ TRANSPARENCIA DE WINDOWS RESTAURADA");
                         Debug.WriteLine($"   Clave: HKCU\\{personalizeKey}");
                         Debug.WriteLine("   EnableTransparency: 1");
                         Debug.WriteLine("⚠️  Puede consumir más GPU y VRAM");
-                        
+
                         success = true;
                     }
                 }
@@ -463,7 +464,7 @@ namespace Tweaker.Optimizations
             {
                 string info = "";
                 string personalizeKey = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-                
+
                 using (RegistryKey key = Registry.CurrentUser.OpenSubKey(personalizeKey, false))
                 {
                     if (key != null)
@@ -471,9 +472,9 @@ namespace Tweaker.Optimizations
                         object value = key.GetValue("EnableTransparency");
                         string setting = value?.ToString() ?? "1";
                         string status = setting == "0" ? "DESHABILITADA" : "HABILITADA";
-                        
+
                         info += $"Transparencia: {status}\n";
-                        
+
                         if (setting == "0")
                         {
                             info += "   🎯 OPTIMIZADA PARA GAMING\n";

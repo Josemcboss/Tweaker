@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Tweaker.License;
 
 namespace Tweaker.KeyGenerator
@@ -17,18 +17,23 @@ namespace Tweaker.KeyGenerator
             Console.WriteLine("════════════════════════════════════════════════════════");
             Console.WriteLine();
 
+            var keyVault = new KeyVault();
+            var securityChecks = new SecurityChecks();
+            var licenseKeyGenerator = new LicenseKeyGenerator(keyVault);
+            var licenseValidator = new LicenseValidator(keyVault, securityChecks);
+
             if (args.Length > 0 && args[0] == "--batch")
             {
                 // Modo batch: args[1] = fingerprint, args[2] = fecha (opcional)
-                BatchMode(args);
+                BatchMode(args, licenseKeyGenerator);
                 return;
             }
 
             // Modo interactivo
-            InteractiveMode();
+            InteractiveMode(licenseKeyGenerator, licenseValidator);
         }
 
-        static void InteractiveMode()
+        static void InteractiveMode(LicenseKeyGenerator licenseKeyGenerator, LicenseValidator licenseValidator)
         {
             while (true)
             {
@@ -57,8 +62,7 @@ namespace Tweaker.KeyGenerator
                         var fingerprint = HardwareFingerprint.GetFingerprint();
                         var displayFingerprint = HardwareFingerprint.GetDisplayFingerprint();
                         
-                        Console.WriteLine($"✅ Fingerprint detectado: {displayFingerprint}");
-                        Console.WriteLine();
+                        Console.WriteLine($"✅ Fingerprint detectado: {fingerprint}");
                         
                         // Preguntar por el límite de tweaks
                         Console.Write("Límite de Tweaks (-1 para ilimitado, o número específico): ");
@@ -67,43 +71,43 @@ namespace Tweaker.KeyGenerator
                         
                         if (!string.IsNullOrEmpty(maxTweaksInput) && int.TryParse(maxTweaksInput, out var parsedValue))
                         {
-                            if (parsedValue < -1)
-                            {
-                                Console.WriteLine("⚠️ Valor inválido. Usando ilimitado (-1).");
-                                maxTweaksValue = -1;
-                            }
-                            else
-                            {
-                                maxTweaksValue = parsedValue;
-                            }
+                            maxTweaksValue = parsedValue;
                         }
                         
                         Console.WriteLine();
                         Console.WriteLine("🔑 Generando tu clave personalizada...");
                         
-                        var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, null, maxTweaksValue);
+                        var licenseKey = licenseKeyGenerator.GenerateKey(fingerprint, null, maxTweaksValue);
                         
-                        PrintLicenseKey(fingerprint, licenseKey, null, maxTweaksValue);
-                        
-                        // Validar
-                        var result = LicenseValidator.ValidateLicenseKey(licenseKey, fingerprint);
-                        if (result != null && result.IsValid)
+                        if (string.IsNullOrEmpty(licenseKey))
                         {
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("✅ CLAVE VÁLIDA - Lista para usar en Ghost Optimizer");
-                            Console.ResetColor();
+                            Console.WriteLine("❌ ERROR: La clave generada está vacía.");
                         }
                         else
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("❌ ADVERTENCIA: Error al validar la clave");
-                            Console.ResetColor();
+                            PrintLicenseKey(fingerprint, licenseKey, null, maxTweaksValue);
+                            
+                            // Validar
+                            var result = licenseValidator.ValidateLicenseKey(licenseKey, fingerprint, DateTime.Now);
+                            if (result != null)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine("✅ CLAVE VÁLIDA - Lista para usar en Ghost Optimizer");
+                                Console.ResetColor();
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("❌ ADVERTENCIA: La clave generada no pasó la validación inmediata.");
+                                Console.ResetColor();
+                            }
                         }
                     }
                     catch (Exception ex)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"❌ Error al detectar hardware: {ex.Message}");
+                        Console.WriteLine($"❌ ERROR CRÍTICO: {ex.Message}");
+                        if (ex.InnerException != null) Console.WriteLine($"   Detalle: {ex.InnerException.Message}");
                         Console.ResetColor();
                     }
                     
@@ -158,7 +162,7 @@ namespace Tweaker.KeyGenerator
 
                 try
                 {
-                    var licenseKey = LicenseKeyGenerator.GenerateKey(manualFingerprint, expirationDate, maxTweaks);
+                    var licenseKey = licenseKeyGenerator.GenerateKey(manualFingerprint, expirationDate, maxTweaks);
                     PrintLicenseKey(manualFingerprint, licenseKey, expirationDate, maxTweaks);
                 }
                 catch (Exception ex)
@@ -174,6 +178,10 @@ namespace Tweaker.KeyGenerator
             Console.WriteLine("════════════════════════════════════════════════════════");
             Console.WriteLine("✅ LLAVE GENERADA EXITOSAMENTE");
             Console.WriteLine("════════════════════════════════════════════════════════");
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"LLAVE DE LICENCIA:    {licenseKey}");
+            Console.ResetColor();
             Console.WriteLine();
             Console.WriteLine($"Hardware Fingerprint: {fingerprint}");
             
@@ -198,7 +206,7 @@ namespace Tweaker.KeyGenerator
             
         }
 
-        static void BatchMode(string[] args)
+        static void BatchMode(string[] args, LicenseKeyGenerator licenseKeyGenerator)
         {
             if (args.Length < 2)
             {
@@ -225,7 +233,7 @@ namespace Tweaker.KeyGenerator
 
             try
             {
-                var licenseKey = LicenseKeyGenerator.GenerateKey(fingerprint, expirationDate);
+                var licenseKey = licenseKeyGenerator.GenerateKey(fingerprint, expirationDate);
                 Console.WriteLine(licenseKey);
             }
             catch (Exception ex)

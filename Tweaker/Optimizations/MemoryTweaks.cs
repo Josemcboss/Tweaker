@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -218,12 +219,12 @@ namespace Tweaker.Optimizations
                     object disablePaging = key.GetValue("DisablePagingExecutive");
                     object largeCache = key.GetValue("LargeSystemCache");
 
-                    string pagingStatus = disablePaging?.ToString() == "1" 
-                        ? "Deshabilitado (Kernel en RAM)" 
+                    string pagingStatus = disablePaging?.ToString() == "1"
+                        ? "Deshabilitado (Kernel en RAM)"
                         : "Habilitado (Kernel puede ir al disco)";
 
-                    string cacheStatus = largeCache?.ToString() == "1" 
-                        ? "File cache priority (Servidores)" 
+                    string cacheStatus = largeCache?.ToString() == "1"
+                        ? "File cache priority (Servidores)"
                         : "Apps priority (Gaming)";
 
                     return $"DisablePagingExecutive: {pagingStatus}\n" +

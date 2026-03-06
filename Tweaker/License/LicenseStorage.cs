@@ -43,9 +43,9 @@ namespace Tweaker.License
                 };
 
                 // Serializar a JSON
-                var json = JsonSerializer.Serialize(saveData, new JsonSerializerOptions 
-                { 
-                    WriteIndented = false 
+                var json = JsonSerializer.Serialize(saveData, new JsonSerializerOptions
+                {
+                    WriteIndented = false
                 });
 
                 // Encriptar y guardar
@@ -98,8 +98,8 @@ namespace Tweaker.License
                 var licenseData = new LicenseData
                 {
                     HardwareFingerprint = saveData.Fingerprint,
-                    ExpirationDate = string.IsNullOrEmpty(saveData.ExpirationDate) 
-                        ? null 
+                    ExpirationDate = string.IsNullOrEmpty(saveData.ExpirationDate)
+                        ? null
                         : DateTime.Parse(saveData.ExpirationDate),
                     CreatedDate = DateTime.Parse(saveData.CreatedDate)
                 };
@@ -153,12 +153,12 @@ namespace Tweaker.License
                 {
                     var dataBytes = Encoding.UTF8.GetBytes(data);
                     var encryptedBytes = encryptor.TransformFinalBlock(dataBytes, 0, dataBytes.Length);
-                    
+
                     // Combinar IV + datos encriptados
                     var result = new byte[aes.IV.Length + encryptedBytes.Length];
                     Array.Copy(aes.IV, 0, result, 0, aes.IV.Length);
                     Array.Copy(encryptedBytes, 0, result, aes.IV.Length, encryptedBytes.Length);
-                    
+
                     return Convert.ToBase64String(result);
                 }
             }
@@ -172,21 +172,21 @@ namespace Tweaker.License
             try
             {
                 var allBytes = Convert.FromBase64String(encryptedData);
-                
+
                 using (var aes = Aes.Create())
                 {
                     var key = DeriveKey("TweakerStorage2024");
                     aes.Key = key;
-                    
+
                     // Extraer IV
                     var iv = new byte[16];
                     Array.Copy(allBytes, 0, iv, 0, 16);
                     aes.IV = iv;
-                    
+
                     // Extraer datos encriptados
                     var encryptedBytes = new byte[allBytes.Length - 16];
                     Array.Copy(allBytes, 16, encryptedBytes, 0, encryptedBytes.Length);
-                    
+
                     using (var decryptor = aes.CreateDecryptor(aes.Key, aes.IV))
                     {
                         var decryptedBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);

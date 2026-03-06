@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
@@ -41,16 +41,18 @@
     <PublishReadyToRunShowWarnings>false</PublishReadyToRunShowWarnings>
     <EnablePreviewFeatures>false</EnablePreviewFeatures>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Referencia para ServiceController (gestión de servicios de Windows) -->
-    <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.7-pre641" />
+    <!-- LiveCharts2 removed due to restore conflicts; using custom WPF rendering for TemperatureGraph -->
     
     <!-- Referencia para WMI (obtener info del sistema) -->
     <PackageReference Include="System.Management" Version="10.0.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.103" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
-

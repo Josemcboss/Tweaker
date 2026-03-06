@@ -1,12 +1,13 @@
 using System.Collections.Generic;
-using Tweaker.Models;
+
 using Tweaker.Data;
+using Tweaker.Models;
 
 namespace Tweaker.Factories
 {
     /// <summary>
-    /// Factory para crear configuraciones de tweaks din�micamente
-    /// Elimina hardcoding y centraliza configuraci�n
+    /// Factory para crear configuraciones de tweaks din�micamente
+    /// Elimina hardcoding y centraliza configuraci�n
     /// </summary>
     public static class TweakFactory
     {
@@ -16,7 +17,7 @@ namespace Tweaker.Factories
         private static TweakModel CreateTweakModel(string tweakId, string title, string description, bool useApplyMode = false)
         {
             var tweakInfo = TweaksDatabase.GetTweakInfo(tweakId);
-            
+
             return new TweakModel
             {
                 Title = title,
@@ -43,7 +44,7 @@ namespace Tweaker.Factories
 
             section.Tweaks.Add(CreateTweakModel(
                 "mouse_acceleration",
-                "Desactivar Aceleraci�n del Mouse",
+                "Desactivar Aceleraci�n del Mouse",
                 "MouseSpeed = 0, Thresholds = 0\nAim 1:1 pixel perfect, muscle memory consistente"
             ));
 
@@ -95,21 +96,21 @@ namespace Tweaker.Factories
 
             section.Tweaks.Add(CreateTweakModel(
                 "network_optimization",
-                "Optimizaci�n TCP/IP Completa",
+                "Optimizaci�n TCP/IP Completa",
                 "TcpAckFrequency = 1, TCPNoDelay = 1, NetworkThrottling OFF\nReduce ping 5-30ms, mejora hitreg, elimina packet loss"
             ));
 
             section.Tweaks.Add(CreateTweakModel(
                 "dns_cloudflare",
                 "DNS Cloudflare (1.1.1.1)",
-                "DNS m�s r�pido del mundo, latencia <10ms\nPrimario: 1.1.1.1 | Secundario: 1.0.0.1\nReduce ping 10-50ms, mejor resoluci�n de dominios",
+                "DNS m�s r�pido del mundo, latencia <10ms\nPrimario: 1.1.1.1 | Secundario: 1.0.0.1\nReduce ping 10-50ms, mejor resoluci�n de dominios",
                 useApplyMode: true
             ));
 
             section.Tweaks.Add(new TweakModel
             {
                 Title = "DNS Google (8.8.8.8)",
-                Description = "DNS confiable y estable, latencia ~15ms\nPrimario: 8.8.8.8 | Secundario: 8.8.4.4\nAlternativa probada, ideal para juegos en l�nea",
+                Description = "DNS confiable y estable, latencia ~15ms\nPrimario: 8.8.8.8 | Secundario: 8.8.4.4\nAlternativa probada, ideal para juegos en l�nea",
                 IsRecommended = true,
                 ShowInfoButton = false,
                 TweakId = "dns_google",
@@ -118,8 +119,41 @@ namespace Tweaker.Factories
 
             section.Tweaks.Add(CreateTweakModel(
                 "dns_cache",
-                "Optimizar Cach� DNS",
-                "MaxCacheTtl = 86400, NegativeCacheTime = 0\nMejora velocidad de resoluci�n, reduce consultas"
+                "Optimizar Caché DNS",
+                "MaxCacheTtl = 86400, NegativeCacheTime = 0\nMejora velocidad de resolución, reduce consultas"
+            ));
+
+            // --- TWEAKS ANTI-BUFFERBLOAT ---
+
+            section.Tweaks.Add(CreateTweakModel(
+                "ecn_capability",
+                "Activar ECN (Anti-Bufferbloat)",
+                "Mitiga el bufferbloat severo y estabiliza el ping\nEvita packet loss notificando al router antes de saturarse"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "tcp_congestion",
+                "Algoritmo de Congestión TCP (CUBIC/BBR)",
+                "Cambia el algoritmo de control de congestión de Windows\nOptimiza cómo se envían los paquetes para no saturar los buffers"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "disable_lso",
+                "Deshabilitar LSO (Large Send Offload)",
+                "Evita micro-picos de ping (jitter)\nObliga a la tarjeta de red a enviar paquetes más pequeños y consistentes"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "qos_prioritization",
+                "Habilitar QoS (Priorización)",
+                "Fuerza a Windows a enviar etiquetas de prioridad en los paquetes\nPermite que el tráfico de juegos salte la cola local de red"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "tcp_autotuning",
+                "Restringir TCP Auto-Tuning",
+                "Limita el tamaño de ventana de recepción TCP\nPreviene el bufferbloat de bajada. (Puede reducir vel. máxima de descarga)",
+                useApplyMode: true
             ));
 
             return section;
@@ -133,7 +167,7 @@ namespace Tweaker.Factories
             var section = new TweakSectionModel
             {
                 Title = "Sistema & GPU",
-                Subtitle = "GPU, CPU y Configuraci�n del Sistema",
+                Subtitle = "GPU, CPU y Configuraci�n del Sistema",
                 Icon = "??",
                 Category = "System"
             };
@@ -158,8 +192,176 @@ namespace Tweaker.Factories
 
             section.Tweaks.Add(CreateTweakModel(
                 "high_performance",
-                "Plan de Energ�a: Alto Rendimiento",
-                "CPU siempre a m�xima frecuencia"
+                "Plan de Energ�a: Alto Rendimiento",
+                "CPU siempre a m�xima frecuencia"
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para Limpieza
+        /// </summary>
+        public static TweakSectionModel CreateCleanupSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Limpieza",
+                Subtitle = "Optimización de espacio y archivos temporales",
+                Icon = "??",
+                Category = "Cleanup"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "temp_files_cleanup",
+                "Limpiar Archivos Temporales",
+                "Elimina archivos en %TEMP%, Prefetch y caché de aplicaciones\nLibera 500MB - 5GB+ de espacio en disco",
+                useApplyMode: true
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "win_update_cache",
+                "Caché de Windows Update",
+                "Limpia la carpeta SoftwareDistribution\nLibera hasta 10GB de espacio en disco",
+                useApplyMode: true
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para GHOST Pack
+        /// </summary>
+        public static TweakSectionModel CreateGhostPackSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "GHOST Pack",
+                Subtitle = "Optimizaciones Extremas (Requiere Reinicio)",
+                Icon = "??",
+                Category = "Ghost"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "core_isolation",
+                "Deshabilitar Core Isolation (VBS)",
+                "FPS +10-30% (Ryzen), Input lag -5ms\nElimina overhead de virtualización de Windows"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "hpet_optimization",
+                "Optimización HPET",
+                "Micro-stuttering -80% (Ryzen), 0.1% low FPS +20%\nForza el uso de timers TSC ultra-precisos"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "mpo_fix",
+                "MPO Fix (Anti-Flicker)",
+                "Elimina stuttering y pantallazos negros en navegadores/juegos\nFuerza modo legacy estable en composición de ventanas"
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para Advanced System
+        /// </summary>
+        public static TweakSectionModel CreateAdvancedSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Advanced",
+                Subtitle = "Configuraciones avanzadas de Windows",
+                Icon = "??",
+                Category = "Advanced"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "fso_game_dvr",
+                "Desactivar FSO y Game DVR",
+                "Input lag -5-15ms, Frame pacing consistente\nElimina latencia del compositor DWM en Fullscreen"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "uac_disable",
+                "Desactivar UAC (Notificaciones)",
+                "Evita popups molestos de permisos\nFlujo de trabajo ininterrumpido (Reduce seguridad)"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "hibernate_disable",
+                "Desactivar Hibernación",
+                "Libera 4GB-16GB de espacio en disco\nElimina hiberfil.sys y alarga vida de SSD"
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para Laptop & Power
+        /// </summary>
+        public static TweakSectionModel CreateLaptopPowerSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Laptop & Power",
+                Subtitle = "Planes de energía y optimización de batería",
+                Icon = "??",
+                Category = "Laptop"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "ultimate_power_plan",
+                "Plan: Máximo Rendimiento",
+                "Desbloquea 'Ultimate Performance'\nMáxima respuesta de CPU y mínima latencia de hardware",
+                useApplyMode: true
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "usb_selective_suspend",
+                "Desactivar Suspensión USB",
+                "Evita que el mouse/teclado se 'duerman'\nEstabilidad total en periféricos gaming"
+            ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para Competitive Gaming
+        /// </summary>
+        public static TweakSectionModel CreateCompetitiveSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Competitive",
+                Subtitle = "Latencia ultra-baja y priorización de juegos",
+                Icon = "??",
+                Category = "Competitive"
+            };
+
+            section.Tweaks.Add(CreateTweakModel(
+                "max_timer_resolution",
+                "Timer Resolution 0.5ms",
+                "Reduce jitter de frame times y mejora precisión de mira\nInput lag -1-2ms (Solo mientras la app está abierta)",
+                useApplyMode: true
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_irq_priority",
+                "GPU IRQ Priority (High)",
+                "Forza al CPU a priorizar interrupciones de video\nEstabilidad de FPS mejorada y 1% lows más altos"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "network_throttling_disable",
+                "Disable Network Throttling",
+                "Evita que Windows limite la red para tareas de fondo\nSin picos de lag repentinos durante gaming"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "system_responsiveness",
+                "System Responsiveness (Gaming)",
+                "Prioridad absoluta al juego activo sobre servicios de fondo\nRespuesta del sistema inmediata y Alt+Tab más rápido"
             ));
 
             return section;
@@ -174,8 +376,12 @@ namespace Tweaker.Factories
             {
                 CreateInputVisualsSection(),
                 CreateNetworkSection(),
-                CreateSystemGpuSection()
-                // Agregar m�s secciones seg�n sea necesario
+                CreateSystemGpuSection(),
+                CreateCleanupSection(),
+                CreateGhostPackSection(),
+                CreateAdvancedSection(),
+                CreateLaptopPowerSection(),
+                CreateCompetitiveSection()
             };
         }
     }

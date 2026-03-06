@@ -1,0 +1,9 @@
+<UserControl x:Class="Tweaker.Controls.HardwareGraph"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Tweaker.Controls"
+             Height="200" Width="600">
+    <Grid x:Name="RootGrid" Background="#111111">
+        <!-- Chart will be created in code-behind to avoid XAML design-time assembly resolution issues -->
+    </Grid>
+</UserControl>

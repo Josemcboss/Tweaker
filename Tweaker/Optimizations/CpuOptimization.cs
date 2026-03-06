@@ -1,22 +1,23 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
     /// <summary>
     /// Optimizaciones de CPU, Latencia del Sistema y Power Management
-    /// Crítico para reducir latencia en juegos competitivos
+    /// Crï¿½tico para reducir latencia en juegos competitivos
     /// </summary>
     public static class CpuOptimization
     {
         private const string SYSTEM_PROFILE = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile";
 
         /// <summary>
-        /// OPTIMIZACIÓN CRÍTICA: System Responsiveness
+        /// OPTIMIZACIï¿½N CRï¿½TICA: System Responsiveness
         /// 
         /// SystemResponsiveness: 0 (Rango 0-100)
-        ///   - Controla cuánto tiempo de CPU reserva Windows para tareas del sistema
+        ///   - Controla cuï¿½nto tiempo de CPU reserva Windows para tareas del sistema
         ///   - Valor predeterminado: 20 (20% del CPU reservado para el sistema)
         ///   - Valor 0: 0% reservado = TODO el CPU disponible para aplicaciones
         /// 
@@ -24,12 +25,12 @@ namespace Tweaker.Optimizations
         /// - Reduce latencia del sistema operativo (OS latency)
         /// - Mejora respuesta de input (mouse, teclado)
         /// - Elimina "lag" causado por procesos de Windows en background
-        /// - CRÍTICO para juegos de alta precisión (Valorant, CS2)
+        /// - CRï¿½TICO para juegos de alta precisiï¿½n (Valorant, CS2)
         /// 
-        /// NetworkThrottlingIndex: 0xFFFFFFFF (DWORD máximo)
+        /// NetworkThrottlingIndex: 0xFFFFFFFF (DWORD mï¿½ximo)
         ///   - Deshabilita el "throttling" de red de Windows
-        ///   - Windows limita paquetes de red por defecto para "ahorrar energía"
-        ///   - Valor máximo = sin límite de paquetes por segundo
+        ///   - Windows limita paquetes de red por defecto para "ahorrar energï¿½a"
+        ///   - Valor mï¿½ximo = sin lï¿½mite de paquetes por segundo
         /// 
         /// IMPACTO EN ESPORTS:
         /// - Reduce ping efectivo en 5-20ms
@@ -47,8 +48,8 @@ namespace Tweaker.Optimizations
                     {
                         // SystemResponsiveness en 0 = TODO el CPU para gaming
                         key.SetValue("SystemResponsiveness", 0, RegistryValueKind.DWord);
-                        
-                        // NetworkThrottlingIndex en máximo = sin límite de paquetes
+
+                        // NetworkThrottlingIndex en mï¿½ximo = sin lï¿½mite de paquetes
                         key.SetValue("NetworkThrottlingIndex", unchecked((int)0xFFFFFFFF), RegistryValueKind.DWord);
                     }
                 }
@@ -87,16 +88,16 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// ACTIVA Plan de Energía de Alto Rendimiento (High Performance Power Plan)
+        /// ACTIVA Plan de Energï¿½a de Alto Rendimiento (High Performance Power Plan)
         /// 
-        /// ¿Qué hace?
+        /// ï¿½Quï¿½ hace?
         /// - Deshabilita C-States del CPU (estados de bajo consumo)
-        /// - Mantiene el CPU a velocidad máxima constantemente
+        /// - Mantiene el CPU a velocidad mï¿½xima constantemente
         /// - Elimina "power throttling" que causa stuttering
         /// 
         /// PROBLEMA CON "BALANCED":
         /// - El CPU baja frecuencia en momentos de bajo uso
-        /// - Tarda 1-5ms en volver a frecuencia máxima
+        /// - Tarda 1-5ms en volver a frecuencia mï¿½xima
         /// - Causa micro-stutters y frame drops
         /// 
         /// IMPACTO EN GAMING:
@@ -105,7 +106,7 @@ namespace Tweaker.Optimizations
         /// - Reduce latencia de entrada en 2-5ms
         /// - Usado por TODOS los jugadores profesionales
         /// 
-        /// NOTA: Aumenta consumo eléctrico y temperatura del CPU
+        /// NOTA: Aumenta consumo elï¿½ctrico y temperatura del CPU
         /// 
         /// Comando: powercfg -setactive scheme_min
         /// scheme_min = GUID del plan de Alto Rendimiento
@@ -139,7 +140,64 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// ACTIVA Plan de Energía Balanceado (predeterminado de Windows)
+        /// ACTIVA el Plan de EnergÃ­a 'Ultimate Performance' (MÃ¡ximo Rendimiento)
+        /// 
+        /// Â¿QuÃ© es?
+        /// - Un plan oculto de Windows diseÃ±ado para estaciones de trabajo de alto nivel.
+        /// - Elimina micro-latencias de energÃ­a y mantiene el hardware al 100%.
+        /// </summary>
+        public static bool EnableUltimatePowerPlan()
+        {
+            try
+            {
+                // Primero intentar duplicar el esquema (si no existe)
+                ProcessStartInfo duplicatePsi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = "-duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    Verb = "runas"
+                };
+
+                using (Process p = Process.Start(duplicatePsi))
+                {
+                    p?.WaitForExit(3000);
+                }
+
+                // Luego activarlo
+                ProcessStartInfo activePsi = new ProcessStartInfo
+                {
+                    FileName = "powercfg.exe",
+                    Arguments = "-setactive e9a42b02-d5df-448d-aa00-03f14749eb61",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    Verb = "runas"
+                };
+
+                using (Process p = Process.Start(activePsi))
+                {
+                    p?.WaitForExit(3000);
+                    return p?.ExitCode == 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error al activar plan Ultimate: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// RESTAURA el plan Balanceado (Disable Ultimate)
+        /// </summary>
+        public static bool DisableUltimatePowerPlan()
+        {
+            return EnableBalancedPowerPlan();
+        }
+
+        /// <summary>
+        /// ACTIVA Plan de Energa Balanceado (predeterminado de Windows)
         /// </summary>
         public static bool EnableBalancedPowerPlan()
         {
@@ -219,19 +277,19 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// OPTIMIZACIÓN AVANZADA: Deshabilita Core Parking
+        /// OPTIMIZACIï¿½N AVANZADA: Deshabilita Core Parking
         /// 
         /// Core Parking:
-        /// - Windows "apaga" núcleos de CPU no utilizados
-        /// - Ahorra energía pero causa stuttering al "despertar" cores
+        /// - Windows "apaga" nï¿½cleos de CPU no utilizados
+        /// - Ahorra energï¿½a pero causa stuttering al "despertar" cores
         /// 
         /// IMPACTO EN RYZEN (AMD):
         /// - Ryzen tiene latencia alta entre CCX/CCD
         /// - Core parking causa frame drops severos
-        /// - CRÍTICO en Ryzen 5000/7000 para gaming
+        /// - CRï¿½TICO en Ryzen 5000/7000 para gaming
         /// 
         /// IMPACTO EN INTEL:
-        /// - Menos crítico pero aún mejora frame times
+        /// - Menos crï¿½tico pero aï¿½n mejora frame times
         /// - Especialmente importante en CPUs de 8+ cores
         /// </summary>
         public static bool DisableCoreParking()
@@ -240,10 +298,10 @@ namespace Tweaker.Optimizations
             {
                 // Deshabilitar core parking en todos los power schemes
                 string[] schemes = { "scheme_min", "scheme_balanced", "scheme_max" };
-                
+
                 foreach (string scheme in schemes)
                 {
-                    // Configurar mínimo de cores activos al 100%
+                    // Configurar mï¿½nimo de cores activos al 100%
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = "powercfg.exe",
@@ -276,7 +334,7 @@ namespace Tweaker.Optimizations
             try
             {
                 string[] schemes = { "scheme_min", "scheme_balanced", "scheme_max" };
-                
+
                 foreach (string scheme in schemes)
                 {
                     ProcessStartInfo psi = new ProcessStartInfo
@@ -304,13 +362,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si Core Parking está habilitado
+        /// Verifica si Core Parking estï¿½ habilitado
         /// </summary>
         public static bool IsCoreParking()
         {
             try
             {
-                // Verificar si el GUID de Core Parking está configurado
+                // Verificar si el GUID de Core Parking estï¿½ configurado
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Power\PowerSettings\54533251-82be-4824-96c1-47b60b740d00\0cc5b647-c1df-4637-891a-dec35c318583", false))
                 {
                     if (key != null)
@@ -328,7 +386,7 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                // Si no se puede determinar, asumir que está habilitado (default de Windows)
+                // Si no se puede determinar, asumir que estï¿½ habilitado (default de Windows)
                 return true;
             }
             catch
@@ -339,7 +397,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si el plan de energía de alto rendimiento está activo
+        /// Verifica si el plan de energï¿½a de alto rendimiento estï¿½ activo
         /// </summary>
         public static bool IsHighPerformanceActive()
         {

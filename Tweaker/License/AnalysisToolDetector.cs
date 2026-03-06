@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 namespace Tweaker.License
 {
     /// <summary>
-    /// Detecta herramientas de análisis y descompilación como dnSpy, ILSpy, dotPeek
-    /// Dificulta la ingeniería inversa del sistema de licencias
+    /// Detecta herramientas de anï¿½lisis y descompilaciï¿½n como dnSpy, ILSpy, dotPeek
+    /// Dificulta la ingenierï¿½a inversa del sistema de licencias
     /// </summary>
     internal static class AnalysisToolDetector
     {
-        // Windows API para detección de ventanas
+        // Windows API para detecciï¿½n de ventanas
         [DllImport("user32.dll", SetLastError = true)]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
@@ -25,7 +25,7 @@ namespace Tweaker.License
         private delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         /// <summary>
-        /// Verifica si hay herramientas de análisis ejecutándose
+        /// Verifica si hay herramientas de anï¿½lisis ejecutï¿½ndose
         /// </summary>
         public static bool IsAnalysisToolRunning()
         {
@@ -45,10 +45,10 @@ namespace Tweaker.License
                     return true;
                 }
 
-                // Verificar módulos cargados sospechosos
+                // Verificar mï¿½dulos cargados sospechosos
                 if (DetectSuspiciousModules())
                 {
-                    LogToolDetection("Módulo sospechoso cargado");
+                    LogToolDetection("Mï¿½dulo sospechoso cargado");
                     return true;
                 }
 
@@ -56,20 +56,20 @@ namespace Tweaker.License
             }
             catch
             {
-                // Si falla la verificación, asumir herramienta presente
+                // Si falla la verificaciï¿½n, asumir herramienta presente
                 return true;
             }
         }
 
         /// <summary>
-        /// Detecta procesos de herramientas de análisis conocidas
+        /// Detecta procesos de herramientas de anï¿½lisis conocidas
         /// </summary>
         private static bool DetectSuspiciousProcesses()
         {
             try
             {
-                // Lista de herramientas de análisis conocidas
-                string[] analysisTools = 
+                // Lista de herramientas de anï¿½lisis conocidas
+                string[] analysisTools =
                 {
                     // Decompilers / Disassemblers
                     "dnspy",
@@ -156,14 +156,14 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Detecta ventanas de herramientas de análisis
+        /// Detecta ventanas de herramientas de anï¿½lisis
         /// </summary>
         private static bool DetectSuspiciousWindows()
         {
             try
             {
-                // Títulos de ventanas de herramientas conocidas
-                string[] suspiciousWindowTitles = 
+                // Tï¿½tulos de ventanas de herramientas conocidas
+                string[] suspiciousWindowTitles =
                 {
                     "dnSpy",
                     "ILSpy",
@@ -202,17 +202,17 @@ namespace Tweaker.License
                                 {
                                     Debug.WriteLine($"?? Ventana sospechosa: {windowTitle}");
                                     toolDetected = true;
-                                    return false; // Detener enumeración
+                                    return false; // Detener enumeraciï¿½n
                                 }
                             }
                         }
                     }
                     catch
                     {
-                        // Error al obtener título, continuar
+                        // Error al obtener tï¿½tulo, continuar
                     }
 
-                    return true; // Continuar enumeración
+                    return true; // Continuar enumeraciï¿½n
                 }, IntPtr.Zero);
 
                 return toolDetected;
@@ -224,7 +224,7 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Detecta módulos DLL sospechosos cargados en el proceso
+        /// Detecta mï¿½dulos DLL sospechosos cargados en el proceso
         /// </summary>
         private static bool DetectSuspiciousModules()
         {
@@ -232,8 +232,8 @@ namespace Tweaker.License
             {
                 var currentProcess = Process.GetCurrentProcess();
 
-                // Módulos sospechosos (profilers, hooks, etc.)
-                string[] suspiciousModules = 
+                // Mï¿½dulos sospechosos (profilers, hooks, etc.)
+                string[] suspiciousModules =
                 {
                     "easyhook",
                     "detours",
@@ -256,14 +256,14 @@ namespace Tweaker.License
                         {
                             if (moduleName.Contains(suspicious))
                             {
-                                Debug.WriteLine($"?? Módulo sospechoso: {module.ModuleName}");
+                                Debug.WriteLine($"?? Mï¿½dulo sospechoso: {module.ModuleName}");
                                 return true;
                             }
                         }
                     }
                     catch
                     {
-                        // Módulo sin acceso, continuar
+                        // Mï¿½dulo sin acceso, continuar
                     }
                 }
 
@@ -318,40 +318,40 @@ namespace Tweaker.License
             try
             {
                 var assembly = System.Reflection.Assembly.GetExecutingAssembly();
-                
+
                 // Usar AppContext.BaseDirectory en lugar de Assembly.Location
                 // para compatibilidad con single-file apps
                 var appDirectory = AppContext.BaseDirectory;
                 var assemblyName = assembly.GetName().Name ?? "Tweaker";
                 var assemblyPath = System.IO.Path.Combine(appDirectory, assemblyName + ".dll");
 
-                // Verificar si el archivo existe donde debería
+                // Verificar si el archivo existe donde deberï¿½a
                 if (!System.IO.File.Exists(assemblyPath))
                 {
                     // En single-file apps, el ensamblado puede estar embebido
-                    Debug.WriteLine("?? Aplicación en modo single-file o ensamblado embebido");
+                    Debug.WriteLine("?? Aplicaciï¿½n en modo single-file o ensamblado embebido");
                     return false; // No considerar como modificado en single-file
                 }
 
                 // Verificar firma digital (si existe)
-                // Nota: Esto requeriría implementación adicional con certificados
+                // Nota: Esto requerirï¿½a implementaciï¿½n adicional con certificados
 
                 return false;
             }
             catch
             {
-                return false; // No asumir modificado por error de verificación
+                return false; // No asumir modificado por error de verificaciï¿½n
             }
         }
 
         /// <summary>
-        /// Registra la detección de herramienta
+        /// Registra la detecciï¿½n de herramienta
         /// </summary>
         private static void LogToolDetection(string details)
         {
             try
             {
-                Debug.WriteLine($"?? ALERTA: Herramienta de análisis detectada");
+                Debug.WriteLine($"?? ALERTA: Herramienta de anï¿½lisis detectada");
                 Debug.WriteLine($"   Detalles: {details}");
                 Debug.WriteLine($"   Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
             }
@@ -362,13 +362,13 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Maneja la detección de herramientas de análisis
+        /// Maneja la detecciï¿½n de herramientas de anï¿½lisis
         /// </summary>
         public static void HandleToolDetection()
         {
             try
             {
-                Debug.WriteLine("?? HERRAMIENTA DE ANÁLISIS DETECTADA - Terminando proceso");
+                Debug.WriteLine("?? HERRAMIENTA DE ANï¿½LISIS DETECTADA - Terminando proceso");
 
                 // Invalidar licencia
                 LicenseStorage.DeleteLicense();
@@ -377,7 +377,7 @@ namespace Tweaker.License
                 System.Threading.Thread.Sleep(100);
 
                 // Terminar proceso
-                Environment.FailFast("Herramienta de análisis detectada. Proceso terminado por seguridad.");
+                Environment.FailFast("Herramienta de anï¿½lisis detectada. Proceso terminado por seguridad.");
             }
             catch
             {
@@ -386,7 +386,7 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Ejecuta todas las verificaciones y retorna si se detectó algo
+        /// Ejecuta todas las verificaciones y retorna si se detectï¿½ algo
         /// </summary>
         public static bool PerformFullCheck()
         {
@@ -419,8 +419,7 @@ namespace Tweaker.License
             {
 #if DEBUG
                 return true;
-#endif
-
+#else
                 // Verificar variables de entorno de desarrollo
                 var devEnvVars = new[] 
                 { 
@@ -439,6 +438,7 @@ namespace Tweaker.License
                 }
 
                 return false;
+#endif
             }
             catch
             {

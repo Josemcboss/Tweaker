@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+
 using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
@@ -18,28 +19,28 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// Deshabilita Fullscreen Optimizations y Game DVR con BehaviorSteps
         /// 
-        /// øQU… SON LAS FULLSCREEN OPTIMIZATIONS (FSO)?
+        /// ¬øQU√â SON LAS FULLSCREEN OPTIMIZATIONS (FSO)?
         /// ???????????????????????????????????????????????????????????????
-        /// ï Feature introducida en Windows 10 1903
-        /// ï Convierte Fullscreen Exclusive en "Borderless Fullscreen"
-        /// ï Permite Alt+Tab m·s r·pido
-        /// ï Pero A—ADE LATENCIA en juegos competitivos
+        /// ‚Ä¢ Feature introducida en Windows 10 1903
+        /// ‚Ä¢ Convierte Fullscreen Exclusive en "Borderless Fullscreen"
+        /// ‚Ä¢ Permite Alt+Tab m√°s r√°pido
+        /// ‚Ä¢ Pero A√ëADE LATENCIA en juegos competitivos
         /// 
         /// PROBLEMA EN GAMING:
         /// ???????????????????????????????????????????????????????????????
-        /// ï FSO aÒade 5-15ms de input lag
-        /// ï Compositor de Windows (DWM) procesa cada frame
-        /// ï Causa micro-stuttering
-        /// ï Peor frame pacing
+        /// ‚Ä¢ FSO a√±ade 5-15ms de input lag
+        /// ‚Ä¢ Compositor de Windows (DWM) procesa cada frame
+        /// ‚Ä¢ Causa micro-stuttering
+        /// ‚Ä¢ Peor frame pacing
         /// 
-        /// SOLUCI”N:
+        /// SOLUCI√ìN:
         /// ???????????????????????????????????????????????????????????????
-        /// ï DisableFullscreenOptimizations = 1
-        /// ï AllowGameDVR = 0
-        /// ï GameDVR_Enabled = 0
-        /// ï BehaviorSteps para deshabilitar globalmente
+        /// ‚Ä¢ DisableFullscreenOptimizations = 1
+        /// ‚Ä¢ AllowGameDVR = 0
+        /// ‚Ä¢ GameDVR_Enabled = 0
+        /// ‚Ä¢ BehaviorSteps para deshabilitar globalmente
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKCU\System\GameConfigStore
         /// HKLM\SOFTWARE\Microsoft\PolicyManager\default\ApplicationManagement\AllowGameDVR
         /// </summary>
@@ -60,13 +61,13 @@ namespace Tweaker.Optimizations
                         {
                             // GameDVR_Enabled = 0
                             key.SetValue("GameDVR_Enabled", 0, RegistryValueKind.DWord);
-                            
+
                             // GameDVR_FSEBehaviorMode = 2 (Deshabilitar FSO)
                             key.SetValue("GameDVR_FSEBehaviorMode", 2, RegistryValueKind.DWord);
-                            
+
                             // GameDVR_HonorUserFSEBehaviorMode = 1
                             key.SetValue("GameDVR_HonorUserFSEBehaviorMode", 1, RegistryValueKind.DWord);
-                            
+
                             // GameDVR_DXGIHonorFSEWindowsCompatible = 1
                             key.SetValue("GameDVR_DXGIHonorFSEWindowsCompatible", 1, RegistryValueKind.DWord);
 
@@ -140,7 +141,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("? FSO y Game DVR deshabilitados");
                 Debug.WriteLine("?? Input lag reducido en 5-15ms");
                 Debug.WriteLine("?? REINICIA para aplicar cambios");
-                
+
                 return success;
             }
             catch (Exception ex)
@@ -214,20 +215,20 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Agrega "Take Ownership" al men˙ contextual de archivos y carpetas
+        /// Agrega "Take Ownership" al men√∫ contextual de archivos y carpetas
         /// 
-        /// øQU… HACE?
+        /// ¬øQU√â HACE?
         /// ???????????????????????????????????????????????????????????????
-        /// ï Agrega opciÛn "Take Ownership" al click derecho
-        /// ï Permite tomar posesiÛn de archivos del sistema
-        /// ï ⁄til para modificar archivos protegidos de Windows
-        /// ï CRÕTICO para tweaking avanzado
+        /// ‚Ä¢ Agrega opci√≥n "Take Ownership" al click derecho
+        /// ‚Ä¢ Permite tomar posesi√≥n de archivos del sistema
+        /// ‚Ä¢ √ötil para modificar archivos protegidos de Windows
+        /// ‚Ä¢ CR√çTICO para tweaking avanzado
         /// 
         /// COMANDOS EJECUTADOS:
-        /// ï takeown /f "%1" /r /d y
-        /// ï icacls "%1" /grant administrators:F /t
+        /// ‚Ä¢ takeown /f "%1" /r /d y
+        /// ‚Ä¢ icacls "%1" /grant administrators:F /t
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKCR\*\shell\runas
         /// HKCR\Directory\shell\runas
         /// </summary>
@@ -235,7 +236,7 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("?? Agregando 'Take Ownership' al men˙ contextual...");
+                Debug.WriteLine("?? Agregando 'Take Ownership' al men√∫ contextual...");
 
                 // ARCHIVOS (*)
                 string fileShellPath = @"*\shell\runas";
@@ -246,7 +247,7 @@ namespace Tweaker.Optimizations
                         key.SetValue("", "Take Ownership");
                         key.SetValue("NoWorkingDirectory", "");
                         key.SetValue("HasLUAShield", "");
-                        
+
                         // Comando
                         using (var cmdKey = key.CreateSubKey("command", true))
                         {
@@ -257,7 +258,7 @@ namespace Tweaker.Optimizations
                                 cmdKey.SetValue("IsolatedCommand", command);
                             }
                         }
-                        
+
                         Debug.WriteLine("   ? Context menu para archivos agregado");
                     }
                 }
@@ -271,7 +272,7 @@ namespace Tweaker.Optimizations
                         key.SetValue("", "Take Ownership");
                         key.SetValue("NoWorkingDirectory", "");
                         key.SetValue("HasLUAShield", "");
-                        
+
                         // Comando
                         using (var cmdKey = key.CreateSubKey("command", true))
                         {
@@ -282,12 +283,12 @@ namespace Tweaker.Optimizations
                                 cmdKey.SetValue("IsolatedCommand", command);
                             }
                         }
-                        
+
                         Debug.WriteLine("   ? Context menu para carpetas agregado");
                     }
                 }
 
-                Debug.WriteLine("? 'Take Ownership' agregado al men˙ contextual");
+                Debug.WriteLine("? 'Take Ownership' agregado al men√∫ contextual");
                 Debug.WriteLine("?? Click derecho en archivos/carpetas para usarlo");
                 return true;
             }
@@ -299,17 +300,17 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Elimina "Take Ownership" del men˙ contextual
+        /// Elimina "Take Ownership" del men√∫ contextual
         /// </summary>
         public static bool RemoveTakeOwnershipContext()
         {
             try
             {
-                Debug.WriteLine("?? Eliminando 'Take Ownership' del men˙ contextual...");
+                Debug.WriteLine("?? Eliminando 'Take Ownership' del men√∫ contextual...");
 
                 // Eliminar de archivos
                 Registry.ClassesRoot.DeleteSubKeyTree(@"*\shell\runas", false);
-                
+
                 // Eliminar de carpetas
                 Registry.ClassesRoot.DeleteSubKeyTree(@"Directory\shell\runas", false);
 
@@ -332,22 +333,22 @@ namespace Tweaker.Optimizations
         /// 
         /// ?????? ADVERTENCIA EXTREMA ??????
         /// ???????????????????????????????????????????????????????????????
-        /// ï UAC protege contra malware
-        /// ï Deshabilitar = RIESGO DE SEGURIDAD
-        /// ï Solo para PCs dedicados a gaming
-        /// ï NO recomendado para uso general
+        /// ‚Ä¢ UAC protege contra malware
+        /// ‚Ä¢ Deshabilitar = RIESGO DE SEGURIDAD
+        /// ‚Ä¢ Solo para PCs dedicados a gaming
+        /// ‚Ä¢ NO recomendado para uso general
         /// 
         /// BENEFICIOS:
-        /// ï Sin popups molestos
-        /// ï Apps se inician sin confirmaciÛn
-        /// ï Tweaker funciona sin permisos
+        /// ‚Ä¢ Sin popups molestos
+        /// ‚Ä¢ Apps se inician sin confirmaci√≥n
+        /// ‚Ä¢ Tweaker funciona sin permisos
         /// 
         /// RIESGOS:
-        /// ï Malware puede ejecutarse sin confirmar
-        /// ï Apps tienen acceso completo al sistema
-        /// ï Vulnerabilidades sin protecciÛn
+        /// ‚Ä¢ Malware puede ejecutarse sin confirmar
+        /// ‚Ä¢ Apps tienen acceso completo al sistema
+        /// ‚Ä¢ Vulnerabilidades sin protecci√≥n
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA
         /// </summary>
         public static bool DisableUAC()
@@ -368,10 +369,10 @@ namespace Tweaker.Optimizations
 
                     // EnableLUA = 0 (UAC deshabilitado)
                     key.SetValue("EnableLUA", 0, RegistryValueKind.DWord);
-                    
+
                     // ConsentPromptBehaviorAdmin = 0 (sin prompt)
                     key.SetValue("ConsentPromptBehaviorAdmin", 0, RegistryValueKind.DWord);
-                    
+
                     // PromptOnSecureDesktop = 0 (sin secure desktop)
                     key.SetValue("PromptOnSecureDesktop", 0, RegistryValueKind.DWord);
 
@@ -404,10 +405,10 @@ namespace Tweaker.Optimizations
 
                     // EnableLUA = 1 (UAC habilitado)
                     key.SetValue("EnableLUA", 1, RegistryValueKind.DWord);
-                    
+
                     // ConsentPromptBehaviorAdmin = 5 (prompt for administrators)
                     key.SetValue("ConsentPromptBehaviorAdmin", 5, RegistryValueKind.DWord);
-                    
+
                     // PromptOnSecureDesktop = 1 (secure desktop)
                     key.SetValue("PromptOnSecureDesktop", 1, RegistryValueKind.DWord);
 
@@ -428,32 +429,32 @@ namespace Tweaker.Optimizations
         // ???????????????????????????????????????????????????????????????????
 
         /// <summary>
-        /// Limpia cachÈ de Windows Update (SoftwareDistribution)
+        /// Limpia cach√© de Windows Update (SoftwareDistribution)
         /// 
-        /// øQU… ES SOFTWAREDISTRIBUTION?
+        /// ¬øQU√â ES SOFTWAREDISTRIBUTION?
         /// ???????????????????????????????????????????????????????????????
-        /// ï Carpeta donde Windows Update descarga archivos
-        /// ï Puede crecer hasta 10-30GB
-        /// ï Updates fallidos quedan ahÌ permanentemente
-        /// ï Causa lentitud en Windows Update
+        /// ‚Ä¢ Carpeta donde Windows Update descarga archivos
+        /// ‚Ä¢ Puede crecer hasta 10-30GB
+        /// ‚Ä¢ Updates fallidos quedan ah√≠ permanentemente
+        /// ‚Ä¢ Causa lentitud en Windows Update
         /// 
-        /// UBICACI”N:
+        /// UBICACI√ìN:
         /// C:\Windows\SoftwareDistribution\Download
         /// 
         /// IMPACTO:
         /// ? Libera 5-30GB de espacio
-        /// ? Windows Update m·s r·pido
+        /// ? Windows Update m√°s r√°pido
         /// ? Menos espacio desperdiciado
         /// 
         /// SEGURO:
-        /// ? Windows redownloadear· updates cuando sea necesario
+        /// ? Windows redownloadear√° updates cuando sea necesario
         /// ? No afecta updates ya instalados
         /// </summary>
         public static (bool success, long mbFreed) CleanWindowsUpdateCache()
         {
             try
             {
-                Debug.WriteLine("?? Limpiando cachÈ de Windows Update...");
+                Debug.WriteLine("?? Limpiando cach√© de Windows Update...");
 
                 string updateCachePath = @"C:\Windows\SoftwareDistribution\Download";
 
@@ -485,14 +486,14 @@ namespace Tweaker.Optimizations
                 try
                 {
                     var files = Directory.GetFiles(updateCachePath, "*", SearchOption.AllDirectories);
-                    
+
                     foreach (string file in files)
                     {
                         try
                         {
                             var fileInfo = new FileInfo(file);
                             long fileSize = fileInfo.Length;
-                            
+
                             File.Delete(file);
                             filesDeleted++;
                             bytesFreed += fileSize;
@@ -517,10 +518,10 @@ namespace Tweaker.Optimizations
 
                 long mbFreed = bytesFreed / 1024 / 1024;
 
-                Debug.WriteLine("? CachÈ de Windows Update limpiado");
+                Debug.WriteLine("? Cach√© de Windows Update limpiado");
                 Debug.WriteLine($"   ?? Archivos eliminados: {filesDeleted}");
                 Debug.WriteLine($"   ?? Espacio liberado: {mbFreed} MB");
-                
+
                 return (true, mbFreed);
             }
             catch (Exception ex)
@@ -540,7 +541,7 @@ namespace Tweaker.Optimizations
             {
                 long size = 0;
                 var files = Directory.GetFiles(path, "*", SearchOption.AllDirectories);
-                
+
                 foreach (string file in files)
                 {
                     try
@@ -549,7 +550,7 @@ namespace Tweaker.Optimizations
                     }
                     catch { }
                 }
-                
+
                 return size;
             }
             catch
@@ -573,7 +574,7 @@ namespace Tweaker.Optimizations
 
                 var process = Process.Start(psi);
                 process?.WaitForExit(10000); // 10 segundos timeout
-                
+
                 return process?.ExitCode == 0;
             }
             catch
@@ -596,7 +597,7 @@ namespace Tweaker.Optimizations
 
                 var process = Process.Start(psi);
                 process?.WaitForExit(10000);
-                
+
                 return process?.ExitCode == 0;
             }
             catch
@@ -621,13 +622,13 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("???????????????????????????????????????");
 
                 bool success = true;
-                
+
                 success &= DisableFSOAndGameDVR();
                 success &= AddTakeOwnershipContext();
-                
-                // UAC es opcional (requiere confirmaciÛn del usuario)
+
+                // UAC es opcional (requiere confirmaci√≥n del usuario)
                 // success &= DisableUAC();
-                
+
                 Debug.WriteLine("???????????????????????????????????????");
                 if (success)
                 {
@@ -674,7 +675,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO DE COMPATIBILIDAD PARA PRESETS
+        /// M√âTODO DE COMPATIBILIDAD PARA PRESETS
         /// Aplica las optimizaciones principales del sistema
         /// </summary>
         public static bool Apply()

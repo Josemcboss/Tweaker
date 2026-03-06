@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -10,26 +11,26 @@ namespace Tweaker.Optimizations
     public static class WindowsOptimization
     {
         /// <summary>
-        /// DESHABILITA Hibernación (hiberfil.sys)
+        /// DESHABILITA HibernaciÃ³n (hiberfil.sys)
         /// 
-        /// ¿Qué es Hibernación?
+        /// Â¿QuÃ© es HibernaciÃ³n?
         /// - Guarda el contenido de la RAM en el disco (hiberfil.sys)
         /// - Permite "hibernar" el PC y restaurar el estado completo
-        /// - El archivo hiberfil.sys ocupa el tamaño de tu RAM (8GB, 16GB, 32GB, etc.)
+        /// - El archivo hiberfil.sys ocupa el tamaÃ±o de tu RAM (8GB, 16GB, 32GB, etc.)
         /// 
         /// PROBLEMAS:
         /// - Ocupa MUCHO espacio en disco (hasta 32GB en sistemas gaming)
-        /// - Causa fragmentación del SSD/HDD
+        /// - Causa fragmentaciÃ³n del SSD/HDD
         /// - En gaming NO se usa (los jugadores apagan/reinician el PC normalmente)
         /// - Puede causar "Resume from Hibernate" bugs (pantallas negras, crashes)
         /// 
         /// IMPACTO AL DESHABILITAR:
         /// - Libera espacio: 8-32GB dependiendo de tu RAM
-        /// - Elimina escrituras innecesarias al SSD (mejora vida útil)
-        /// - Reduce fragmentación del sistema
-        /// - Elimina posibles bugs de "Fast Startup" (que usa hibernación parcial)
+        /// - Elimina escrituras innecesarias al SSD (mejora vida Ãºtil)
+        /// - Reduce fragmentaciÃ³n del sistema
+        /// - Elimina posibles bugs de "Fast Startup" (que usa hibernaciÃ³n parcial)
         /// 
-        /// NOTA: Fast Startup también se desactiva (usa hibernación)
+        /// NOTA: Fast Startup tambiÃ©n se desactiva (usa hibernaciÃ³n)
         /// Fast Startup causa problemas con dual-boot y drivers
         /// 
         /// Comando: powercfg -h off
@@ -57,13 +58,13 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error al deshabilitar Hibernación: {ex.Message}");
+                Debug.WriteLine($"Error al deshabilitar HibernaciÃ³n: {ex.Message}");
                 return false;
             }
         }
 
         /// <summary>
-        /// HABILITA Hibernación (crea hiberfil.sys)
+        /// HABILITA HibernaciÃ³n (crea hiberfil.sys)
         /// </summary>
         public static bool EnableHibernation()
         {
@@ -88,7 +89,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error al habilitar Hibernación: {ex.Message}");
+                Debug.WriteLine($"Error al habilitar HibernaciÃ³n: {ex.Message}");
                 return false;
             }
         }
@@ -103,7 +104,7 @@ namespace Tweaker.Optimizations
         /// PROBLEMA EN GAMING:
         /// - Causa stuttering cuando indexa durante gameplay
         /// - Uso constante de disco (100% disk usage en HDDs)
-        /// - En gaming no necesitas búsquedas instantáneas del menú inicio
+        /// - En gaming no necesitas bÃºsquedas instantÃ¡neas del menÃº inicio
         /// 
         /// IMPACTO:
         /// - Reduce uso de disco de 20-100% (especialmente HDDs)
@@ -128,7 +129,7 @@ namespace Tweaker.Optimizations
                     process?.WaitForExit(3000);
                 }
 
-                // Detener el servicio también
+                // Detener el servicio tambiÃ©n
                 psi.Arguments = "stop WSearch";
                 using (Process process = Process.Start(psi))
                 {
@@ -185,8 +186,8 @@ namespace Tweaker.Optimizations
         /// 
         /// SysMain/SuperFetch:
         /// - Pre-carga aplicaciones "frecuentes" en RAM
-        /// - Intenta "predecir" qué vas a abrir
-        /// - En teoría mejora velocidad de apertura de apps
+        /// - Intenta "predecir" quÃ© vas a abrir
+        /// - En teorÃ­a mejora velocidad de apertura de apps
         /// 
         /// PROBLEMA EN GAMING:
         /// - Consume RAM innecesariamente (1-3GB)
@@ -277,7 +278,7 @@ namespace Tweaker.Optimizations
         /// - PRO PLAYERS lo deshabilitan antes de torneos
         /// 
         /// RIESGO: Deja el sistema vulnerable
-        /// Úsalo solo si sabes lo que haces
+        /// Ãšsalo solo si sabes lo que haces
         /// </summary>
         public static bool DisableWindowsDefenderRealTime()
         {
@@ -326,7 +327,7 @@ namespace Tweaker.Optimizations
         /// DESHABILITA Telemetry de Windows
         /// 
         /// Telemetry:
-        /// - Windows envía datos de uso a Microsoft constantemente
+        /// - Windows envÃ­a datos de uso a Microsoft constantemente
         /// - Consume ancho de banda y CPU
         /// 
         /// IMPACTO:
@@ -343,9 +344,9 @@ namespace Tweaker.Optimizations
                     key?.SetValue("AllowTelemetry", 0, RegistryValueKind.DWord);
                 }
 
-                // Deshabilitar servicios de telemetría
+                // Deshabilitar servicios de telemetrÃ­a
                 string[] services = { "DiagTrack", "dmwappushservice" };
-                
+
                 foreach (string service in services)
                 {
                     try
@@ -395,7 +396,7 @@ namespace Tweaker.Optimizations
                 }
 
                 string[] services = { "DiagTrack", "dmwappushservice" };
-                
+
                 foreach (string service in services)
                 {
                     try

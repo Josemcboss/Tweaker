@@ -1,9 +1,11 @@
-﻿#nullable disable
+#nullable disable
 
-using System.Text;
 using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -11,14 +13,16 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Threading.Tasks;
-using System.Windows.Controls.Primitives;
+
 using Microsoft.Win32;
-using Tweaker.Optimizations;
-using Tweaker.Utilities;
-using Tweaker.Presets;
-using Tweaker.Data;
+
 using Tweaker.Controls;
+using Tweaker.Data;
+using Tweaker.Models;
+using Tweaker.Optimizations;
+using Tweaker.Presets;
+using Tweaker.Services;
+using Tweaker.Utilities;
 
 namespace Tweaker
 {
@@ -31,94 +35,123 @@ namespace Tweaker
         private readonly TelemetryService _telemetry;
         private readonly NotificationService _notifications;
         private readonly TweakHelper _tweakHelper;
+        private readonly SmartScanService _smartScanService;
+        private readonly StartupManagerService _startupManagerService;
+        private List<ScanResult> _lastScanResults;
+        private bool _isInitializingTweakStates = false;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            // Inicializar servicios
+            // Inicializar ViewModel (Cerebro real de la operación)
+            var viewModel = new ViewModels.MainWindowViewModel();
+            DataContext = viewModel;
+
+            // Inicializar servicios legacy (para compatibilidad temporal)
             _stateManager = TweakStateManager.Instance;
             _telemetry = TelemetryService.Instance;
             _notifications = NotificationService.Instance;
             _tweakHelper = new TweakHelper(_stateManager, _telemetry, _notifications);
-
-            // Configurar binding de datos para dashboard dinámico
-            DataContext = _stateManager;
+            _smartScanService = new SmartScanService();
+            _startupManagerService = new StartupManagerService();
 
             // Inicializar notificaciones
             var rootGrid = (Grid)this.Content;
             _notifications.Initialize(rootGrid);
 
-            // 🌐 VERIFICAR Y OFRECER FIX RÁPIDO DE NAVEGADORES
-            Task.Run(async () => await CheckBrowserSpeedIssues());
+            // Suscribirse a cambios de estado (UI Sync)
+            _stateManager.PropertyChanged += (s, e) =>
+            {
+                if (_isInitializingTweakStates) return;
+                Dispatcher.InvokeAsync(() =>
+                {
+                    UpdateDashboard();
+                    UpdateTweakIndicators();
+                });
+            };
 
-            // Registrar inicio de aplicación
+            // Monitoreo en tiempo real para gráficas
+            _stateManager.HardwareMonitor.PropertyChanged += (s, e) =>
+            {
+                try
+                {
+                    var monitor = _stateManager.HardwareMonitor;
+                    if (e.PropertyName == nameof(monitor.CpuLoadPercent))
+                    {
+                        GraphCpu.AddValue(monitor.CpuLoadPercent);
+                        TxtCpuLoad.Text = $"{monitor.CpuLoadPercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.GpuLoadPercent))
+                    {
+                        GraphGpu.AddValue(monitor.GpuLoadPercent);
+                        TxtGpuLoad.Text = $"{monitor.GpuLoadPercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.RamUsagePercent))
+                    {
+                        GraphRam.AddValue(monitor.RamUsagePercent);
+                        TxtRamLoad.Text = $"{monitor.RamUsagePercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.CpuTemperature))
+                    {
+                        TxtCpuTemp.Text = $"{monitor.CpuTemperature:F0}°C";
+                    }
+                    else if (e.PropertyName == nameof(monitor.GpuTemperature))
+                    {
+                        TxtGpuTemp.Text = $"{monitor.GpuTemperature:F0}°C";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"⚠️ Error en HardwareMonitor handler: {ex.Message}");
+                }
+            };
+
+            // Secuencia de inicialización segura
+            this.Loaded += async (s, e) =>
+            {
+                await InitializeAppSafeAsync();
+            };
+        }
+
+        private async Task InitializeAppSafeAsync()
+        {
+            // 1. Dejar que la ventana se renderice completamente
+            await Task.Delay(300);
+
+            // 2. Registrar inicio y actualizar dashboard inicial
             _telemetry.TrackAppLaunch();
-
-            // Actualizar dashboard
             UpdateDashboard();
-            
-            // Actualizar perfil de CPU Scheduling actual
-            UpdateCurrentPriorityProfile();
-            
-            // Verificar si se ejecuta como administrador
+
+            // 3. Verificar privilegios de administrador (No bloqueante al renderizado)
             if (!IsRunAsAdministrator())
             {
                 MessageBox.Show(
-                    "⚠️ ADVERTENCIA: Esta aplicación debe ejecutarse como Administrador.\n\n" +
-                    "Los tweaks de registro y comandos requieren permisos elevados.\n" +
-                    "Click derecho > Ejecutar como Administrador",
-                    "Permisos de Administrador Requeridos",
+                    "⚠️ ADVERTENCIA: Esta aplicación requiere permisos de Administrador para aplicar la mayoría de los tweaks.\n\n" +
+                    "Por favor, reinicia como Administrador.",
+                    "Permisos Requeridos",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
             }
             else
             {
-                // Si es admin, preguntar por punto de restauración
-                // Solo preguntar la primera vez (al abrir la app)
+                // Solo preguntar por punto de restauración si es admin
                 SystemRestore.PromptCreateRestorePoint();
             }
 
-            // Suscribirse a cambios de estado
-            _stateManager.PropertyChanged += (s, e) =>
+            // 4. Sincronizar UI con el estado actual del sistema
+            await Dispatcher.InvokeAsync(() =>
             {
-                UpdateDashboard();
-                // Dar un pequeño delay para asegurar que el UI esté listo
-                Dispatcher.BeginInvoke(new Action(() => UpdateTweakIndicators()), System.Windows.Threading.DispatcherPriority.Loaded);
-            };
-
-            // Actualizar indicadores visuales al iniciar (con delay para asegurar que la UI esté renderizada)
-            this.Loaded += (s, e) =>
-            {
-                // Primer intento inmediato
                 UpdateTweakIndicators();
-                
-                // Segundo intento con delay de 100ms (para asegurar que todos los botones estén renderizados)
-                Task.Delay(100).ContinueWith(_ =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        UpdateTweakIndicators();
-                        Debug.WriteLine("🔄 Indicadores actualizados después de cargar la ventana");
-                    });
-                });
-                
-                // Tercer intento con delay de 500ms (para casos donde la UI tarda más)
-                Task.Delay(500).ContinueWith(_ =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        UpdateTweakIndicators();
-                        Debug.WriteLine("🔄 Indicadores actualizados (verificación final)");
-                    });
-                });
-            };
+                UpdateCurrentPriorityProfile();
+                Debug.WriteLine("✅ UI sincronizada");
+            });
 
-#if DEBUG
-            // Tests de nuevas características (solo en DEBUG)
-            // TestProfileManager(); // Método no implementado
-            // TestBackupService(); // Método no implementado  
-#endif
+            // 5. Verificaciones adicionales con delay
+            await Task.Delay(1000);
+            await CheckBrowserSpeedIssues();
+
+            Debug.WriteLine("🚀 Inicio completado");
         }
 
         /// <summary>
@@ -217,7 +250,7 @@ namespace Tweaker
                 ActiveTweaksList.Children.Clear();
 
                 var recentTweaks = _stateManager.GetRecentTweaks(10);
-                
+
                 foreach (var tweak in recentTweaks)
                 {
                     var tweakItem = CreateActiveTweakItem(tweak);
@@ -266,7 +299,7 @@ namespace Tweaker
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            
+
             Grid.SetColumn(leftStack, 0);
             Grid.SetColumn(timeBlock, 1);
             grid.Children.Add(leftStack);
@@ -344,8 +377,172 @@ namespace Tweaker
                 return $"hace {(int)timeSpan.TotalHours}h";
             if (timeSpan.TotalDays < 7)
                 return $"hace {(int)timeSpan.TotalDays}d";
-            
+
             return dateTime.ToString("dd/MM/yyyy");
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SMART SCAN & OPTIMIZATION
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Smart Scan
+
+        private async void BtnStartScan_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            try
+            {
+                BtnStartScan.IsEnabled = false;
+                ScanningState.Visibility = Visibility.Visible;
+                ResultState.Visibility = Visibility.Collapsed;
+                TxtScanStatus.Text = "Analizando servicios y registro...";
+
+                _lastScanResults = await _smartScanService.ScanAsync();
+
+                int total = _lastScanResults.Count;
+                int optimized = _lastScanResults.Count(r => r.IsOptimized);
+                int score = (int)((double)optimized / total * 100);
+
+                TxtOptimizationScore.Text = $"{score}%";
+
+                // Cambiar color basado en score
+                if (score > 80) TxtOptimizationScore.Foreground = (Brush)new BrushConverter().ConvertFrom("#2ECC71");
+                else if (score > 50) TxtOptimizationScore.Foreground = (Brush)new BrushConverter().ConvertFrom("#F1C40F");
+                else TxtOptimizationScore.Foreground = (Brush)new BrushConverter().ConvertFrom("#E74C3C");
+
+                int pending = total - optimized;
+                if (pending > 0)
+                {
+                    TxtScanSummary.Text = $"Se encontraron {pending} optimizaciones recomendadas para mejorar tu rendimiento.";
+                    BtnOptimizeNow.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    TxtScanSummary.Text = "¡Felicidades! Tu sistema ya está altamente optimizado.";
+                    BtnOptimizeNow.Visibility = Visibility.Collapsed;
+                }
+
+                ScanningState.Visibility = Visibility.Collapsed;
+                ResultState.Visibility = Visibility.Visible;
+                BtnStartScan.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error durante el análisis: {ex.Message}", "Smart Scan");
+                ScanningState.Visibility = Visibility.Collapsed;
+                BtnStartScan.Visibility = Visibility.Visible;
+            }
+            finally
+            {
+                BtnStartScan.IsEnabled = true;
+            }
+        }
+
+        private async void BtnOptimizeNow_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            try
+            {
+                var pendingResults = _lastScanResults.Where(r => !r.IsOptimized).ToList();
+
+                if (pendingResults.Count == 0) return;
+
+                BtnOptimizeNow.IsEnabled = false;
+                TxtScanSummary.Text = "Aplicando optimizaciones seleccionadas...";
+
+                var pendingIds = pendingResults.Select(r => r.TweakId).ToList();
+                await _smartScanService.ApplyRecommendedAsync(pendingIds);
+
+                // Actualizar estados locales y UI
+                foreach (var result in pendingResults)
+                {
+                    _stateManager.SetTweakEnabled(result.TweakId, result.Category);
+                }
+
+                _notifications.ShowSuccess("Optimización completada con éxito", "Smart Scan");
+
+                // Mostrar éxito final
+                TxtScanSummary.Text = "Tu sistema ahora está totalmente optimizado.";
+                BtnOptimizeNow.Visibility = Visibility.Collapsed;
+                TxtOptimizationScore.Text = "100%";
+                TxtOptimizationScore.Foreground = (Brush)new BrushConverter().ConvertFrom("#2ECC71");
+
+                UpdateDashboard();
+                UpdateTweakIndicators();
+
+                // Regresar al botón de analizar después de un tiempo
+                await Task.Delay(3000);
+                ResultState.Visibility = Visibility.Collapsed;
+                BtnStartScan.Visibility = Visibility.Visible;
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error al aplicar optimizaciones: {ex.Message}", "Smart Scan");
+            }
+            finally
+            {
+                BtnOptimizeNow.IsEnabled = true;
+            }
+        }
+
+        #endregion
+
+        #region Startup Manager
+
+        private void BtnRefreshStartup_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshStartupList();
+        }
+
+        private void RefreshStartupList()
+        {
+            if (_isInitializingTweakStates) return;
+            try
+            {
+                var items = _startupManagerService.GetStartupItems();
+                StartupItemsList.ItemsSource = items;
+
+                TxtNoStartupItems.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error al listar programas de inicio: {ex.Message}", "Startup Manager");
+            }
+        }
+
+        private void BtnDisableStartupItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            try
+            {
+                if (sender is Button btn && btn.Tag is StartupItem item)
+                {
+                    var result = MessageBox.Show(
+                        $"¿Estás seguro de que deseas deshabilitar {item.Name} del inicio de Windows?",
+                        "Confirmar Deshabilitación",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        if (_startupManagerService.DisableItem(item))
+                        {
+                            _notifications.ShowSuccess($"{item.Name} deshabilitado con éxito.", "Startup Manager");
+                            RefreshStartupList();
+                        }
+                        else
+                        {
+                            _notifications.ShowError($"No se pudo deshabilitar {item.Name}.", "Startup Manager");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error: {ex.Message}", "Startup Manager");
+            }
         }
 
         #endregion
@@ -359,6 +556,9 @@ namespace Tweaker
         /// <summary>
         /// Actualiza los indicadores visuales de todos los tweaks basándose en el estado guardado
         /// </summary>
+        /// <summary>
+        /// Actualiza los indicadores visuales de todos los tweaks basándose en el estado guardado
+        /// </summary>
         private void UpdateTweakIndicators()
         {
             try
@@ -366,15 +566,20 @@ namespace Tweaker
                 Debug.WriteLine("═══════════════════════════════════════");
                 Debug.WriteLine("🔄 ACTUALIZANDO INDICADORES VISUALES");
                 Debug.WriteLine("═══════════════════════════════════════");
-                
+
+                // 1. ACTUALIZAR TOGGLE SWITCHES (CheckBoxes) Y STATUS TEXTS
+                // Este método es más preciso para los interruptores modernos
+                UpdateNamedToggles();
+
+                // 2. ACTUALIZAR BOTONES GENÉRICOS (Búsqueda por texto)
                 // Obtener lista de tweaks activos para logging
                 var stats = _stateManager.GetDashboardStats();
                 Debug.WriteLine($"📊 Tweaks activos: {stats.ActiveTweaks}");
-                
+
                 // Buscar todos los botones en la interfaz y actualizar su estado visual
                 int buttonsUpdated = 0;
                 UpdateAllButtonIndicators(this, ref buttonsUpdated);
-                
+
                 Debug.WriteLine($"✅ {buttonsUpdated} botones actualizados con indicadores");
                 Debug.WriteLine("═══════════════════════════════════════");
             }
@@ -382,6 +587,99 @@ namespace Tweaker
             {
                 Debug.WriteLine($"⚠️ Error actualizando indicadores: {ex.Message}");
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// Sincroniza el estado de los interruptores (CheckBox) con el StateManager
+        /// </summary>
+        private void UpdateNamedToggles()
+        {
+            _isInitializingTweakStates = true;
+            try
+            {
+                // --- RED & PING (Incluyendo Anti-Bufferbloat) ---
+                UpdateToggleState("ecn_capability", ToggleEcnCapability, TxtEcnCapabilityStatus);
+                UpdateToggleState("tcp_congestion", ToggleTcpCongestion, TxtTcpCongestionStatus);
+                UpdateToggleState("disable_lso", ToggleDisableLSO, TxtDisableLSOStatus);
+                UpdateToggleState("qos_prioritization", ToggleQosDscp, TxtQosDscpStatus);
+                UpdateToggleState("MTUOptimization", ToggleMTU, TxtMTUStatus);
+                UpdateToggleState("AdapterSettings", ToggleAdapterSettings, TxtAdapterSettingsStatus);
+                UpdateToggleState("dns_cache", ToggleDnsCache, TxtDnsCacheStatus);
+                UpdateToggleState("NetworkOptimization", ToggleNetworkOptimization, null);
+                UpdateToggleState("NetworkPower", ToggleNetworkPower, null);
+                UpdateToggleState("NetBios", ToggleNetBios, TxtNetBiosStatus);
+
+                // --- SISTEMA & GPU ---
+                UpdateToggleState("SystemProfile", ToggleSystemProfile, TxtSystemProfileStatus);
+                UpdateToggleState("GameDVR", ToggleGameDVR, TxtGameDVRStatus);
+                UpdateToggleState("GpuScheduling", ToggleGpuScheduling, TxtGpuSchedulingStatus);
+                UpdateToggleState("SystemResponsiveness", ToggleSystemResponsiveness, TxtSystemResponsivenessStatus);
+                UpdateToggleState("HighPerformance", ToggleHighPerformance, TxtHighPerformanceStatus);
+                UpdateToggleState("PowerThrottling", TogglePowerThrottling, TxtPowerThrottlingStatus);
+                UpdateToggleState("CoreParking", ToggleCoreParking, TxtCoreParkingStatus);
+                UpdateToggleState("WindowsGameMode", ToggleGameMode, null);
+                UpdateToggleState("NTFSLastAccessTime", ToggleNTFSLastAccess, null);
+                UpdateToggleState("GameProcessPriority", ToggleGamePriority, null);
+
+                // --- LIMPIEZA ---
+                UpdateToggleState("Hibernation", ToggleHibernation, null);
+                UpdateToggleState("WindowsSearch", ToggleWindowsSearch, null);
+                UpdateToggleState("SysMain", ToggleSysMain, null);
+
+                // --- GHOST PACK ---
+                UpdateToggleState("UltimatePower", ToggleUltimatePower, null);
+                UpdateToggleState("GameBar", ToggleGameBar, null);
+                UpdateToggleState("CoreIsolation", ToggleCoreIsolation, null);
+                UpdateToggleState("HPET", ToggleHPET, null);
+                UpdateToggleState("MPOFix", ToggleMPOFix, null);
+                UpdateToggleState("HyperV", ToggleHyperV, null);
+
+                // --- ADVANCED ---
+                UpdateToggleState("SpectreMeltdown", ToggleSpectreMeltdown, null);
+                UpdateToggleState("GpuIRQ", ToggleGpuIRQ, null);
+                UpdateToggleState("USBOptimization", ToggleOptimizeUSB, null);
+                UpdateToggleState("InputQueues", ToggleInputQueues, null);
+                UpdateToggleState("FaultTolerantHeap", ToggleDisableFTH, null);
+
+                // --- INPUT & VISUALS ---
+                UpdateToggleState("MouseAcceleration", ToggleMouseAccel, TxtMouseAccelStatus);
+                UpdateToggleState("Keyboard", ToggleKeyboard, TxtKeyboardStatus);
+                UpdateToggleState("VisualEffects", ToggleVisuals, TxtVisualsStatus);
+                UpdateToggleState("MemoryOptimization", ToggleMemory, null);
+                UpdateToggleState("TransparencyEffects", ToggleTransparency, TxtTransparencyStatus);
+                UpdateToggleState("StickyKeys", ToggleStickyKeys, TxtStickyKeysStatus);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"⚠️ Error en UpdateNamedToggles: {ex.Message}");
+            }
+            finally
+            {
+                _isInitializingTweakStates = false;
+            }
+        }
+
+        /// <summary>
+        /// Helper para actualizar un ToggleSwitch y su Texto de estado
+        /// </summary>
+        private void UpdateToggleState(string tweakId, CheckBox toggle, TextBlock statusText)
+        {
+            if (toggle == null) return;
+
+            bool isEnabled = _stateManager.IsTweakEnabled(tweakId);
+
+            if (toggle.IsChecked != isEnabled)
+            {
+                toggle.IsChecked = isEnabled;
+            }
+
+            if (statusText != null)
+            {
+                statusText.Text = isEnabled ? "ON" : "OFF";
+                statusText.Foreground = isEnabled ?
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0E7A0D")) : // Verde
+                    new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E74C3C")); // Rojo
             }
         }
 
@@ -500,9 +798,9 @@ namespace Tweaker
                 if (tweakId != null)
                 {
                     bool isEnabled = _stateManager.IsTweakEnabled(tweakId);
-                    
+
                     // No modificar botones de "RESTAURAR" o "REVERTIR"
-                    if (content.Contains("RESTAURAR") || content.Contains("REVERTIR") || 
+                    if (content.Contains("RESTAURAR") || content.Contains("REVERTIR") ||
                         content.Contains("OFF") || content.Contains("RESET"))
                     {
                         // Estos botones no necesitan indicador
@@ -518,7 +816,7 @@ namespace Tweaker
                         button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0E7A0D"));
                         button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#13A813"));
                         button.BorderThickness = new Thickness(2);
-                        
+
                         Debug.WriteLine($"   🟢 VERDE: {content} (Tweak: {tweakId})");
                         return true;
                     }
@@ -530,12 +828,12 @@ namespace Tweaker
                         button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3A3A3A"));
                         button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A"));
                         button.BorderThickness = new Thickness(1);
-                        
+
                         Debug.WriteLine($"   ⚫ GRIS: {content} (Tweak: {tweakId})");
                         return true;
                     }
                 }
-                
+
                 return false;
             }
             catch (Exception ex)
@@ -588,6 +886,14 @@ namespace Tweaker
             SetActiveButton((Button)sender);
         }
 
+        private void NavigateToStartup(object sender, RoutedEventArgs e)
+        {
+            _telemetry.TrackPageVisit("Startup Manager");
+            SwitchView(StartupPage);
+            SetActiveButton((Button)sender);
+            RefreshStartupList();
+        }
+
         private void NavigateToGhost(object sender, RoutedEventArgs e)
         {
             _telemetry.TrackPageVisit("GHOST Pack");
@@ -617,6 +923,24 @@ namespace Tweaker
         }
 
         /// <summary>
+        /// Navega al Debloat Wizard (ventana modal independiente)
+        /// </summary>
+        private void NavigateToDebloatWizard(object sender, RoutedEventArgs e)
+        {
+            _telemetry.TrackPageVisit("Debloat Wizard");
+
+            // Abrir ventana modal del Debloat Wizard
+            var debloatWindow = new Windows.DebloatWindow();
+            debloatWindow.Owner = this;
+            debloatWindow.ShowDialog();
+
+            // Actualizar dashboard después de cerrar el wizard
+            // (en caso de que se hayan eliminado apps)
+            UpdateDashboard();
+            UpdateTweakIndicators();
+        }
+
+        /// <summary>
         /// Cambia a una nueva vista con animación FadeIn suave
         /// </summary>
         private void SwitchView(UIElement newView)
@@ -627,6 +951,7 @@ namespace Tweaker
             NetworkPage.Visibility = Visibility.Collapsed;
             SystemPage.Visibility = Visibility.Collapsed;
             CleanupPage.Visibility = Visibility.Collapsed;
+            StartupPage.Visibility = Visibility.Collapsed;
             GhostPage.Visibility = Visibility.Collapsed;
             AdvancedPage.Visibility = Visibility.Collapsed;
             LaptopPage.Visibility = Visibility.Collapsed;
@@ -639,10 +964,10 @@ namespace Tweaker
             try
             {
                 var animation = (System.Windows.Media.Animation.Storyboard)FindResource("FadeInAnimation");
-                
+
                 // Clonar el Storyboard para evitar conflictos si se llama múltiples veces rápidamente
                 var storyboardCopy = animation.Clone();
-                
+
                 // Aplicar la animación al elemento
                 storyboardCopy.Begin((FrameworkElement)newView);
             }
@@ -664,6 +989,7 @@ namespace Tweaker
             BtnNavNetwork.Tag = null;
             BtnNavSystem.Tag = null;
             BtnNavCleanup.Tag = null;
+            BtnNavStartup.Tag = null;
             BtnNavGhost.Tag = null;
             BtnNavAdvanced.Tag = null;
             BtnNavLaptop.Tag = null;
@@ -679,7 +1005,7 @@ namespace Tweaker
         private void CreateRestorePoint(object sender, RoutedEventArgs e)
         {
             SystemRestore.CreateRestorePoint($"Tweaker Backup - {System.DateTime.Now:yyyy-MM-dd HH:mm}");
-            
+
             MessageBox.Show(
                 "✅ Creando punto de restauración...\n\n" +
                 "Esto puede tomar 1-3 minutos (background).\n\n" +
@@ -694,6 +1020,7 @@ namespace Tweaker
         /// </summary>
         private void OpenSystemRestore(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 ProcessStartInfo psi = new ProcessStartInfo
@@ -749,32 +1076,41 @@ namespace Tweaker
 
         private void BtnSystemProfile_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "SystemProfile",
                 "Sistema & GPU",
                 () => GpuOptimization.EnableSystemProfileOptimization(),
                 "System Profile configurado para Games. GPU Priority: 8, CPU Priority: 6.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
-            // Actualizar botón inmediatamente
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleSystemProfile.IsChecked = true;
+            TxtSystemProfileStatus.Text = "ON";
+            TxtSystemProfileStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnSystemProfile_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "SystemProfile",
                 "Sistema & GPU",
                 () => GpuOptimization.DisableSystemProfileOptimization(),
                 "System Profile restaurado a valores predeterminados.",
                 null,
-                true
+                showNotification: false
+
+
             );
-            
-            // Buscar y actualizar el botón ON correspondiente
-            UpdateRelatedOnButton("SYSTEM PROFILE", false);
+
+            // Actualizar estado visual del toggle
+            ToggleSystemProfile.IsChecked = false;
+            TxtSystemProfileStatus.Text = "OFF";
+            TxtSystemProfileStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         /// <summary>
@@ -783,13 +1119,13 @@ namespace Tweaker
         private void UpdateButtonState(Button button, bool isActive)
         {
             if (button == null) return;
-            
+
             var content = button.Content?.ToString() ?? "";
             // Limpiar todos los indicadores anteriores
             content = content.Replace("✅ ", "").Replace("⚪ ", "")
                            .Replace("🟢 ", "").Replace("🔴 ", "")
                            .Replace("[ON] ", "").Replace("[OFF] ", "");
-            
+
             if (isActive)
             {
                 // ESTADO ACTIVO - Verde brillante
@@ -798,7 +1134,7 @@ namespace Tweaker
                 button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#0E7A0D")); // Verde oscuro
                 button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#13A813")); // Verde brillante
                 button.BorderThickness = new Thickness(2);
-                
+
                 Debug.WriteLine($"🟢 Botón ACTIVADO: {content}");
             }
             else
@@ -809,7 +1145,7 @@ namespace Tweaker
                 button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#3A3A3A")); // Gris oscuro
                 button.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#5A5A5A")); // Gris
                 button.BorderThickness = new Thickness(1);
-                
+
                 Debug.WriteLine($"⚫ Botón DESACTIVADO: {content}");
             }
         }
@@ -819,6 +1155,7 @@ namespace Tweaker
         /// </summary>
         private void UpdateRelatedOnButton(string searchText, bool isActive)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 FindAndUpdateButton(this, searchText, isActive);
@@ -858,54 +1195,78 @@ namespace Tweaker
 
         private void BtnGameDVR_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "GameDVR",
                 "Sistema & GPU",
                 () => GpuOptimization.DisableGameDVR(),
                 "GameDVR y Xbox Game Bar deshabilitados. Input lag -5-15ms, FPS +10-30%.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleGameDVR.IsChecked = true;
+            TxtGameDVRStatus.Text = "ON";
+            TxtGameDVRStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnGameDVR_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "GameDVR",
                 "Sistema & GPU",
                 () => GpuOptimization.EnableGameDVR(),
                 "GameDVR y Xbox Game Bar restaurados.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("GAMEDVR", false);
+
+            // Actualizar estado visual del toggle
+            ToggleGameDVR.IsChecked = false;
+            TxtGameDVRStatus.Text = "OFF";
+            TxtGameDVRStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnGpuScheduling_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "GpuScheduling",
                 "Sistema & GPU",
                 () => GpuOptimization.EnableHardwareAcceleratedGPUScheduling(),
                 "Hardware GPU Scheduling activado. Puede mejorar o empeorar latencia (probar ambos).",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleGpuScheduling.IsChecked = true;
+            TxtGpuSchedulingStatus.Text = "ON";
+            TxtGpuSchedulingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnGpuScheduling_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "GpuScheduling",
                 "Sistema & GPU",
                 () => GpuOptimization.DisableHardwareAcceleratedGPUScheduling(),
                 "Hardware GPU Scheduling desactivado.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("GPU SCHEDULING", false);
+
+            // Actualizar estado visual del toggle
+            ToggleGpuScheduling.IsChecked = false;
+            TxtGpuSchedulingStatus.Text = "OFF";
+            TxtGpuSchedulingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
@@ -918,102 +1279,156 @@ namespace Tweaker
 
         private void BtnSystemResponsiveness_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "SystemResponsiveness",
                 "Sistema & GPU",
                 () => CpuOptimization.EnableSystemResponsivenessOptimization(),
                 "System Responsiveness optimizado. NetworkThrottling OFF, ping reducido 5-20ms.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleSystemResponsiveness.IsChecked = true;
+            TxtSystemResponsivenessStatus.Text = "ON";
+            TxtSystemResponsivenessStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnSystemResponsiveness_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "SystemResponsiveness",
                 "Sistema & GPU",
                 () => CpuOptimization.DisableSystemResponsivenessOptimization(),
                 "System Responsiveness restaurado a valores predeterminados.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("RESPONSIVENESS", false);
+
+            // Actualizar estado visual del toggle
+            ToggleSystemResponsiveness.IsChecked = false;
+            TxtSystemResponsivenessStatus.Text = "OFF";
+            TxtSystemResponsivenessStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnHighPerformance_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "HighPerformance",
                 "Sistema & GPU",
                 () => CpuOptimization.EnableHighPerformancePowerPlan(),
-                "Plan Alto Rendimiento activado. CPU siempre a máxima frecuencia."
+                "Plan Alto Rendimiento activado. CPU siempre a máxima frecuencia.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                false, // createRestorePoint (default)
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleHighPerformance.IsChecked = true;
+            TxtHighPerformanceStatus.Text = "ON";
+            TxtHighPerformanceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnHighPerformance_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "HighPerformance",
                 "Sistema & GPU",
                 () => CpuOptimization.EnableBalancedPowerPlan(),
-                "Plan Balanceado activado. CPU ajustará frecuencia según uso."
+                "Plan Balanceado activado. CPU ajustará frecuencia según uso.",
+                null,
+                false, // requiresRestart = false
+                showNotification: false
             );
-            UpdateRelatedOnButton("ALTO RENDIMIENTO", false);
+
+            // Actualizar estado visual del toggle
+            ToggleHighPerformance.IsChecked = false;
+            TxtHighPerformanceStatus.Text = "OFF";
+            TxtHighPerformanceStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnPowerThrottling_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "PowerThrottling",
                 "Sistema & GPU",
                 () => CpuOptimization.DisablePowerThrottling(),
                 "Power Throttling deshabilitado. Apps en background sin limitaciones.",
                 null,
-                true
+                true, // requiresRestart
+                false, // createRestorePoint (default)
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            TogglePowerThrottling.IsChecked = true;
+            TxtPowerThrottlingStatus.Text = "ON";
+            TxtPowerThrottlingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnPowerThrottling_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "PowerThrottling",
                 "Sistema & GPU",
                 () => CpuOptimization.EnablePowerThrottling(),
                 "Power Throttling restaurado.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("THROTTLING", false);
+
+            // Actualizar estado visual del toggle
+            TogglePowerThrottling.IsChecked = false;
+            TxtPowerThrottlingStatus.Text = "OFF";
+            TxtPowerThrottlingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnCoreParking_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "CoreParking",
                 "Sistema & GPU",
                 () => CpuOptimization.DisableCoreParking(),
                 "Core Parking deshabilitado. Todos los cores permanecen activos (crítico en Ryzen).",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleCoreParking.IsChecked = true;
+            TxtCoreParkingStatus.Text = "ON";
+            TxtCoreParkingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnCoreParking_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "CoreParking",
                 "Sistema & GPU",
                 () => CpuOptimization.EnableCoreParking(),
                 "Core Parking restaurado. Windows puede aparcar cores no utilizados.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("CORE PARKING", false);
+
+            // Actualizar estado visual del toggle
+            ToggleCoreParking.IsChecked = false;
+            TxtCoreParkingStatus.Text = "OFF";
+            TxtCoreParkingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
@@ -1026,96 +1441,147 @@ namespace Tweaker
 
         private void BtnHibernation_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "Hibernation",
                 "Limpieza",
                 () => WindowsOptimization.DisableHibernation(),
                 "Hibernación deshabilitada. Archivo hiberfil.sys eliminado (8-32GB liberados).",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleHibernation.IsChecked = true;
+            TxtHibernationStatus.Text = "ON";
+            TxtHibernationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnHibernation_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "Hibernation",
                 "Limpieza",
                 () => WindowsOptimization.EnableHibernation(),
                 "Hibernación restaurada.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("HIBERNACIÓN", false);
+
+            // Actualizar estado visual del toggle
+            ToggleHibernation.IsChecked = false;
+            TxtHibernationStatus.Text = "OFF";
+            TxtHibernationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnWindowsSearch_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "WindowsSearch",
                 "Limpieza",
                 () => WindowsOptimization.DisableWindowsSearch(),
-                "Windows Search deshabilitado. Indexación detenida, 200-500MB RAM liberados."
+                "Windows Search deshabilitado. Indexación detenida, 200-500MB RAM liberados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                false, // createRestorePoint (default)
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleWindowsSearch.IsChecked = true;
+            TxtWindowsSearchStatus.Text = "ON";
+            TxtWindowsSearchStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnWindowsSearch_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "WindowsSearch",
                 "Limpieza",
                 () => WindowsOptimization.EnableWindowsSearch(),
-                "Windows Search restaurado. Servicio de indexación activo."
+                "Windows Search restaurado. Servicio de indexación activo.",
+                null,
+                false, // requiresRestart = false (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("WINDOWS SEARCH", false);
+
+            // Actualizar estado visual del toggle
+            ToggleWindowsSearch.IsChecked = false;
+            TxtWindowsSearchStatus.Text = "OFF";
+            TxtWindowsSearchStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnSysMain_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "SysMain",
                 "Limpieza",
                 () => WindowsOptimization.DisableSysMain(),
                 "SysMain (SuperFetch) deshabilitado. 1-3GB RAM liberados, uso de disco reducido.",
                 null,
-                true
+                true, // requiresRestart
+                false, // createRestorePoint (default)
+                showNotification: false
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleSysMain.IsChecked = true;
+            TxtSysMainStatus.Text = "ON";
+            TxtSysMainStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnSysMain_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "SysMain",
                 "Limpieza",
                 () => WindowsOptimization.EnableSysMain(),
                 "SysMain (SuperFetch) restaurado. Pre-carga de apps habilitada.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("SYSMAIN", false);
+
+            // Actualizar estado visual del toggle
+            ToggleSysMain.IsChecked = false;
+            TxtSysMainStatus.Text = "OFF";
+            TxtSysMainStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnTelemetry_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "Telemetry",
                 "Limpieza",
                 () => WindowsOptimization.DisableTelemetry(),
-                "Telemetría deshabilitada. Windows dejará de enviar datos a Microsoft."
+                "Telemetría deshabilitada. Windows dejará de enviar datos a Microsoft.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                false, // createRestorePoint (default)
+                showNotification: false
             );
             UpdateButtonState((Button)sender, true);
         }
 
         private void BtnTelemetry_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "Telemetry",
                 "Limpieza",
                 () => WindowsOptimization.EnableTelemetry(),
-                "Telemetría restaurada. Servicios de telemetría activos."
+                "Telemetría restaurada. Servicios de telemetría activos.",
+                null,
+                false, // requiresRestart = false (default)
+                showNotification: false
             );
             UpdateRelatedOnButton("TELEMETRÍA", false);
         }
@@ -1123,22 +1589,25 @@ namespace Tweaker
         #endregion
 
         // ═══════════════════════════════════════════════════════════════════
-        // CATEGORÍA 4: RED Y PING (ADAMX TWEAKS)
+        // CATEGORÍA 4: RED Y PING
         // ═══════════════════════════════════════════════════════════════════
 
         #region Red y Ping
 
         private void BtnNetworkOptimization_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 bool success = NetworkOptimization.OptimizeNetwork();
-                
+
                 if (success)
                 {
-                    // Actualizar botón inmediatamente
-                    UpdateButtonState((Button)sender, true);
-                    
+                    // Actualizar estado visual del toggle
+                    ToggleNetworkOptimization.IsChecked = true;
+                    TxtNetworkOptimizationStatus.Text = "ON";
+                    TxtNetworkOptimizationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
+
                     MessageBox.Show(
                         "✅ OPTIMIZACIÓN DE RED APLICADA (ADAMX TWEAKS)\n\n" +
                         "═══════════════════════════════════════\n" +
@@ -1203,24 +1672,27 @@ namespace Tweaker
                     $"SOLUCIÓN:\n" +
                     $"• Ejecuta como Administrador\n" +
                     $"• Verifica que tu red esté activa\n" +
-                    $"• Revisa el Output de Visual Studio", 
-                    "Error", 
-                    MessageBoxButton.OK, 
+                    $"• Revisa el Output de Visual Studio",
+                    "Error",
+                    MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
 
         private void BtnNetworkOptimization_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 bool success = NetworkOptimization.RestoreNetwork();
-                
+
                 if (success)
                 {
-                    // Actualizar botón ON relacionado
-                    UpdateRelatedOnButton("TCP/IP", false);
-                    
+                    // Actualizar estado visual del toggle
+                    ToggleNetworkOptimization.IsChecked = false;
+                    TxtNetworkOptimizationStatus.Text = "OFF";
+                    TxtNetworkOptimizationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+
                     MessageBox.Show(
                         "✅ CONFIGURACIÓN DE RED RESTAURADA\n\n" +
                         "Los tweaks de red han sido eliminados/restaurados:\n\n" +
@@ -1254,9 +1726,9 @@ namespace Tweaker
             {
                 MessageBox.Show(
                     $"❌ Error al restaurar red: {ex.Message}\n\n" +
-                    $"Ejecuta como Administrador.", 
-                    "Error", 
-                    MessageBoxButton.OK, 
+                    $"Ejecuta como Administrador.",
+                    "Error",
+                    MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
         }
@@ -1275,16 +1747,17 @@ namespace Tweaker
         /// </summary>
         private void BtnBrowserOptimization_Apply_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 bool success = BrowserOptimization.ApplyBrowserBalancedTweaks();
-                
+
                 if (success)
                 {
                     // Usar TweakHelper para registrar estado
                     _stateManager.SetTweakEnabled("BrowserOptimization", "Navegadores");
                     _telemetry.TrackTweakEnabled("BrowserOptimization", "Navegadores");
-                    
+
                     MessageBox.Show(
                         "✅ NAVEGADORES OPTIMIZADOS\n\n" +
                         "Se aplicaron tweaks balanceados para mejorar navegación web:\n\n" +
@@ -1305,7 +1778,7 @@ namespace Tweaker
                         "Navegadores Optimizados",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
-                        
+
                     _notifications.ShowSuccess(
                         "Navegadores optimizados con tweaks balanceados. NetworkThrottlingIndex=5, TCP moderado, DNS optimizado.",
                         "Tweak Activado");
@@ -1329,7 +1802,7 @@ namespace Tweaker
                         "Advertencia",
                         MessageBoxButton.OK,
                         MessageBoxImage.Warning);
-                        
+
                     _notifications.ShowError("Error al optimizar navegadores. Verifica que tu adaptador de red esté conectado y activo.");
                 }
             }
@@ -1345,7 +1818,7 @@ namespace Tweaker
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                    
+
                 _notifications.ShowError($"Excepción al optimizar navegadores: {ex.Message}");
             }
         }
@@ -1355,6 +1828,7 @@ namespace Tweaker
         /// </summary>
         private void BtnBrowserOptimization_Revert_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             var result = MessageBox.Show(
                 "⚠️ RESTAURAR TWEAKS EXTREMOS PARA GAMING\n\n" +
                 "Esta opción restaurará los tweaks extremos optimizados\n" +
@@ -1379,13 +1853,13 @@ namespace Tweaker
             try
             {
                 bool success = BrowserOptimization.RestoreGamingOnlyTweaks();
-                
+
                 if (success)
                 {
                     // Usar TweakHelper para registrar estado
                     _stateManager.SetTweakDisabled("BrowserOptimization");
                     _telemetry.TrackTweakDisabled("BrowserOptimization", "Navegadores");
-                    
+
                     MessageBox.Show(
                         "🎮 TWEAKS EXTREMOS GAMING RESTAURADOS\n\n" +
                         "Se aplicaron tweaks máximos para gaming:\n\n" +
@@ -1402,7 +1876,7 @@ namespace Tweaker
                         "Gaming Extremo Activado",
                         MessageBoxButton.OK,
                         MessageBoxImage.Information);
-                        
+
                     _notifications.ShowInfo(
                         "Tweaks extremos para gaming restaurados. NetworkThrottlingIndex=FFFFFFFF, TCP agresivo.",
                         "Tweak Revertido");
@@ -1419,7 +1893,7 @@ namespace Tweaker
                     "Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
-                    
+
                 _notifications.ShowError($"Excepción al restaurar tweaks: {ex.Message}");
             }
         }
@@ -1453,41 +1927,59 @@ namespace Tweaker
 
         private void BtnSysMainService_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "SysMainService",
                 "Limpieza",
                 () => ServiceOptimization.DisableSysMain(),
-                "SysMain (SuperFetch) servicio deshabilitado. 1-3GB RAM liberados."
+                "SysMain (SuperFetch) servicio deshabilitado. 1-3GB RAM liberados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                false, // createRestorePoint (default)
+                showNotification: false
             );
         }
 
         private void BtnSysMainService_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "SysMainService",
                 "Limpieza",
                 () => ServiceOptimization.EnableSysMain(),
-                "SysMain (SuperFetch) servicio restaurado."
+                "SysMain (SuperFetch) servicio restaurado.",
+                null,
+                false, // requiresRestart = false (default)
+                showNotification: false
             );
         }
 
         private void BtnDiagTrack_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "DiagTrack",
                 "Limpieza",
                 () => ServiceOptimization.DisableDiagTrack(),
-                "DiagTrack (Telemetría) deshabilitado. Sin envío de datos a Microsoft."
+                "DiagTrack (Telemetría) deshabilitado. Sin envío de datos a Microsoft.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                false, // createRestorePoint (default)
+                showNotification: false
             );
         }
 
         private void BtnDiagTrack_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "DiagTrack",
                 "Limpieza",
                 () => ServiceOptimization.EnableDiagTrack(),
-                "DiagTrack (Telemetría) restaurado."
+                "DiagTrack (Telemetría) restaurado.",
+                null,
+                false, // requiresRestart = false (default)
+                showNotification: false
             );
         }
 
@@ -1501,6 +1993,7 @@ namespace Tweaker
 
         private void BtnHPET_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "HPET",
                 "GHOST Pack",
@@ -1509,24 +2002,35 @@ namespace Tweaker
                 null,
                 true
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleHPET.IsChecked = true;
+            TxtHPETStatus.Text = "ON";
+            TxtHPETStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnHPET_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "HPET",
                 "GHOST Pack",
                 () => LatencyOptimization.EnableHPET(),
                 "HPET restaurado. Windows decidirá automáticamente qué timer usar.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("HPET", false);
+
+            // Actualizar estado visual del toggle
+            ToggleHPET.IsChecked = false;
+            TxtHPETStatus.Text = "OFF";
+            TxtHPETStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnHyperV_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Confirmación adicional porque deshabilita Docker/WSL2
@@ -1565,6 +2069,11 @@ namespace Tweaker
                     null,
                     true
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleHyperV.IsChecked = true;
+                TxtHyperVStatus.Text = "ON";
+                TxtHyperVStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -1574,70 +2083,104 @@ namespace Tweaker
 
         private void BtnHyperV_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "HyperV",
                 "GHOST Pack",
                 () => LatencyOptimization.EnableHyperV(),
                 "Hyper-V restaurado. Docker y WSL2 volverán a funcionar.",
                 null,
-                true
+                true,
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleHyperV.IsChecked = false;
+            TxtHyperVStatus.Text = "OFF";
+            TxtHyperVStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
 
         // ═══════════════════════════════════════════════════════════════════
-        // CATEGORÍA 7: GHOST PACK (TWEAKS LEGENDARIOS)
+        // CATEGORÍA 7: GHOST Tweaks
         // ═══════════════════════════════════════════════════════════════════
 
         #region GHOST Pack
 
         private void BtnUltimatePower_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "UltimatePower",
                 "GHOST Pack",
                 () => PowerTweaks.EnableUltimatePerformance(),
                 "Ultimate Performance activado. Latencia CPU -93%, 0.1% low FPS +20%."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleUltimatePower.IsChecked = true;
+            TxtUltimatePowerStatus.Text = "ON";
+            TxtUltimatePowerStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnUltimatePower_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "UltimatePower",
                 "GHOST Pack",
                 () => PowerTweaks.RestoreBalancedPlan(),
-                "Plan Balanced restaurado. Consumo y temperaturas optimizados."
+                "Plan Balanced restaurado. Consumo y temperaturas optimizados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("ULTIMATE", false);
+
+            // Actualizar estado visual del toggle
+            ToggleUltimatePower.IsChecked = false;
+            TxtUltimatePowerStatus.Text = "OFF";
+            TxtUltimatePowerStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnGameBar_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "GameBar",
                 "GHOST Pack",
                 () => WindowsDebloat.DisableGameBar(),
                 "Xbox Game Bar deshabilitada. Input lag -50%, CPU libre +8%."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleGameBar.IsChecked = true;
+            TxtGameBarStatus.Text = "ON";
+            TxtGameBarStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnGameBar_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "GameBar",
                 "GHOST Pack",
                 () => WindowsDebloat.EnableGameBar(),
-                "Xbox Game Bar restaurada."
+                "Xbox Game Bar restaurada.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("GAME BAR", false);
+
+            // Actualizar estado visual del toggle
+            ToggleGameBar.IsChecked = false;
+            TxtGameBarStatus.Text = "OFF";
+            TxtGameBarStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnCoreIsolation_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "CoreIsolation",
                 "GHOST Pack",
@@ -1646,20 +2189,30 @@ namespace Tweaker
                 null,
                 true
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleCoreIsolation.IsChecked = true;
+            TxtCoreIsolationStatus.Text = "ON";
+            TxtCoreIsolationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnCoreIsolation_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "CoreIsolation",
                 "GHOST Pack",
                 () => WindowsDebloat.EnableCoreIsolation(),
                 "Core Isolation (VBS) restaurado.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            UpdateRelatedOnButton("CORE ISOLATION", false);
+
+            // Actualizar estado visual del toggle
+            ToggleCoreIsolation.IsChecked = false;
+            TxtCoreIsolationStatus.Text = "OFF";
+            TxtCoreIsolationStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -1668,6 +2221,7 @@ namespace Tweaker
 
         private void BtnMPOFix_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -1697,6 +2251,11 @@ namespace Tweaker
                         null,
                         true
                     );
+
+                    // Actualizar estado visual del toggle
+                    ToggleMPOFix.IsChecked = true;
+                    TxtMPOFixStatus.Text = "ON";
+                    TxtMPOFixStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
                 }
             }
             catch (Exception ex)
@@ -1707,6 +2266,7 @@ namespace Tweaker
 
         private void BtnMPOFix_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -1735,6 +2295,11 @@ namespace Tweaker
                         null,
                         true
                     );
+
+                    // Actualizar estado visual del toggle
+                    ToggleMPOFix.IsChecked = false;
+                    TxtMPOFixStatus.Text = "OFF";
+                    TxtMPOFixStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
                 }
             }
             catch (Exception ex)
@@ -1745,6 +2310,7 @@ namespace Tweaker
 
         private void RadioBalanced_Checked(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _tweakHelper.ExecuteTweak(
@@ -1764,10 +2330,11 @@ namespace Tweaker
 
         private void RadioSmooth_Checked(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _tweakHelper.ExecuteTweak(
-                    "CpuPrioritySmooth", 
+                    "CpuPrioritySmooth",
                     "GHOST Pack",
                     () => InputTweaks.SetSmoothCpuProfile(),
                     "Perfil CPU 'Smooth' aplicado. Time slices largos para streaming.\n\n⚠️ REINICIA Windows para efecto completo.",
@@ -1783,6 +2350,7 @@ namespace Tweaker
 
         private void RadioAggressive_Checked(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -1806,7 +2374,7 @@ namespace Tweaker
                 {
                     _tweakHelper.ExecuteTweak(
                         "CpuPriorityAggressive",
-                        "GHOST Pack", 
+                        "GHOST Pack",
                         () => InputTweaks.SetAggressiveCpuProfile(),
                         "Perfil CPU 'Aggressive' aplicado. Máximo rendimiento gaming.\n\n⚠️ REINICIA Windows para efecto completo.",
                         null,
@@ -1827,6 +2395,7 @@ namespace Tweaker
 
         private void BtnCpuPriority_Reset_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -1874,50 +2443,77 @@ namespace Tweaker
 
         private void BtnKeyboard_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "Keyboard",
                 "Input & Visuals",
                 () => KeyboardOptimization.OptimizeKeyboard(),
                 "Teclado optimizado. Input lag reducido 50ms, WASD más responsive."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleKeyboard.IsChecked = true;
+            TxtKeyboardStatus.Text = "ON";
+            TxtKeyboardStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnKeyboard_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "Keyboard",
                 "Input & Visuals",
                 () => KeyboardOptimization.RestoreKeyboard(),
-                "Configuración de teclado restaurada a valores predeterminados."
+                "Configuración de teclado restaurada a valores predeterminados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("TECLADO", false);
+
+            // Actualizar estado visual del toggle
+            ToggleKeyboard.IsChecked = false;
+            TxtKeyboardStatus.Text = "OFF";
+            TxtKeyboardStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnVisuals_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "VisualEffects",
                 "Input & Visuals",
                 () => VisualOptimization.OptimizeVisuals(),
                 "Efectos visuales deshabilitados. FPS +3-8%, GPU usage -5-10%."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleVisuals.IsChecked = true;
+            TxtVisualsStatus.Text = "ON";
+            TxtVisualsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnVisuals_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "VisualEffects",
                 "Input & Visuals",
                 () => VisualOptimization.RestoreVisuals(),
-                "Efectos visuales restaurados. Interfaz Windows con animaciones habilitadas."
+                "Efectos visuales restaurados. Interfaz Windows con animaciones habilitadas.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("EFECTOS", false);
+
+            // Actualizar estado visual del toggle
+            ToggleVisuals.IsChecked = false;
+            TxtVisualsStatus.Text = "OFF";
+            TxtVisualsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnMemory_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Verificar RAM del sistema antes de aplicar
@@ -1925,10 +2521,10 @@ namespace Tweaker
 
                 if (!recommended)
                 {
-                _notifications.ShowWarning(
-                    reason + "\n\nDisablePagingExecutive mantiene el kernel en RAM. Con menos de 16GB puede causar problemas.",
-                    "Advertencia - RAM Insuficiente"
-                );
+                    _notifications.ShowWarning(
+                        reason + "\n\nDisablePagingExecutive mantiene el kernel en RAM. Con menos de 16GB puede causar problemas.",
+                        "Advertencia - RAM Insuficiente"
+                    );
                     return;
                 }
 
@@ -1940,6 +2536,11 @@ namespace Tweaker
                     null,
                     true
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleMemory.IsChecked = true;
+                TxtMemoryStatus.Text = "ON";
+                TxtMemoryStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -1949,14 +2550,21 @@ namespace Tweaker
 
         private void BtnMemory_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "MemoryOptimization",
                 "Input & Visuals",
                 () => MemoryTweaks.RestoreMemory(),
                 "Configuración de memoria restaurada.",
                 null,
-                true
+                true, // requiresRestart = true (default in MemoryTweaks.OptimizeMemory)
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleMemory.IsChecked = false;
+            TxtMemoryStatus.Text = "OFF";
+            TxtMemoryStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
@@ -1969,26 +2577,37 @@ namespace Tweaker
 
         private void BtnMouseAccel_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "MouseAcceleration",
                 "Input & Visuals",
                 () => MouseTweaks.Apply(),
                 "Mouse acceleration desactivada. Aim 1:1 pixel perfect activado para gaming competitivo."
             );
-            
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleMouseAccel.IsChecked = true;
+            TxtMouseAccelStatus.Text = "ON";
+            TxtMouseAccelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnMouseAccel_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "MouseAcceleration",
                 "Input & Visuals",
                 () => MouseTweaks.Revert(),
-                "Aceleración del mouse restaurada a valores predeterminados de Windows."
+                "Aceleración del mouse restaurada a valores predeterminados de Windows.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            
-            UpdateRelatedOnButton("ACELERACIÓN", false);
+
+            // Actualizar estado visual del toggle
+            ToggleMouseAccel.IsChecked = false;
+            TxtMouseAccelStatus.Text = "OFF";
+            TxtMouseAccelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
@@ -2001,10 +2620,11 @@ namespace Tweaker
 
         private void BtnCleanup_Analyze_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var (mbCanFree, filesCount) = CleanerTweaks.AnalyzeSpace();
-                
+
                 _notifications.ShowInfo(
                     $"Se pueden liberar {mbCanFree:F0} MB ({filesCount:N0} archivos).\n" +
                     $"Promedio esperado: 500MB - 5GB",
@@ -2019,6 +2639,7 @@ namespace Tweaker
 
         private void BtnCleanup_Clean_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2033,11 +2654,11 @@ namespace Tweaker
                     "Confirmar Limpieza",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question);
-                
+
                 if (result == MessageBoxResult.Yes)
                 {
                     var (success, mbFreed, filesDeleted) = CleanerTweaks.DeepClean();
-                    
+
                     if (success)
                     {
                         _notifications.ShowSuccess(
@@ -2083,42 +2704,285 @@ namespace Tweaker
 
         private void BtnDnsCloudflare_Click(object sender, RoutedEventArgs e)
         {
-            DnsOptimization.SetCloudflareDns();
+            if (_isInitializingTweakStates) return;
+            string result = DnsOptimization.SetCloudflareDns();
+            if (result.StartsWith("✅"))
+            {
+                _notifications.ShowSuccess(result, "DNS Cloudflare");
+            }
+            else
+            {
+                _notifications.ShowError(result, "DNS Cloudflare");
+            }
         }
 
         private void BtnDnsGoogle_Click(object sender, RoutedEventArgs e)
         {
-            DnsOptimization.SetGoogleDns();
+            if (_isInitializingTweakStates) return;
+            string result = DnsOptimization.SetGoogleDns();
+            if (result.StartsWith("✅"))
+            {
+                _notifications.ShowSuccess(result, "DNS Google");
+            }
+            else
+            {
+                _notifications.ShowError(result, "DNS Google");
+            }
         }
 
         private void BtnDnsCache_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             DnsOptimization.EnableDnsCacheOptimization();
+
+            // Actualizar estado visual del toggle
+            ToggleDnsCache.IsChecked = true;
+            TxtDnsCacheStatus.Text = "ON";
+            TxtDnsCacheStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnDnsCache_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             DnsOptimization.DisableDnsCacheOptimization();
+
+            // Actualizar estado visual del toggle
+            ToggleDnsCache.IsChecked = false;
+            TxtDnsCacheStatus.Text = "OFF";
+            TxtDnsCacheStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnNetworkPower_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             DnsOptimization.DisableNetworkAdapterPowerSaving();
+
+            // Actualizar estado visual del toggle
+            ToggleNetworkPower.IsChecked = true;
+            TxtNetworkPowerStatus.Text = "ON";
+            TxtNetworkPowerStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnNetworkPower_Off_Click(object sender, RoutedEventArgs e)
         {
-            DnsOptimization.EnableNetworkAdapterPowerSaving();
+            if (_isInitializingTweakStates) return;
+            string result = DnsOptimization.EnableNetworkAdapterPowerSaving();
+            if (result.StartsWith("✅"))
+            {
+                _notifications.ShowSuccess(result, "Ahorro de Energía de Red");
+            }
+            else
+            {
+                _notifications.ShowError(result, "Ahorro de Energía de Red");
+            }
+
+            // Actualizar estado visual del toggle
+            ToggleNetworkPower.IsChecked = false;
+            TxtNetworkPowerStatus.Text = "OFF";
+            TxtNetworkPowerStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnNetBios_On_Click(object sender, RoutedEventArgs e)
         {
-            DnsOptimization.DisableNetBios();
+            if (_isInitializingTweakStates) return;
+            string result = DnsOptimization.DisableNetBios();
+            if (result.StartsWith("✅"))
+            {
+                _notifications.ShowSuccess(result, "NetBIOS");
+            }
+            else
+            {
+                _notifications.ShowError(result, "NetBIOS");
+            }
+
+            // Actualizar estado visual del toggle
+            ToggleNetBios.IsChecked = true;
+            TxtNetBiosStatus.Text = "ON";
+            TxtNetBiosStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnNetBios_Off_Click(object sender, RoutedEventArgs e)
         {
-            DnsOptimization.EnableNetBios();
+            if (_isInitializingTweakStates) return;
+            string result = DnsOptimization.EnableNetBios();
+            if (result.StartsWith("✅"))
+            {
+                _notifications.ShowSuccess(result, "NetBIOS");
+            }
+            else
+            {
+                _notifications.ShowError(result, "NetBIOS");
+            }
+
+            // Actualizar estado visual del toggle
+            ToggleNetBios.IsChecked = false;
+            TxtNetBiosStatus.Text = "OFF";
+            TxtNetBiosStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+        }
+
+        #endregion
+
+        // ═══════════════════════════════════════════════════════════════════
+        // ANTI-BUFFERBLOAT TWEAKS
+        // ═══════════════════════════════════════════════════════════════════
+
+        #region Anti-Bufferbloat
+
+        private void BtnEcnCapability_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "ecn_capability",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.EnableECN(),
+                "✅ ECN activado. Mitiga bufferbloat severo.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleEcnCapability.IsChecked = true;
+            TxtEcnCapabilityStatus.Text = "ON";
+            TxtEcnCapabilityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
+        }
+
+        private void BtnEcnCapability_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "ecn_capability",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.DisableECN(),
+                "ECN deshabilitado.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleEcnCapability.IsChecked = false;
+            TxtEcnCapabilityStatus.Text = "OFF";
+            TxtEcnCapabilityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+        }
+
+        private void BtnTcpCongestion_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "tcp_congestion",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.SetCubicCongestion(),
+                "✅ Algoritmo CUBIC activado para mejor control de congestión.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleTcpCongestion.IsChecked = true;
+            TxtTcpCongestionStatus.Text = "ON";
+            TxtTcpCongestionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
+        }
+
+        private void BtnTcpCongestion_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "tcp_congestion",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.RevertCongestion(),
+                "Algoritmo TCP restaurado a valores por defecto.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleTcpCongestion.IsChecked = false;
+            TxtTcpCongestionStatus.Text = "OFF";
+            TxtTcpCongestionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+        }
+
+        private void BtnDisableLSO_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "disable_lso",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.DisableLSO(),
+                "✅ LSO deshabilitado. Mayor estabilidad en micro-picos de ping.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleDisableLSO.IsChecked = true;
+            TxtDisableLSOStatus.Text = "ON";
+            TxtDisableLSOStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
+        }
+
+        private void BtnDisableLSO_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "disable_lso",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.EnableLSO(),
+                "LSO habilitado (predeterminado).",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleDisableLSO.IsChecked = false;
+            TxtDisableLSOStatus.Text = "OFF";
+            TxtDisableLSOStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+        }
+
+        private void BtnQosDscp_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "qos_prioritization",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.EnableQoS_Prioritization(),
+                "✅ QoS activado. Prioridad de paquetes y ancho de banda optimizados.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleQosDscp.IsChecked = true;
+            TxtQosDscpStatus.Text = "ON";
+            TxtQosDscpStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
+        }
+
+        private void BtnQosDscp_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "qos_prioritization",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.DisableQoS_Prioritization(),
+                "QoS deshabilitado.",
+                null,
+                showNotification: false
+                );
+
+            // Actualizar estado visual del toggle
+            ToggleQosDscp.IsChecked = false;
+            TxtQosDscpStatus.Text = "OFF";
+            TxtQosDscpStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
+        }
+
+        private void BtnTcpAutoTuning_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "tcp_autotuning",
+                "Red & Ping",
+                () => Tweaker.Optimizations.AntiBufferbloatTweaks.RestrictAutoTuning(),
+                "✅ TCP Auto-Tuning restringido para evitar bufferbloat de bajada.",
+                null,
+                showNotification: false
+                );
         }
 
         #endregion
@@ -2131,6 +2995,7 @@ namespace Tweaker
 
         private void BtnSpectreMeltdown_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2159,6 +3024,11 @@ namespace Tweaker
                     null,
                     true
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleSpectreMeltdown.IsChecked = true;
+                TxtSpectreMeltdownStatus.Text = "ON";
+                TxtSpectreMeltdownStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -2168,18 +3038,26 @@ namespace Tweaker
 
         private void BtnSpectreMeltdown_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "SpectreMeltdown",
                 "Advanced",
                 () => AdvancedTweaks.EnableSpectreMeltdown(),
                 "Mitigaciones Spectre/Meltdown restauradas. Sistema protegido.",
                 null,
-                true
+                true,
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleSpectreMeltdown.IsChecked = false;
+            TxtSpectreMeltdownStatus.Text = "OFF";
+            TxtSpectreMeltdownStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnGpuIRQ_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2209,6 +3087,11 @@ namespace Tweaker
                     null,
                     true
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleGpuIRQ.IsChecked = true;
+                TxtGpuIRQStatus.Text = "ON";
+                TxtGpuIRQStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -2218,14 +3101,21 @@ namespace Tweaker
 
         private void BtnGpuIRQ_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "GpuIRQ",
                 "Advanced",
                 () => GpuIRQOptimization.DisableGpuIRQOptimization(),
                 "GPU IRQ restaurada. Distribución automática de interrupciones habilitada.",
                 null,
-                true
+                true,
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleGpuIRQ.IsChecked = false;
+            TxtGpuIRQStatus.Text = "OFF";
+            TxtGpuIRQStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         /// <summary>
@@ -2233,10 +3123,11 @@ namespace Tweaker
         /// </summary>
         private void BtnGpuIRQDiagnose_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 string diagnosis = GpuIRQOptimization.DiagnoseGpuIRQ();
-                
+
                 var (isOptimized, details, gpuInfo) = GpuIRQOptimization.GetGpuIRQStatus();
 
                 MessageBox.Show(
@@ -2268,16 +3159,19 @@ namespace Tweaker
 
         private void ProfileBalanced_Click(object sender, MouseButtonEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             ApplyPriorityProfile("Balanced", "⚖️ BALANCED");
         }
 
         private void ProfileSmooth_Click(object sender, MouseButtonEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             ApplyPriorityProfile("Smooth", "🌊 SMOOTH");
         }
 
         private void ProfileAggressive_Click(object sender, MouseButtonEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             ApplyPriorityProfile("Aggressive", "⚡ AGGRESSIVE");
         }
 
@@ -2291,6 +3185,7 @@ namespace Tweaker
         /// </summary>
         private void ApplyPriorityProfile(string profile, string displayName)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Obtener detalles del perfil
@@ -2301,7 +3196,7 @@ namespace Tweaker
                     case "balanced":
                         profileValue = "38 (0x26)";
                         description = "Balance óptimo gaming/sistema";
-                        benefits = 
+                        benefits =
                             "✅ Foreground apps priorizadas moderadamente\n" +
                             "✅ Background apps funcionan bien\n" +
                             "✅ Perfecto para gaming + streaming\n" +
@@ -2312,7 +3207,7 @@ namespace Tweaker
                     case "smooth":
                         profileValue = "40 (0x28)";
                         description = "Máxima suavidad y frame times";
-                        benefits = 
+                        benefits =
                             "✅ Time slices largos = menos context switches\n" +
                             "✅ Frame times ultra-consistentes\n" +
                             "✅ Ideal para single-player exigentes\n" +
@@ -2323,7 +3218,7 @@ namespace Tweaker
                     case "aggressive":
                         profileValue = "22 (0x16)";
                         description = "Máxima responsividad competitiva";
-                        benefits = 
+                        benefits =
                             "✅ Foreground app recibe TODO el CPU\n" +
                             "✅ Time slices cortos = respuesta instantánea\n" +
                             "✅ Perfecto para FPS competitivos (CS2, Valorant)\n" +
@@ -2334,7 +3229,7 @@ namespace Tweaker
                     case "default":
                         profileValue = "2";
                         description = "Valor por defecto de Windows";
-                        benefits = 
+                        benefits =
                             "✅ Comportamiento estándar de Windows\n" +
                             "✅ Sin optimizaciones específicas\n" +
                             "✅ Balance general del sistema\n" +
@@ -2422,6 +3317,7 @@ namespace Tweaker
         /// </summary>
         private void UpdatePriorityProfileUI(string profile)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Buscar los controles dinámicamente
@@ -2447,7 +3343,7 @@ namespace Tweaker
                 // Highlight el perfil seleccionado
                 var activeBrush = new System.Windows.Media.SolidColorBrush(
                     (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#00D9FF"));
-                
+
                 switch (profile.ToLower())
                 {
                     case "balanced":
@@ -2485,6 +3381,7 @@ namespace Tweaker
         /// </summary>
         private void UpdateCurrentPriorityProfile()
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 string currentProfile = InputTweaks.GetCurrentPriorityProfile();
@@ -2518,46 +3415,77 @@ namespace Tweaker
 
         private void BtnOptimizeUSB_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "USBOptimization",
                 "Advanced - Input & USB",
                 () => InputTweaks.OptimizeUSBForGaming(),
                 "✅ USB optimizado para gaming. Latencia reducida, mejor polling rate para mouse/teclado."
             );
+
+            // Actualizar estado visual del toggle
+            ToggleOptimizeUSB.IsChecked = true;
+            TxtOptimizeUSBStatus.Text = "ON";
+            TxtOptimizeUSBStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnOptimizeUSB_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "USBOptimization",
                 "Advanced - Input & USB",
                 () => InputTweaks.RevertUSBOptimization(),
-                "USB restaurado a configuración por defecto."
+                "USB restaurado a configuración por defecto.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleOptimizeUSB.IsChecked = false;
+            TxtOptimizeUSBStatus.Text = "OFF";
+            TxtOptimizeUSBStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnOptimizeInputQueues_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "InputQueues",
                 "Advanced - Input & USB",
                 () => InputTweaks.OptimizeInputQueues(),
                 "✅ Colas de input optimizadas. Reducción de latencia de mouse y teclado."
             );
+
+            // Actualizar estado visual del toggle
+            ToggleInputQueues.IsChecked = true;
+            TxtInputQueuesStatus.Text = "ON";
+            TxtInputQueuesStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnOptimizeInputQueues_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "InputQueues",
                 "Advanced - Input & USB",
                 () => InputTweaks.RevertInputQueues(),
-                "Colas de input restauradas a configuración por defecto."
+                "Colas de input restauradas a configuración por defecto.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleInputQueues.IsChecked = false;
+            TxtInputQueuesStatus.Text = "OFF";
+            TxtInputQueuesStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnDisableFTH_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2595,6 +3523,11 @@ namespace Tweaker
                     null,
                     true // Requires restart
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleDisableFTH.IsChecked = true;
+                TxtDisableFTHStatus.Text = "ON";
+                TxtDisableFTHStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -2604,14 +3537,21 @@ namespace Tweaker
 
         private void BtnDisableFTH_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "FaultTolerantHeap",
                 "Advanced - Input & USB",
                 () => InputTweaks.EnableFaultTolerantHeap(),
                 "Fault Tolerant Heap restaurado. Sistema protegido contra apps problemáticas.",
                 null,
-                true // Requires restart
+                true, // Requires restart
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleDisableFTH.IsChecked = false;
+            TxtDisableFTHStatus.Text = "OFF";
+            TxtDisableFTHStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2620,24 +3560,37 @@ namespace Tweaker
 
         private void BtnTransparency_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "TransparencyEffects",
                 "Input & Visuals",
                 () => VisualOptimization.DisableTransparency(),
                 "✅ Efectos de transparencia deshabilitados. VRAM liberada +50-200MB."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleTransparency.IsChecked = true;
+            TxtTransparencyStatus.Text = "ON";
+            TxtTransparencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnTransparency_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "TransparencyEffects",
                 "Input & Visuals",
                 () => VisualOptimization.RestoreTransparency(),
-                "Efectos de transparencia restaurados."
+                "Efectos de transparencia restaurados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("TRANSPARENCIA", false);
+
+            // Actualizar estado visual del toggle
+            ToggleTransparency.IsChecked = false;
+            TxtTransparencyStatus.Text = "OFF";
+            TxtTransparencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2646,116 +3599,87 @@ namespace Tweaker
 
         private void BtnMTU_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "MTUOptimization",
                 "Red & Ping - Advanced",
                 () => AdvancedNetworkTweaks.OptimizeMTU(),
                 "✅ MTU optimizado a 1492 bytes. Latencia reducida 2-5ms."
             );
+
+            // Actualizar estado visual del toggle
+            ToggleMTU.IsChecked = true;
+            TxtMTUStatus.Text = "ON";
+            TxtMTUStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnMTU_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "MTUOptimization",
                 "Red & Ping - Advanced",
                 () => AdvancedNetworkTweaks.RevertMTU(),
-                "MTU restaurado a valores por defecto."
+                "MTU restaurado a valores por defecto.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-        }
 
-        private void BtnQoS_On_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweak(
-                "QoSConfiguration",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.ConfigureQoS(),
-                "✅ QoS configurado. Tráfico de gaming priorizado, 20% ancho de banda liberado."
-            );
-        }
-
-        private void BtnQoS_Off_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweakRevert(
-                "QoSConfiguration",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.RevertQoS(),
-                "QoS restaurado a configuración estándar."
-            );
-        }
-
-        private void BtnAutoTuning_On_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweak(
-                "AutoTuningLevel",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.ConfigureAutoTuning(),
-                "✅ Auto-Tuning configurado. Uso de CPU reducido -30%, mejor throughput."
-            );
-        }
-
-        private void BtnAutoTuning_Off_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweakRevert(
-                "AutoTuningLevel",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.RevertAutoTuning(),
-                "Auto-Tuning restaurado a configuración por defecto."
-            );
+            // Actualizar estado visual del toggle
+            ToggleMTU.IsChecked = false;
+            TxtMTUStatus.Text = "OFF";
+            TxtMTUStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnAdapterSettings_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "AdapterSettings",
                 "Red & Ping - Advanced",
                 () => AdvancedNetworkTweaks.OptimizeAdapterSettings(),
                 "✅ Configuración de adaptador optimizada. Window Scaling y SACK configurados."
             );
+
+            // Actualizar estado visual del toggle
+            ToggleAdapterSettings.IsChecked = true;
+            TxtAdapterSettingsStatus.Text = "ON";
+            TxtAdapterSettingsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnAdapterSettings_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "AdapterSettings",
                 "Red & Ping - Advanced",
                 () => AdvancedNetworkTweaks.RevertAdapterSettings(),
-                "Configuración de adaptador restaurada."
+                "Configuración de adaptador restaurada.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-        }
 
-        private void BtnCongestionControl_On_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweak(
-                "CongestionControl",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.ConfigureCongestionControl(),
-                "✅ Control de congestión optimizado. CTCP y ECN configurados."
-            );
-        }
-
-        private void BtnCongestionControl_Off_Click(object sender, RoutedEventArgs e)
-        {
-            _tweakHelper.ExecuteTweakRevert(
-                "CongestionControl",
-                "Red & Ping - Advanced",
-                () => AdvancedNetworkTweaks.RevertCongestionControl(),
-                "Control de congestión restaurado."
-            );
+            // Actualizar estado visual del toggle
+            ToggleAdapterSettings.IsChecked = false;
+            TxtAdapterSettingsStatus.Text = "OFF";
+            TxtAdapterSettingsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnAllAdvancedNetwork_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
                     "🌐 APLICAR TODAS LAS OPTIMIZACIONES AVANZADAS DE RED\n\n" +
                     "SE APLICARÁN:\n" +
                     "✅ MTU Optimization (1492 bytes)\n" +
-                    "✅ QoS Configuration (20% liberado)\n" +
-                    "✅ Auto-Tuning Level (CPU -30%)\n" +
+                    "✅ QoS & Priorización (20% liberado)\n" +
+                    "✅ TCP Auto-Tuning (Restricted)\n" +
                     "✅ Adapter Advanced Settings\n" +
-                    "✅ Congestion Control (CTCP + ECN)\n\n" +
+                    "✅ Congestion Control (CUBIC + ECN)\n\n" +
                     "🎯 REDUCCIÓN ESTIMADA: -11 a -29ms latencia\n\n" +
                     "⚠️ REQUIERE REINICIO después de aplicar.\n\n" +
                     "¿Aplicar TODAS las optimizaciones avanzadas?",
@@ -2782,13 +3706,15 @@ namespace Tweaker
 
         private void BtnAllAdvancedNetwork_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "AllAdvancedNetwork",
                 "Red & Ping - Advanced",
                 () => AdvancedNetworkTweaks.RevertAllOptimizations(),
                 "Todas las optimizaciones avanzadas de red han sido restauradas.",
                 null,
-                true // Requires restart
+                true, // requiresRestart (All optimizations)
+                showNotification: false
             );
         }
 
@@ -2798,28 +3724,42 @@ namespace Tweaker
 
         private void BtnGameMode_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "WindowsGameMode",
                 "Sistema & GPU - Game Mode",
                 () => GameModeTweaks_Optimized.EnableGameMode(),
                 "✅ Windows Game Mode activado. Frame stability +10-15%."
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleGameMode.IsChecked = true;
+            TxtGameModeStatus.Text = "ON";
+            TxtGameModeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnGameMode_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "WindowsGameMode",
                 "Sistema & GPU - Game Mode",
                 () => GameModeTweaks_Optimized.DisableGameMode(),
-                "Windows Game Mode desactivado."
+                "Windows Game Mode desactivado.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            UpdateRelatedOnButton("GAME MODE", false);
+
+            // Actualizar estado visual del toggle
+            ToggleGameMode.IsChecked = false;
+            TxtGameModeStatus.Text = "OFF";
+            TxtGameModeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnNTFSLastAccess_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "NTFSLastAccessTime",
                 "Sistema & GPU - Game Mode",
@@ -2828,24 +3768,35 @@ namespace Tweaker
                 null,
                 true // Requires restart
             );
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleNTFSLastAccess.IsChecked = true;
+            TxtNTFSLastAccessStatus.Text = "ON";
+            TxtNTFSLastAccessStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnNTFSLastAccess_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "NTFSLastAccessTime",
                 "Sistema & GPU - Game Mode",
                 () => DiskTweaks.EnableNTFSLastAccessTime(),
                 "NTFS Last Access Time restaurado. REINICIO REQUERIDO.",
                 null,
-                true // Requires restart
+                true, // Requires restart
+                showNotification: false
             );
-            UpdateRelatedOnButton("LAST ACCESS", false);
+
+            // Actualizar estado visual del toggle
+            ToggleNTFSLastAccess.IsChecked = false;
+            TxtNTFSLastAccessStatus.Text = "OFF";
+            TxtNTFSLastAccessStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         private void BtnGamePriority_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2875,6 +3826,11 @@ namespace Tweaker
                     null,
                     true // Requires restart
                 );
+
+                // Actualizar estado visual del toggle
+                ToggleGamePriority.IsChecked = true;
+                TxtGamePriorityStatus.Text = "ON";
+                TxtGamePriorityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
             }
             catch (Exception ex)
             {
@@ -2884,14 +3840,21 @@ namespace Tweaker
 
         private void BtnGamePriority_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "GameProcessPriority",
                 "Sistema & GPU - Game Mode",
                 () => GameModeTweaks_Optimized.RevertGamePriority(),
                 "Prioridad de juegos restaurada a normal. REINICIA para aplicar.",
                 null,
-                true // Requires restart
+                true, // Requires restart
+                showNotification: false
             );
+
+            // Actualizar estado visual del toggle
+            ToggleGamePriority.IsChecked = false;
+            TxtGamePriorityStatus.Text = "OFF";
+            TxtGamePriorityStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         // ═══════════════════════════════════════════════════════════════════
@@ -2900,6 +3863,7 @@ namespace Tweaker
 
         private void BtnDisableUpdates_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -2936,16 +3900,21 @@ namespace Tweaker
 
         private void BtnEnableUpdates_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "WindowsUpdateDisable",
                 "Sistema & GPU - Toques Finales",
                 () => UpdateTweaks.EnableAutomaticUpdates(),
-                "Windows Update automático reactivado."
+                "Windows Update automático reactivado.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
         }
 
         private void BtnDisableDeliveryOpt_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "DeliveryOptimization",
                 "Sistema & GPU - Toques Finales",
@@ -2956,16 +3925,21 @@ namespace Tweaker
 
         private void BtnEnableDeliveryOpt_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "DeliveryOptimization",
                 "Sistema & GPU - Toques Finales",
                 () => UpdateTweaks.EnableDeliveryOptimization(),
-                "P2P Update Sharing reactivado."
+                "P2P Update Sharing reactivado.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
         }
 
         private void BtnOptimizeNTFS_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3004,23 +3978,26 @@ namespace Tweaker
 
         private void BtnRestoreNTFS_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "NTFSOptimization",
                 "Sistema & GPU - Toques Finales",
                 () => DiskTweaks.RestoreNTFSDefaults(),
                 "NTFS restaurado a configuración por defecto. REINICIA para aplicar.",
                 null,
-                true // Requires restart
+                true, // Requires restart
+                showNotification: false
             );
         }
 
         // MÉTODOS DE TELEMETRÍA ELIMINADOS POR PROBLEMAS CON BLUETOOTH/DISCORD
         // Estos tweaks causaban que los audífonos Bluetooth no funcionaran para hablar en Discord
         // Los servicios OneSyncSvc, MessagingService, UserDataSvc son necesarios para dispositivos Bluetooth
-        
+
         /*
         private void BtnDisableTelemetry_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "TelemetryTracking",
                 "Sistema & GPU - Toques Finales",
@@ -3031,16 +4008,21 @@ namespace Tweaker
 
         private void BtnEnableTelemetry_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "TelemetryTracking",
                 "Sistema & GPU - Toques Finales",
                 () => PrivacyTweaks.EnableTelemetryAndTracking(),
-                "Telemetría y tracking restaurados."
+                "Telemetría y tracking restaurados.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
         }
 
         private void BtnDisableTelemetryServices_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "TelemetryServices",
                 "Sistema & GPU - Toques Finales",
@@ -3053,19 +4035,22 @@ namespace Tweaker
 
         private void BtnEnableTelemetryServices_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "TelemetryServices",
                 "Sistema & GPU - Toques Finales",
                 () => PrivacyTweaks.EnableTelemetryServices(),
                 "Servicios de telemetría reactivados. REINICIA para aplicar.",
                 null,
-                true // Requires restart
+                true, // Requires restart
+                showNotification: false
             );
         }
         */
 
         private void BtnDiagnoseFinishingTouches_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _notifications.ShowInfo(
@@ -3084,7 +4069,7 @@ namespace Tweaker
                     try
                     {
                         var diagnosis = UpdateTweaks.DiagnoseSystemState();
-                        
+
                         Dispatcher.Invoke(() =>
                         {
                             var diagWindow = new Window
@@ -3132,6 +4117,7 @@ namespace Tweaker
 
         private void RevertAllTweaks(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3213,6 +4199,7 @@ namespace Tweaker
 
         private void BtnLatency_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "LatencyOptimizations",
                 "Advanced - Latency",
@@ -3229,21 +4216,23 @@ namespace Tweaker
                 null,
                 true // Requires restart
             );
-            
+
             UpdateButtonState((Button)sender, true);
         }
 
         private void BtnLatency_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "LatencyOptimizations",
                 "Advanced - Latency",
                 () => LatencyTweaks.RevertAllLatencyOptimizations(),
                 "Latency Optimizations revertidas a valores por defecto.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
+
             UpdateRelatedOnButton("LATENCY", false);
         }
 
@@ -3269,7 +4258,7 @@ namespace Tweaker
                 "Pro Tweaks",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Question);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 _tweakHelper.ExecuteTweak(
@@ -3283,22 +4272,24 @@ namespace Tweaker
                     null,
                     true // Requires restart
                 );
-                
+
                 UpdateButtonState((Button)sender, true);
             }
         }
 
         private void BtnPro_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "ProTweaks",
                 "Advanced - Pro",
                 () => ProTweaks.RevertAllProTweaks(),
                 "Pro Tweaks revertidos. REINICIA para aplicar cambios.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
+
             UpdateRelatedOnButton("PRO", false);
         }
 
@@ -3308,6 +4299,7 @@ namespace Tweaker
 
         private void BtnStickyKeys_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "StickyKeys",
                 "Input & Visuals",
@@ -3317,20 +4309,30 @@ namespace Tweaker
                 "• No más Toggle Keys\n" +
                 "• Gaming sin interrupciones"
             );
-            
-            UpdateButtonState((Button)sender, true);
+
+            // Actualizar estado visual del toggle
+            ToggleStickyKeys.IsChecked = true;
+            TxtStickyKeysStatus.Text = "ON";
+            TxtStickyKeysStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13)); // Verde
         }
 
         private void BtnStickyKeys_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "StickyKeys",
                 "Input & Visuals",
                 () => ProTweaks.RevertStickyKeys(),
-                "Sticky Keys restaurado a valores por defecto."
+                "Sticky Keys restaurado a valores por defecto.",
+                null, // errorMessage
+                false, // requiresRestart (default)
+                showNotification: false
             );
-            
-            UpdateRelatedOnButton("STICKY", false);
+
+            // Actualizar estado visual del toggle
+            ToggleStickyKeys.IsChecked = false;
+            TxtStickyKeysStatus.Text = "OFF";
+            TxtStickyKeysStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60)); // Rojo
         }
 
         #endregion
@@ -3354,7 +4356,7 @@ namespace Tweaker
                 "Optimizar Servicios",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 _tweakHelper.ExecuteTweak(
@@ -3367,27 +4369,30 @@ namespace Tweaker
                     null,
                     true
                 );
-                
+
                 UpdateButtonState((Button)sender, true);
             }
         }
 
         private void BtnUltimateServices_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "UltimateServices",
                 "Limpieza - Ultimate",
                 () => UltimateTweaks.RevertServices(),
                 "Servicios restaurados. REINICIA para aplicar cambios.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
+
             UpdateRelatedOnButton("SERVICIOS", false);
         }
 
         private void BtnUltimateBloat_On_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweak(
                 "UltimateBloatware",
                 "Limpieza - Ultimate",
@@ -3401,21 +4406,23 @@ namespace Tweaker
                 null,
                 true
             );
-            
+
             UpdateButtonState((Button)sender, true);
         }
 
         private void BtnUltimateBloat_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "UltimateBloatware",
                 "Limpieza - Ultimate",
                 () => UltimateTweaks.RevertWindowsBloat(),
                 "Bloatware restaurado. REINICIA para aplicar cambios.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
+
             UpdateRelatedOnButton("BLOAT", false);
         }
 
@@ -3436,7 +4443,7 @@ namespace Tweaker
                 "System Tweaks",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 _tweakHelper.ExecuteTweak(
@@ -3449,22 +4456,24 @@ namespace Tweaker
                     null,
                     true
                 );
-                
+
                 UpdateButtonState((Button)sender, true);
             }
         }
 
         private void BtnUltimateSystem_Off_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             _tweakHelper.ExecuteTweakRevert(
                 "UltimateSystem",
                 "Limpieza - Ultimate",
                 () => UltimateTweaks.RevertSystemOptimizations(),
                 "System Tweaks revertidos. REINICIA para aplicar cambios.",
                 null,
-                true
+                true,
+                showNotification: false
             );
-            
+
             UpdateRelatedOnButton("SYSTEM", false);
         }
 
@@ -3488,7 +4497,7 @@ namespace Tweaker
                 "Ultimate Mode",
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
-            
+
             if (result == MessageBoxResult.Yes)
             {
                 _notifications.ShowInfo(
@@ -3496,14 +4505,14 @@ namespace Tweaker
                     "Esto puede tomar 30-60 segundos.\n" +
                     "No cierres la aplicación.",
                     "Ultimate Mode");
-                
+
                 Task.Run(() =>
                 {
                     try
                     {
                         bool success = true;
                         success &= UltimateTweaks.ApplyAllUltimateTweaks();
-                        
+
                         Dispatcher.Invoke(() =>
                         {
                             if (success)
@@ -3554,6 +4563,7 @@ namespace Tweaker
 
         private void BtnLaptopPreset_Apply_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3622,6 +4632,7 @@ namespace Tweaker
 
         private void BtnLaptopPreset_Revert_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3672,6 +4683,7 @@ namespace Tweaker
 
         private void BtnLaptopDiagnose_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _notifications.ShowInfo(
@@ -3691,7 +4703,7 @@ namespace Tweaker
                     try
                     {
                         var diagnosis = LaptopPreset.DiagnoseLaptopOptimizations();
-                        
+
                         Dispatcher.Invoke(() =>
                         {
                             var diagWindow = new Window
@@ -3759,6 +4771,7 @@ namespace Tweaker
 
         private void BtnCompetitivePreset_Apply_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3838,6 +4851,7 @@ namespace Tweaker
 
         private void BtnCompetitivePreset_Revert_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -3900,6 +4914,7 @@ namespace Tweaker
 
         private void BtnCompetitiveDiagnose_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _notifications.ShowInfo(
@@ -3919,7 +4934,7 @@ namespace Tweaker
                     try
                     {
                         var diagnosis = CompetitivePreset.DiagnoseCompetitiveReadiness();
-                        
+
                         Dispatcher.Invoke(() =>
                         {
                             var diagWindow = new Window
@@ -3979,6 +4994,7 @@ namespace Tweaker
 
         private void BtnCompetitiveDNS_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 _tweakHelper.ExecuteTweak(
@@ -4011,6 +5027,7 @@ namespace Tweaker
 
         private void BtnCompetitiveRestart_Click(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var result = MessageBox.Show(
@@ -4097,6 +5114,7 @@ namespace Tweaker
         /// </summary>
         private void ShowTweakInfo(object sender, RoutedEventArgs e)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 if (sender is Button infoButton && infoButton.Tag is string tweakId)
@@ -4115,22 +5133,23 @@ namespace Tweaker
         /// </summary>
         private void ShowTweakPopup(string tweakId, FrameworkElement relativeTo)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Obtener información del tweak
                 var tweakInfo = TweaksDatabase.GetTweakInfo(tweakId);
-                
+
                 // Crear popup
                 var popup = new Popup();
                 var popupControl = new TweakInfoPopup();
-                
+
                 // Configurar datos del popup
                 popupControl.Title = tweakInfo.Title;
                 popupControl.Description = tweakInfo.Description;
                 popupControl.Benefits = tweakInfo.Benefits;
                 popupControl.Warnings = tweakInfo.Warnings;
                 popupControl.Recommended = tweakInfo.Recommended;
-                
+
                 // Configurar popup
                 popup.Child = popupControl;
                 popup.Placement = PlacementMode.Bottom;
@@ -4138,26 +5157,26 @@ namespace Tweaker
                 popup.AllowsTransparency = true;
                 popup.PopupAnimation = PopupAnimation.Fade;
                 popup.StaysOpen = false; // Se cierra al hacer click fuera
-                
+
                 // Manejar cierre del popup
                 popup.Closed += (s, e) =>
                 {
                     popup.Child = null;
                     popup = null;
                 };
-                
+
                 // Cerrar popup al hacer click en el botón de cerrar o fuera del popup
                 popupControl.MouseDown += (s, e) => e.Handled = true; // Prevenir que se cierre al hacer click en el contenido
-                
+
                 // Mostrar popup
                 popup.IsOpen = true;
-                
+
                 Debug.WriteLine($"📋 Popup mostrado para tweak: {tweakId}");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"❌ Error mostrando popup para {tweakId}: {ex.Message}");
-                
+
                 // Fallback: mostrar MessageBox simple
                 var fallbackInfo = TweaksDatabase.GetTweakInfo(tweakId);
                 MessageBox.Show(
@@ -4176,19 +5195,20 @@ namespace Tweaker
         /// </summary>
         private void ShowTweakPopupAt(string tweakId, Point position)
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 var tweakInfo = TweaksDatabase.GetTweakInfo(tweakId);
-                
+
                 var popup = new Popup();
                 var popupControl = new TweakInfoPopup();
-                
+
                 popupControl.Title = tweakInfo.Title;
                 popupControl.Description = tweakInfo.Description;
                 popupControl.Benefits = tweakInfo.Benefits;
                 popupControl.Warnings = tweakInfo.Warnings;
                 popupControl.Recommended = tweakInfo.Recommended;
-                
+
                 popup.Child = popupControl;
                 popup.Placement = PlacementMode.AbsolutePoint;
                 popup.HorizontalOffset = position.X;
@@ -4196,9 +5216,9 @@ namespace Tweaker
                 popup.AllowsTransparency = true;
                 popup.PopupAnimation = PopupAnimation.Fade;
                 popup.StaysOpen = false;
-                
+
                 popup.IsOpen = true;
-                
+
                 Debug.WriteLine($"📋 Popup mostrado en posición ({position.X}, {position.Y}) para: {tweakId}");
             }
             catch (Exception ex)
@@ -4215,10 +5235,10 @@ namespace Tweaker
             if (sender is FrameworkElement element && element.Tag is string tweakId)
             {
                 var tweakInfo = TweaksDatabase.GetTweakInfo(tweakId);
-                string quickInfo = tweakInfo.Recommended ? 
-                    $"✅ RECOMENDADO: {tweakInfo.Title}" : 
+                string quickInfo = tweakInfo.Recommended ?
+                    $"✅ RECOMENDADO: {tweakInfo.Title}" :
                     $"⚠️ AVANZADO: {tweakInfo.Title}";
-                
+
                 element.ToolTip = quickInfo;
             }
         }
@@ -4234,29 +5254,34 @@ namespace Tweaker
         /// </summary>
         private async Task CheckBrowserSpeedIssues()
         {
+            if (_isInitializingTweakStates) return;
             try
             {
                 // Dar tiempo para que la interfaz cargue completamente
                 await Task.Delay(3000);
 
                 Debug.WriteLine("🔍 Verificando problemas de navegadores...");
-                
-                bool hasBrowserIssues = await BrowserSpeedFix.HasBrowserIssues();
-                
-                if (hasBrowserIssues)
+
+                Tuple<bool, string> browserIssues = await BrowserSpeedFix.HasBrowserIssues();
+
+                if (browserIssues.Item1) // Si hay problemas detectados
                 {
-                    Debug.WriteLine("🚨 PROBLEMAS DE NAVEGADORES DETECTADOS - Mostrando notificación");
-                    
+                    Debug.WriteLine("🚨 PROBLEMAS DE NAVEGADORES DETECTADOS - Mostrando prompt para fix.");
+
                     // Mostrar notificación en el hilo principal
                     Dispatcher.Invoke(() =>
                     {
-                        _notifications.ShowWarning(
-                            "🌐 NAVEGADORES LENTOS DETECTADOS\n\n" +
-                            "Ghost Optimizer detectó configuraciones que están\n" +
-                            "causando lentitud en navegadores web.\n\n" +
-                            "💡 Usa el menú Red & Ping para aplicar el fix.",
-                            "Fix Navegadores Disponible"
-                        );
+                        var result = _notifications.ShowPrompt(
+                            $"⚠️ Problemas de navegadores detectados:\n\n{browserIssues.Item2}\n\n" +
+                            "¿Deseas aplicar un fix rápido para mejorar la velocidad?",
+                            "Fix Rápido para Navegadores",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Warning);
+
+                        if (result == MessageBoxResult.Yes)
+                        {
+                            _ = ApplyBrowserQuickFix(); // Llamar al método para aplicar el fix
+                        }
                     });
                 }
                 else
@@ -4266,7 +5291,36 @@ namespace Tweaker
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"❌ Error verificando navegadores: {ex.Message}");
+                Debug.WriteLine($"❌ Error en CheckBrowserSpeedIssues: {ex.Message}");
+                _notifications.ShowError($"Error al verificar/aplicar fix para navegadores: {ex.Message}", "Navegadores");
+            }
+        }
+
+        /// <summary>
+        /// Aplica el fix rápido de navegadores y muestra los resultados.
+        /// </summary>
+        private async Task ApplyBrowserQuickFix()
+        {
+            if (_isInitializingTweakStates) return;
+            try
+            {
+                string fixResult = await BrowserSpeedFix.ApplyQuickBrowserFix();
+                if (fixResult.StartsWith("✅"))
+                {
+                    _notifications.ShowSuccess(fixResult, "Fix Rápido para Navegadores");
+                }
+                else if (fixResult.StartsWith("⚠️"))
+                {
+                    _notifications.ShowWarning(fixResult, "Fix Rápido para Navegadores");
+                }
+                else
+                {
+                    _notifications.ShowError(fixResult, "Fix Rápido para Navegadores");
+                }
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error al aplicar fix rápido: {ex.Message}", "Navegadores");
             }
         }
 
@@ -4275,9 +5329,10 @@ namespace Tweaker
         /// </summary>
         private async Task ShowBrowserFixDialog()
         {
+            if (_isInitializingTweakStates) return;
             try
             {
-                var result = MessageBox.Show(
+                var result = _notifications.ShowPrompt(
                     "🌐 FIX NAVEGADORES ULTRA RÁPIDO\n\n" +
                     "PROBLEMA DETECTADO:\n" +
                     "• Configuraciones extremas de gaming están causando\n" +
@@ -4299,53 +5354,55 @@ namespace Tweaker
                 if (result == MessageBoxResult.Yes)
                 {
                     Debug.WriteLine("🔧 Aplicando fix automático de navegadores...");
-                    
+
                     _notifications.ShowInfo(
                         "🔧 Aplicando fix de navegadores...\n\n" +
                         "Por favor espera 10-15 segundos.",
                         "Aplicando Fix"
                     );
 
-                    bool success = await BrowserSpeedFix.ApplyQuickBrowserFix();
-                    
-                    if (success)
+                    string fixResult = await BrowserSpeedFix.ApplyQuickBrowserFix();
+
+                    if (fixResult.StartsWith("✅"))
                     {
-                        _notifications.ShowSuccess(
-                            "✅ NAVEGADORES OPTIMIZADOS EXITOSAMENTE\n\n" +
-                            "🌐 Prueba abrir un navegador ahora\n" +
-                            "🎮 Gaming mantiene ~90% rendimiento\n" +
-                            "⚡ Navegación web MUCHO más rápida",
-                            "¡Fix Completado!"
-                        );
+                        _notifications.ShowSuccess(fixResult, "¡Fix Completado!");
+                    }
+                    else if (fixResult.StartsWith("⚠️"))
+                    {
+                        _notifications.ShowWarning(fixResult, "Fix Parcial");
+                    }
+                    else
+                    {
+                        _notifications.ShowError(fixResult, "Error en Fix");
+                    }
 
-                        // Opcional: Abrir navegador para probar
-                        var testBrowser = MessageBox.Show(
-                            "¿Abrir Google para probar la velocidad?",
-                            "Probar Navegador",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question);
+                    // Opcional: Abrir navegador para probar
+                    var testBrowser = _notifications.ShowPrompt(
+                        "¿Abrir Google para probar la velocidad?",
+                        "Probar Navegador",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
 
-                        if (testBrowser == MessageBoxResult.Yes)
+                    if (testBrowser == MessageBoxResult.Yes)
+                    {
+                        try
                         {
-                            try
+                            Process.Start(new ProcessStartInfo
                             {
-                                Process.Start(new ProcessStartInfo
-                                {
-                                    FileName = "https://www.google.com",
-                                    UseShellExecute = true
-                                });
-                            }
-                            catch (Exception ex)
-                            {
-                                Debug.WriteLine($"No se pudo abrir navegador: {ex.Message}");
-                            }
+                                FileName = "https://www.google.com",
+                                UseShellExecute = true
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"No se pudo abrir navegador: {ex.Message}");
                         }
                     }
                 }
                 else
                 {
                     Debug.WriteLine("ℹ️ Usuario decidió no aplicar fix de navegadores");
-                    
+
                     _notifications.ShowInfo(
                         "ℹ️ Fix no aplicado\n\n" +
                         "Si experimentas navegadores lentos:\n" +
@@ -4358,7 +5415,7 @@ namespace Tweaker
             catch (Exception ex)
             {
                 Debug.WriteLine($"❌ Error en diálogo de fix: {ex.Message}");
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _notifications.ShowError($"Error en diálogo de fix: {ex.Message}", "Error");
             }
         }
 

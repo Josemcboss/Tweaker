@@ -1,6 +1,7 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -107,7 +108,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 1: Deshabilitar Game DVR (Usuario)
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(GAMECONFIG_KEY))
                 {
                     if (key != null)
@@ -125,7 +126,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: Deshabilitar Game DVR (Pol�tica Sistema)
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(GAMEDVR_POLICY_KEY))
                 {
                     if (key != null)
@@ -274,13 +275,13 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 1: Deshabilitar VBS (Virtualization Based Security)
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(DEVICE_GUARD_KEY))
                 {
                     if (key != null)
                     {
                         key.SetValue("EnableVirtualizationBasedSecurity", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? VBS (Virtualization Based Security) deshabilitado");
                         success1 = true;
                     }
@@ -289,13 +290,13 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // PASO 2: Deshabilitar HVCI (Memory Integrity)
                 // ???????????????????????????????????????????????????????????
-                
+
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(HVCI_KEY))
                 {
                     if (key != null)
                     {
                         key.SetValue("Enabled", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? HVCI (Memory Integrity) deshabilitado");
                         success2 = true;
                     }
@@ -363,9 +364,9 @@ namespace Tweaker.Optimizations
                     if (key == null) return false;
 
                     object value = key.GetValue("EnableVirtualizationBasedSecurity");
-                    
+
                     if (value == null) return false;
-                    
+
                     return Convert.ToInt32(value) == 1;
                 }
             }
@@ -387,9 +388,9 @@ namespace Tweaker.Optimizations
                     if (key == null) return true; // Default = habilitado
 
                     object value = key.GetValue("GameDVR_Enabled");
-                    
+
                     if (value == null) return true;
-                    
+
                     return Convert.ToInt32(value) == 1;
                 }
             }
@@ -397,6 +398,220 @@ namespace Tweaker.Optimizations
             {
                 return true;
             }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // DEBLOAT WIZARD - POWERSHELL APP REMOVAL
+        // ═══════════════════════════════════════════════════════════════════
+
+        /// <summary>
+        /// Ejecuta un comando PowerShell y retorna si fue exitoso
+        /// </summary>
+        private static bool RunPowerShell(string command)
+        {
+            try
+            {
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = "powershell.exe",
+                    Arguments = $"-NoProfile -ExecutionPolicy Bypass -Command \"{command}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    Verb = "runas" // Requiere administrador
+                };
+
+                using (Process process = Process.Start(psi))
+                {
+                    if (process == null)
+                    {
+                        Debug.WriteLine("❌ No se pudo iniciar PowerShell");
+                        return false;
+                    }
+
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode == 0)
+                    {
+                        Debug.WriteLine($"✅ PowerShell ejecutado: {command}");
+                        if (!string.IsNullOrWhiteSpace(output))
+                            Debug.WriteLine($"   Output: {output}");
+                        return true;
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"❌ Error PowerShell (Exit code: {process.ExitCode})");
+                        if (!string.IsNullOrWhiteSpace(error))
+                            Debug.WriteLine($"   Error: {error}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Excepción al ejecutar PowerShell: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Remueve Cortana (Microsoft.549981C3F5F10)
+        /// SAFE - Cortana ya no es funcional en Windows 11
+        /// </summary>
+        public static bool RemoveCortana()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.549981C3F5F10 | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve OneDrive (Microsoft.OneDrive)
+        /// MODERATE - Si usas OneDrive, NO apliques este tweak
+        /// </summary>
+        public static bool RemoveOneDrive()
+        {
+            // OneDrive requiere desinstalación especial
+            string command = @"
+                taskkill /f /im OneDrive.exe;
+                if (Test-Path '$env:SystemRoot\System32\OneDriveSetup.exe') {
+                    & '$env:SystemRoot\System32\OneDriveSetup.exe' /uninstall
+                }
+                if (Test-Path '$env:SystemRoot\SysWOW64\OneDriveSetup.exe') {
+                    & '$env:SystemRoot\SysWOW64\OneDriveSetup.exe' /uninstall
+                }
+                Get-AppxPackage -allusers Microsoft.OneDrive* | Remove-AppxPackage
+            ";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve apps de telemetría y diagnóstico
+        /// SAFE - No afecta funcionalidad esencial
+        /// </summary>
+        public static bool RemoveTelemetry()
+        {
+            string command = @"
+                Get-AppxPackage -allusers Microsoft.Windows.Feedback* | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.GetHelp | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.Getstarted | Remove-AppxPackage
+            ";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Bing Weather
+        /// SAFE - App decorativa
+        /// </summary>
+        public static bool RemoveBingWeather()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.BingWeather | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Windows Maps
+        /// SAFE - A menos que uses mapas integrados
+        /// </summary>
+        public static bool RemoveMaps()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.WindowsMaps | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve servicios de Xbox (ADVERTENCIA: Game Bar también)
+        /// ADVANCED - Solo si ya deshabilitaste Game Bar manualmente
+        /// </summary>
+        public static bool RemoveXboxServices()
+        {
+            string command = @"
+                Get-AppxPackage -allusers Microsoft.Xbox* | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.GamingApp | Remove-AppxPackage
+            ";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Microsoft Solitaire Collection
+        /// SAFE - Solo un juego preinstalado
+        /// </summary>
+        public static bool RemoveSolitaire()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.MicrosoftSolitaireCollection | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Candy Crush y otros juegos preinstalados
+        /// SAFE - Bloatware puro
+        /// </summary>
+        public static bool RemoveGames()
+        {
+            string command = @"
+                Get-AppxPackage -allusers *CandyCrush* | Remove-AppxPackage;
+                Get-AppxPackage -allusers king.com* | Remove-AppxPackage;
+                Get-AppxPackage -allusers *BubbleWitch* | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.MicrosoftSolitaireCollection | Remove-AppxPackage
+            ";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve 3D Builder y Paint 3D
+        /// SAFE - Apps legacy
+        /// </summary>
+        public static bool Remove3DApps()
+        {
+            string command = @"
+                Get-AppxPackage -allusers Microsoft.3DBuilder | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.MSPaint | Remove-AppxPackage;
+                Get-AppxPackage -allusers Microsoft.Print3D | Remove-AppxPackage
+            ";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Skype preinstalado
+        /// SAFE - Puedes reinstalar desde Store si lo necesitas
+        /// </summary>
+        public static bool RemoveSkype()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.SkypeApp | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Microsoft News
+        /// SAFE - App decorativa
+        /// </summary>
+        public static bool RemoveNews()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.BingNews | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Mixed Reality Portal
+        /// SAFE - Solo si no usas VR/AR
+        /// </summary>
+        public static bool RemoveMixedReality()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.MixedReality.Portal | Remove-AppxPackage";
+            return RunPowerShell(command);
+        }
+
+        /// <summary>
+        /// Remueve Microsoft To Do
+        /// SAFE - Puedes reinstalar desde Store
+        /// </summary>
+        public static bool RemoveToDo()
+        {
+            string command = "Get-AppxPackage -allusers Microsoft.Todos | Remove-AppxPackage";
+            return RunPowerShell(command);
         }
     }
 }

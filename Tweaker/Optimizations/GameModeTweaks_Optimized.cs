@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -17,7 +18,7 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// ACTIVA WINDOWS GAME MODE
         /// 
-        /// øQuÈ es Game Mode?
+        /// ¬øQu√© es Game Mode?
         /// ???????????????????????????????????????????????????????????????????
         /// - Prioriza recursos del sistema para el juego en foreground
         /// - Reduce procesamiento de background apps
@@ -26,10 +27,10 @@ namespace Tweaker.Optimizations
         /// 
         /// BENEFICIOS:
         /// ???????????????????????????????????????????????????????????????????
-        /// ï Frame stability +10-15%
-        /// ï Reduce micro-stuttering
-        /// ï Menos interrupciones de sistema
-        /// ï CPU prioritizado para juegos
+        /// ‚Ä¢ Frame stability +10-15%
+        /// ‚Ä¢ Reduce micro-stuttering
+        /// ‚Ä¢ Menos interrupciones de sistema
+        /// ‚Ä¢ CPU prioritizado para juegos
         /// </summary>
         public static bool EnableGameMode()
         {
@@ -38,13 +39,13 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("?? ACTIVANDO WINDOWS GAME MODE");
                 Debug.WriteLine("???????????????????????????????????????????????");
 
-                // Habilitar Game Mode en configuraciÛn de Gaming
+                // Habilitar Game Mode en configuraci√≥n de Gaming
                 string gamingKey = @"Software\Microsoft\GameBar";
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(gamingKey))
                 {
                     if (key != null)
                     {
-                        // AllowAutoGameMode = 1 (Permitir auto-activaciÛn)
+                        // AllowAutoGameMode = 1 (Permitir auto-activaci√≥n)
                         key.SetValue("AllowAutoGameMode", 1, RegistryValueKind.DWord);
                         Debug.WriteLine("? Auto Game Mode: HABILITADO");
 
@@ -54,7 +55,7 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                // ConfiguraciÛn adicional de Game Mode
+                // Configuraci√≥n adicional de Game Mode
                 string gameModeKey = @"Software\Microsoft\Windows\CurrentVersion\GameDVR";
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(gameModeKey))
                 {
@@ -62,20 +63,20 @@ namespace Tweaker.Optimizations
                     {
                         // AppCaptureEnabled = 0 (Deshabilitar captura, mejora rendimiento)
                         key.SetValue("AppCaptureEnabled", 0, RegistryValueKind.DWord);
-                        
+
                         // AudioCaptureEnabled = 0 (Deshabilitar captura de audio)
                         key.SetValue("AudioCaptureEnabled", 0, RegistryValueKind.DWord);
-                        
+
                         Debug.WriteLine("? Captura de DVR deshabilitada (mejora FPS)");
                     }
                 }
 
-                Debug.WriteLine("\n?? GAME MODE OPTIMIZADO PARA M¡XIMO RENDIMIENTO");
+                Debug.WriteLine("\n?? GAME MODE OPTIMIZADO PARA M√ÅXIMO RENDIMIENTO");
                 Debug.WriteLine("   Beneficios:");
-                Debug.WriteLine("   ï Frame stability +10-15%");
-                Debug.WriteLine("   ï Menos background interruptions");
-                Debug.WriteLine("   ï CPU prioritizado para juegos");
-                Debug.WriteLine("   ï Micro-stuttering reducido");
+                Debug.WriteLine("   ‚Ä¢ Frame stability +10-15%");
+                Debug.WriteLine("   ‚Ä¢ Menos background interruptions");
+                Debug.WriteLine("   ‚Ä¢ CPU prioritizado para juegos");
+                Debug.WriteLine("   ‚Ä¢ Micro-stuttering reducido");
                 Debug.WriteLine("? EFECTO INMEDIATO para nuevos juegos");
 
                 return true;
@@ -137,10 +138,10 @@ namespace Tweaker.Optimizations
         /// - Minecraft, Roblox
         /// 
         /// BENEFICIOS:
-        /// ï 0.1% Low FPS +15-20%
-        /// ï Input lag -2-5ms
-        /// ï Menos interrupciones del sistema
-        /// ï Prioridad de CPU para el juego
+        /// ‚Ä¢ 0.1% Low FPS +15-20%
+        /// ‚Ä¢ Input lag -2-5ms
+        /// ‚Ä¢ Menos interrupciones del sistema
+        /// ‚Ä¢ Prioridad de CPU para el juego
         /// </summary>
         public static bool SetHighPriorityForGames()
         {
@@ -171,20 +172,20 @@ namespace Tweaker.Optimizations
                 string imageFileExecutionKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
 
                 int configurados = 0;
-                
+
                 foreach (string executable in gameExecutables)
                 {
                     try
                     {
                         string gameKey = $@"{imageFileExecutionKey}\{executable}\PerfOptions";
-                        
+
                         using (RegistryKey key = Registry.LocalMachine.CreateSubKey(gameKey))
                         {
                             if (key != null)
                             {
                                 // CpuPriorityClass = 3 (HIGH_PRIORITY_CLASS)
                                 key.SetValue("CpuPriorityClass", 3, RegistryValueKind.DWord);
-                                
+
                                 Debug.WriteLine($"? {executable}: Prioridad ALTA configurada");
                                 configurados++;
                             }
@@ -198,13 +199,13 @@ namespace Tweaker.Optimizations
 
                 Debug.WriteLine($"\n?? PRIORIDAD ALTA CONFIGURADA PARA {configurados}/15 JUEGOS");
                 Debug.WriteLine("   Beneficios esperados:");
-                Debug.WriteLine("   ï 0.1% Low FPS +15-20%");
-                Debug.WriteLine("   ï Input lag -2-5ms");
-                Debug.WriteLine("   ï Menos interrupciones de sistema");
-                Debug.WriteLine("   ï CPU prioritizado para gaming");
+                Debug.WriteLine("   ‚Ä¢ 0.1% Low FPS +15-20%");
+                Debug.WriteLine("   ‚Ä¢ Input lag -2-5ms");
+                Debug.WriteLine("   ‚Ä¢ Menos interrupciones de sistema");
+                Debug.WriteLine("   ‚Ä¢ CPU prioritizado para gaming");
                 Debug.WriteLine("\n??  REINICIA Windows para aplicar completamente");
 
-                return configurados > 10; // …xito si se configuraron m·s de 10 juegos
+                return configurados > 10; // √âxito si se configuraron m√°s de 10 juegos
             }
             catch (Exception ex)
             {
@@ -252,7 +253,7 @@ namespace Tweaker.Optimizations
                     }
                     catch
                     {
-                        // No crÌtico si no existe
+                        // No cr√≠tico si no existe
                     }
                 }
 
@@ -277,7 +278,7 @@ namespace Tweaker.Optimizations
                 Debug.WriteLine("???????????????????????????????????????????????????????");
 
                 bool success = true;
-                
+
                 success &= DisableGameMode();
                 success &= RevertGamePriority();
 
@@ -297,7 +298,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// OBTIENE INFORMACI”N ACTUAL DE GAME MODE
+        /// OBTIENE INFORMACI√ìN ACTUAL DE GAME MODE
         /// </summary>
         public static string GetGameModeInfo()
         {
@@ -322,10 +323,10 @@ namespace Tweaker.Optimizations
                     }
                 }
 
-                // Verificar cu·ntos juegos tienen prioridad alta
+                // Verificar cu√°ntos juegos tienen prioridad alta
                 string imageFileExecutionKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options";
                 int juegosConfigurados = 0;
-                
+
                 string[] gameExecutables = {
                     "FortniteClient-Win64-Shipping.exe",
                     "cs2.exe",
@@ -360,7 +361,7 @@ namespace Tweaker.Optimizations
             }
             catch (Exception ex)
             {
-                return $"Error obteniendo informaciÛn: {ex.Message}";
+                return $"Error obteniendo informaci√≥n: {ex.Message}";
             }
         }
     }

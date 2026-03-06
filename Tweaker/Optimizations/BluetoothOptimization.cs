@@ -1,7 +1,8 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -11,7 +12,7 @@ namespace Tweaker.Optimizations
     public static class BluetoothOptimization
     {
         /// <summary>
-        /// Verifica si los servicios de Bluetooth est·n funcionando correctamente
+        /// Verifica si los servicios de Bluetooth est√°n funcionando correctamente
         /// </summary>
         public static bool IsBluetoothHealthy()
         {
@@ -21,7 +22,7 @@ namespace Tweaker.Optimizations
                 bool bluetoothUserService = false;
                 bool bluetoothAudioGateway = false;
 
-                // Verificar servicios crÌticos de Bluetooth
+                // Verificar servicios cr√≠ticos de Bluetooth
                 string[] bluetoothServices = {
                     "bthserv",          // Bluetooth Support Service
                     "BluetoothUserService", // Bluetooth User Support Service  
@@ -72,17 +73,17 @@ namespace Tweaker.Optimizations
                     driversPresent = false;
                 }
 
-                // Bluetooth est· "saludable" si:
-                // - Al menos el servicio principal est· corriendo
-                // - Los drivers est·n presentes
+                // Bluetooth est√° "saludable" si:
+                // - Al menos el servicio principal est√° corriendo
+                // - Los drivers est√°n presentes
                 bool isHealthy = (bluetoothSupport || bluetoothUserService) && driversPresent;
 
                 Debug.WriteLine($"?? ESTADO DE BLUETOOTH:");
-                Debug.WriteLine($"   ï Bluetooth Support Service: {(bluetoothSupport ? "? Corriendo" : "? Detenido")}");
-                Debug.WriteLine($"   ï Bluetooth User Service: {(bluetoothUserService ? "? Corriendo" : "? Detenido")}");
-                Debug.WriteLine($"   ï Audio Gateway Service: {(bluetoothAudioGateway ? "? Corriendo" : "? Detenido")}");
-                Debug.WriteLine($"   ï Drivers presentes: {(driversPresent ? "? SÌ" : "? No")}");
-                Debug.WriteLine($"   ï Estado general: {(isHealthy ? "? SALUDABLE" : "? PROBLEMAS DETECTADOS")}");
+                Debug.WriteLine($"   ‚Ä¢ Bluetooth Support Service: {(bluetoothSupport ? "? Corriendo" : "? Detenido")}");
+                Debug.WriteLine($"   ‚Ä¢ Bluetooth User Service: {(bluetoothUserService ? "? Corriendo" : "? Detenido")}");
+                Debug.WriteLine($"   ‚Ä¢ Audio Gateway Service: {(bluetoothAudioGateway ? "? Corriendo" : "? Detenido")}");
+                Debug.WriteLine($"   ‚Ä¢ Drivers presentes: {(driversPresent ? "? S√≠" : "? No")}");
+                Debug.WriteLine($"   ‚Ä¢ Estado general: {(isHealthy ? "? SALUDABLE" : "? PROBLEMAS DETECTADOS")}");
 
                 return isHealthy;
             }
@@ -94,13 +95,13 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Obtiene informaciÛn detallada sobre el estado de Bluetooth
+        /// Obtiene informaci√≥n detallada sobre el estado de Bluetooth
         /// </summary>
         public static string GetBluetoothStatus()
         {
             try
             {
-                string status = "?? DIAGN”STICO DE BLUETOOTH:\n\n";
+                string status = "?? DIAGN√ìSTICO DE BLUETOOTH:\n\n";
 
                 // Verificar servicios
                 string[] bluetoothServices = {
@@ -162,7 +163,7 @@ namespace Tweaker.Optimizations
                 if (IsBluetoothHealthy())
                 {
                     status += "   ? Bluetooth funcionando correctamente\n";
-                    status += "   ? Compatible con audÌfonos y Discord\n";
+                    status += "   ? Compatible con aud√≠fonos y Discord\n";
                 }
                 else
                 {
@@ -207,7 +208,7 @@ namespace Tweaker.Optimizations
 
                             service.Start();
                             service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(30));
-                            
+
                             Debug.WriteLine($"? Servicio {serviceName} reiniciado");
                             success = true;
                         }

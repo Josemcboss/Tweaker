@@ -1,12 +1,13 @@
-using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Utilities
 {
     /// <summary>
     /// RegistryHelper - Centraliza operaciones de registro para eliminar redundancia
-    /// Proporciona métodos genéricos para operaciones comunes del registro
+    /// Proporciona mÃ©todos genÃ©ricos para operaciones comunes del registro
     /// </summary>
     public static class RegistryHelper
     {
@@ -17,7 +18,7 @@ namespace Tweaker.Utilities
         /// <param name="keyPath">Ruta de la clave</param>
         /// <param name="valueName">Nombre del valor</param>
         /// <param name="value">Valor a establecer</param>
-        /// <param name="operationName">Nombre de la operación para logging</param>
+        /// <param name="operationName">Nombre de la operaciÃ³n para logging</param>
         /// <returns>True si fue exitoso</returns>
         public static bool SetRegistryValue(RegistryKey hive, string keyPath, string valueName, int value, string operationName = "Registry Operation")
         {
@@ -105,7 +106,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Verifica si un valor del registro tiene un valor específico
+        /// Verifica si un valor del registro tiene un valor especÃ­fico
         /// </summary>
         public static bool IsRegistryValueEqual(RegistryKey hive, string keyPath, string valueName, object expectedValue)
         {
@@ -202,112 +203,5 @@ namespace Tweaker.Utilities
             }
         }
 
-        /// <summary>
-        /// Ejecuta múltiples operaciones de registro en una transacción
-        /// </summary>
-        public static bool ExecuteRegistryTransaction(string operationName, params RegistryOperation[] operations)
-        {
-            Debug.WriteLine($"?? Iniciando {operationName}...");
-            bool allSuccess = true;
-            int successCount = 0;
-
-            foreach (var operation in operations)
-            {
-                bool success = false;
-                
-                switch (operation.Type)
-                {
-                    case RegistryOperationType.SetDWord:
-                        success = SetRegistryValue(operation.Hive, operation.KeyPath, operation.ValueName, 
-                            Convert.ToInt32(operation.Value), operation.Description);
-                        break;
-                    case RegistryOperationType.SetString:
-                        success = SetRegistryValue(operation.Hive, operation.KeyPath, operation.ValueName, 
-                            operation.Value.ToString(), operation.Description);
-                        break;
-                    case RegistryOperationType.Delete:
-                        success = DeleteRegistryValue(operation.Hive, operation.KeyPath, operation.ValueName, operation.Description);
-                        break;
-                }
-
-                if (success)
-                {
-                    successCount++;
-                }
-                else
-                {
-                    allSuccess = false;
-                }
-            }
-
-            if (allSuccess)
-            {
-                Debug.WriteLine($"? {operationName} COMPLETADO - {successCount}/{operations.Length} operaciones exitosas");
-            }
-            else
-            {
-                Debug.WriteLine($"?? {operationName} PARCIALMENTE COMPLETADO - {successCount}/{operations.Length} operaciones exitosas");
-            }
-
-            return allSuccess;
-        }
-    }
-
-    /// <summary>
-    /// Representa una operación de registro
-    /// </summary>
-    public class RegistryOperation
-    {
-        public RegistryOperationType Type { get; set; }
-        public RegistryKey Hive { get; set; }
-        public string KeyPath { get; set; }
-        public string ValueName { get; set; }
-        public object Value { get; set; }
-        public string Description { get; set; }
-
-        public static RegistryOperation SetDWord(RegistryKey hive, string keyPath, string valueName, int value, string description = "")
-        {
-            return new RegistryOperation
-            {
-                Type = RegistryOperationType.SetDWord,
-                Hive = hive,
-                KeyPath = keyPath,
-                ValueName = valueName,
-                Value = value,
-                Description = description
-            };
-        }
-
-        public static RegistryOperation SetString(RegistryKey hive, string keyPath, string valueName, string value, string description = "")
-        {
-            return new RegistryOperation
-            {
-                Type = RegistryOperationType.SetString,
-                Hive = hive,
-                KeyPath = keyPath,
-                ValueName = valueName,
-                Value = value,
-                Description = description
-            };
-        }
-
-        public static RegistryOperation Delete(RegistryKey hive, string keyPath, string valueName, string description = "")
-        {
-            return new RegistryOperation
-            {
-                Type = RegistryOperationType.Delete,
-                Hive = hive,
-                KeyPath = keyPath,
-                ValueName = valueName,
-                Description = description
-            };
-        }
-    }
-
-    public enum RegistryOperationType
-    {
-        SetDWord,
-        SetString,
-        Delete
     }
 }

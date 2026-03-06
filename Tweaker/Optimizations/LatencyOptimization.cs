@@ -13,21 +13,21 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// DESHABILITA HPET (High Precision Event Timer)
         /// 
-        /// øQuÈ es HPET?
-        /// - Timer de hardware de alta precisiÛn
+        /// ¬øQu√© es HPET?
+        /// - Timer de hardware de alta precisi√≥n
         /// - Introducido en Windows Vista
-        /// - Supuestamente m·s preciso que TSC (Time Stamp Counter)
+        /// - Supuestamente m√°s preciso que TSC (Time Stamp Counter)
         /// 
         /// PROBLEMA EN GAMING:
         /// - HPET causa MICRO-STUTTERING en muchos sistemas
-        /// - Interrupciones de hardware m·s frecuentes
+        /// - Interrupciones de hardware m√°s frecuentes
         /// - Mayor latencia en algunas configuraciones de hardware
         /// - AMD Ryzen especialmente afectado
         /// 
-        /// øPOR QU… DESHABILITARLO?
-        /// - Windows puede usar TSC (m·s r·pido) o ACPI PM Timer
-        /// - TSC en CPUs modernos (2010+) es M¡S PRECISO que HPET
-        /// - HPET quedÛ obsoleto con Ryzen/Intel moderno
+        /// ¬øPOR QU√â DESHABILITARLO?
+        /// - Windows puede usar TSC (m√°s r√°pido) o ACPI PM Timer
+        /// - TSC en CPUs modernos (2010+) es M√ÅS PRECISO que HPET
+        /// - HPET qued√≥ obsoleto con Ryzen/Intel moderno
         /// 
         /// BENCHMARKS:
         /// - AMD Ryzen: -15 a -30% micro-stuttering
@@ -46,7 +46,7 @@ namespace Tweaker.Optimizations
         /// - Reduce micro-stuttering (frame drops muy breves)
         /// - Mejora consistencia de frame times
         /// - Mejor "smoothness" percibido
-        /// - CRÕTICO en Ryzen (AMD)
+        /// - CR√çTICO en Ryzen (AMD)
         /// 
         /// NOTA: Requiere REINICIO para aplicarse
         /// </summary>
@@ -60,7 +60,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // COMANDO 1: Deshabilitar Platform Clock (HPET)
                 // ???????????????????????????????????????????????????????????
-                
+
                 cmd1Success = ExecuteBcdEditCommand(
                     "/set useplatformclock no",
                     "Deshabilitando HPET (useplatformclock no)..."
@@ -69,7 +69,7 @@ namespace Tweaker.Optimizations
                 // ???????????????????????????????????????????????????????????
                 // COMANDO 2: Deshabilitar Dynamic Tick
                 // ???????????????????????????????????????????????????????????
-                
+
                 cmd2Success = ExecuteBcdEditCommand(
                     "/set disabledynamictick yes",
                     "Deshabilitando Dynamic Tick..."
@@ -86,7 +86,7 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine("? HPET deshabilitado PARCIALMENTE");
                     Debug.WriteLine($"  useplatformclock: {(cmd1Success ? "OK" : "FALLO")}");
                     Debug.WriteLine($"  disabledynamictick: {(cmd2Success ? "OK" : "FALLO")}");
-                    return cmd1Success || cmd2Success; // …xito parcial
+                    return cmd1Success || cmd2Success; // √âxito parcial
                 }
             }
             catch (Exception ex)
@@ -97,14 +97,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// HABILITA HPET (Restaura configuraciÛn predeterminada de Windows)
+        /// HABILITA HPET (Restaura configuraci√≥n predeterminada de Windows)
         /// 
         /// RESTAURA los valores predeterminados eliminando las claves BCD.
-        /// Windows volver· a usar su configuraciÛn autom·tica de timers.
+        /// Windows volver√° a usar su configuraci√≥n autom√°tica de timers.
         /// 
         /// COMANDOS EJECUTADOS:
         /// - bcdedit /deletevalue useplatformclock
-        ///   ? Elimina la configuraciÛn forzada, Windows decide autom·ticamente
+        ///   ? Elimina la configuraci√≥n forzada, Windows decide autom√°ticamente
         /// 
         /// - bcdedit /deletevalue disabledynamictick
         ///   ? Restaura dynamic tick (comportamiento predeterminado)
@@ -118,17 +118,17 @@ namespace Tweaker.Optimizations
             {
                 cmd1Success = ExecuteBcdEditCommand(
                     "/deletevalue useplatformclock",
-                    "Eliminando configuraciÛn useplatformclock (restaurar default)..."
+                    "Eliminando configuraci√≥n useplatformclock (restaurar default)..."
                 );
 
                 cmd2Success = ExecuteBcdEditCommand(
                     "/deletevalue disabledynamictick",
-                    "Eliminando configuraciÛn disabledynamictick (restaurar default)..."
+                    "Eliminando configuraci√≥n disabledynamictick (restaurar default)..."
                 );
 
                 if (cmd1Success && cmd2Success)
                 {
-                    Debug.WriteLine("? HPET restaurado a configuraciÛn predeterminada");
+                    Debug.WriteLine("? HPET restaurado a configuraci√≥n predeterminada");
                     Debug.WriteLine("? REINICIA Windows para que surta efecto");
                     return true;
                 }
@@ -148,29 +148,29 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// DESHABILITA HYPER-V LAUNCHTYPE
         /// 
-        /// øQuÈ es Hyper-V?
-        /// - Hypervisor de virtualizaciÛn de Microsoft
-        /// - Permite correr m·quinas virtuales en Windows
+        /// ¬øQu√© es Hyper-V?
+        /// - Hypervisor de virtualizaci√≥n de Microsoft
+        /// - Permite correr m√°quinas virtuales en Windows
         /// - Usado por Docker, WSL2, Windows Sandbox
         /// 
         /// PROBLEMA EN GAMING:
         /// - Hyper-V corre en modo "hypervisor" (Nivel 0)
         /// - Windows corre como "Guest OS" (Nivel 1) incluso sin VMs activas
-        /// - Esto A—ADE LATENCIA a todas las operaciones
+        /// - Esto A√ëADE LATENCIA a todas las operaciones
         /// - GPU drivers tienen mayor latencia bajo hypervisor
-        /// - CRÕTICO: Afecta anti-cheat (algunos juegos no funcionan con Hyper-V)
+        /// - CR√çTICO: Afecta anti-cheat (algunos juegos no funcionan con Hyper-V)
         /// 
         /// IMPACTO AL DESHABILITAR:
         /// - Reduce latencia de GPU en 2-5ms
         /// - Mejora compatibilidad con anti-cheat (Vanguard, EAC)
         /// - Reduce DPC latency (interrupciones del kernel)
-        /// - FPS m·s estables
+        /// - FPS m√°s estables
         /// 
         /// ?? ADVERTENCIA:
-        /// - Docker Desktop dejar· de funcionar
-        /// - WSL2 volver· a WSL1 (m·s lento)
-        /// - Windows Sandbox no funcionar·
-        /// - Solo deshabilita si NO usas virtualizaciÛn
+        /// - Docker Desktop dejar√° de funcionar
+        /// - WSL2 volver√° a WSL1 (m√°s lento)
+        /// - Windows Sandbox no funcionar√°
+        /// - Solo deshabilita si NO usas virtualizaci√≥n
         /// 
         /// COMANDO EJECUTADO:
         /// - bcdedit /set hypervisorlaunchtype off
@@ -191,7 +191,7 @@ namespace Tweaker.Optimizations
                 {
                     Debug.WriteLine("? Hyper-V deshabilitado");
                     Debug.WriteLine("? REINICIA Windows OBLIGATORIAMENTE");
-                    Debug.WriteLine("? Docker y WSL2 dejar·n de funcionar");
+                    Debug.WriteLine("? Docker y WSL2 dejar√°n de funcionar");
                     return true;
                 }
                 else
@@ -208,14 +208,14 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// HABILITA HYPER-V LAUNCHTYPE (Restaura virtualizaciÛn)
+        /// HABILITA HYPER-V LAUNCHTYPE (Restaura virtualizaci√≥n)
         /// 
-        /// Restaura el hypervisor a su configuraciÛn autom·tica.
+        /// Restaura el hypervisor a su configuraci√≥n autom√°tica.
         /// Necesario si usas Docker, WSL2, Windows Sandbox, etc.
         /// 
         /// COMANDO EJECUTADO:
         /// - bcdedit /set hypervisorlaunchtype auto
-        ///   ? Windows decidir· autom·ticamente si usar Hyper-V
+        ///   ? Windows decidir√° autom√°ticamente si usar Hyper-V
         /// </summary>
         public static bool EnableHyperV()
         {
@@ -246,17 +246,17 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO INTERNO: Ejecuta un comando bcdedit con permisos elevados
+        /// M√âTODO INTERNO: Ejecuta un comando bcdedit con permisos elevados
         /// 
         /// bcdedit (Boot Configuration Data Editor):
-        /// - Modifica la configuraciÛn de arranque de Windows
+        /// - Modifica la configuraci√≥n de arranque de Windows
         /// - Requiere permisos de Administrador OBLIGATORIAMENTE
         /// - Cambios NO se aplican hasta REINICIAR
         /// 
-        /// ESTRATEGIA DE EJECUCI”N:
+        /// ESTRATEGIA DE EJECUCI√ìN:
         /// - Usa cmd.exe para ejecutar bcdedit
         /// - Verb = "runas" para permisos elevados
-        /// - Timeout de 10 segundos (bcdedit es r·pido)
+        /// - Timeout de 10 segundos (bcdedit es r√°pido)
         /// - Captura stdout y stderr para debugging
         /// </summary>
         private static bool ExecuteBcdEditCommand(string arguments, string description)
@@ -285,7 +285,7 @@ namespace Tweaker.Optimizations
                         return false;
                     }
 
-                    // Esperar hasta 10 segundos (bcdedit es r·pido)
+                    // Esperar hasta 10 segundos (bcdedit es r√°pido)
                     bool exited = process.WaitForExit(10000);
 
                     if (!exited)
@@ -309,7 +309,7 @@ namespace Tweaker.Optimizations
                         Debug.WriteLine($"Error: {error}");
                     }
 
-                    // bcdedit retorna 0 si tuvo Èxito
+                    // bcdedit retorna 0 si tuvo √©xito
                     if (process.ExitCode == 0)
                     {
                         Debug.WriteLine($"? Comando ejecutado correctamente (ExitCode: 0)");
@@ -317,16 +317,16 @@ namespace Tweaker.Optimizations
                     }
                     else
                     {
-                        Debug.WriteLine($"? bcdedit retornÛ ExitCode: {process.ExitCode}");
+                        Debug.WriteLine($"? bcdedit retorn√≥ ExitCode: {process.ExitCode}");
                         return false;
                     }
                 }
             }
             catch (System.ComponentModel.Win32Exception ex)
             {
-                // Error com˙n: Usuario cancelÛ el UAC prompt
+                // Error com√∫n: Usuario cancel√≥ el UAC prompt
                 Debug.WriteLine($"? Win32Exception: {ex.Message}");
-                Debug.WriteLine("  Posible causa: Usuario cancelÛ UAC o sin permisos");
+                Debug.WriteLine("  Posible causa: Usuario cancel√≥ UAC o sin permisos");
                 return false;
             }
             catch (Exception ex)
@@ -337,8 +337,8 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Obtiene la configuraciÛn actual de BCD
-        /// ⁄til para verificar si los tweaks est·n aplicados
+        /// M√âTODO AUXILIAR: Obtiene la configuraci√≥n actual de BCD
+        /// √ötil para verificar si los tweaks est√°n aplicados
         /// </summary>
         public static string GetBcdInfo()
         {
@@ -362,8 +362,8 @@ namespace Tweaker.Optimizations
                     process.WaitForExit(5000);
                     string output = process.StandardOutput.ReadToEnd();
 
-                    return string.IsNullOrEmpty(output) 
-                        ? "No se pudo obtener informaciÛn BCD" 
+                    return string.IsNullOrEmpty(output)
+                        ? "No se pudo obtener informaci√≥n BCD"
                         : output;
                 }
             }
@@ -374,7 +374,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Aplica TODOS los tweaks de latencia de una vez
+        /// M√âTODO AUXILIAR: Aplica TODOS los tweaks de latencia de una vez
         /// </summary>
         public static (int success, int total) ApplyAllLatencyTweaks(bool includeHyperV = false)
         {
@@ -382,14 +382,14 @@ namespace Tweaker.Optimizations
             int total = includeHyperV ? 2 : 1;
 
             if (DisableHPET()) success++;
-            
+
             if (includeHyperV && DisableHyperV()) success++;
 
             return (success, total);
         }
 
         /// <summary>
-        /// M…TODO AUXILIAR: Restaura TODOS los tweaks de latencia
+        /// M√âTODO AUXILIAR: Restaura TODOS los tweaks de latencia
         /// </summary>
         public static (int success, int total) RestoreAllLatencyTweaks(bool includeHyperV = false)
         {
@@ -397,7 +397,7 @@ namespace Tweaker.Optimizations
             int total = includeHyperV ? 2 : 1;
 
             if (EnableHPET()) success++;
-            
+
             if (includeHyperV && EnableHyperV()) success++;
 
             return (success, total);

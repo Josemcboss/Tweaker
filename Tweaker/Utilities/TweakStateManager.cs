@@ -8,18 +8,19 @@ using System.Text.Json;
 namespace Tweaker.Utilities
 {
     /// <summary>
-    /// Gestor de estado de tweaks - Trackea qué optimizaciones están activas
-    /// Implementa INotifyPropertyChanged para actualización dinámica del Dashboard
+    /// Gestor de estado de tweaks - Trackea quï¿½ optimizaciones estï¿½n activas
+    /// Implementa INotifyPropertyChanged para actualizaciï¿½n dinï¿½mica del Dashboard
     /// </summary>
-    public class TweakStateManager : INotifyPropertyChanged
+    public class TweakStateManager : INotifyPropertyChanged, IDisposable
     {
-        private static TweakStateManager _instance;
+        private static TweakStateManager? _instance;
         private static readonly object _lock = new object();
 
         private Dictionary<string, TweakState> _tweakStates;
         private readonly string _stateFilePath;
+        private readonly Services.HardwareMonitorService _hardwareMonitor;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Singleton instance
@@ -51,6 +52,14 @@ namespace Tweaker.Utilities
             );
 
             LoadState();
+            _hardwareMonitor = new Services.HardwareMonitorService();
+        }
+
+        public Services.HardwareMonitorService HardwareMonitor => _hardwareMonitor;
+
+        public void Dispose()
+        {
+            _hardwareMonitor?.Dispose();
         }
 
         /// <summary>
@@ -113,10 +122,14 @@ namespace Tweaker.Utilities
 
             _tweakStates[tweakId].IsEnabled = true;
             _tweakStates[tweakId].LastModified = DateTime.Now;
-            
+
             SaveState();
             OnPropertyChanged(nameof(ActiveTweaksCount));
             OnPropertyChanged(nameof(TweaksByCategory));
+            OnPropertyChanged(nameof(OptimizationPercentage));
+            OnPropertyChanged(nameof(EstimatedFpsGain));
+            OnPropertyChanged(nameof(EstimatedLatencyReduction));
+            OnPropertyChanged(nameof(EstimatedRamFreed));
         }
 
         /// <summary>
@@ -128,15 +141,19 @@ namespace Tweaker.Utilities
             {
                 _tweakStates[tweakId].IsEnabled = false;
                 _tweakStates[tweakId].LastModified = DateTime.Now;
-                
+
                 SaveState();
                 OnPropertyChanged(nameof(ActiveTweaksCount));
                 OnPropertyChanged(nameof(TweaksByCategory));
+                OnPropertyChanged(nameof(OptimizationPercentage));
+                OnPropertyChanged(nameof(EstimatedFpsGain));
+                OnPropertyChanged(nameof(EstimatedLatencyReduction));
+                OnPropertyChanged(nameof(EstimatedRamFreed));
             }
         }
 
         /// <summary>
-        /// Verifica si un tweak está activado
+        /// Verifica si un tweak estï¿½ activado
         /// </summary>
         public bool IsTweakEnabled(string tweakId)
         {
@@ -148,6 +165,20 @@ namespace Tweaker.Utilities
         /// </summary>
         public int ActiveTweaksCount => _tweakStates.Count(t => t.Value.IsEnabled);
 
+        /// <summary>
+        /// Ganancia estimada de FPS
+        /// </summary>
+        public int EstimatedFpsGain => CalculateEstimatedFpsGain();
+
+        /// <summary>
+        /// ReducciÃ³n estimada de latencia (ms)
+        /// </summary>
+        public int EstimatedLatencyReduction => CalculateEstimatedLatencyReduction();
+
+        /// <summary>
+        /// RAM liberada estimada (GB)
+        /// </summary>
+        public double EstimatedRamFreed => CalculateEstimatedRamFreed();
 
         /// <summary>
         /// Total de tweaks disponibles
@@ -155,7 +186,7 @@ namespace Tweaker.Utilities
         /// DESGLOSE DE TWEAKS:
         /// ????????????????????????????????????????????????????????????????
         /// Input & Visuals: ~12 tweaks
-        ///   - Aceleración de mouse, teclado, efectos visuales, etc.
+        ///   - Aceleraciï¿½n de mouse, teclado, efectos visuales, etc.
         /// 
         /// Red & Ping (Network): ~10 tweaks
         ///   - DNS, NVDIA tweaks, TCP optimizer, QoS, etc.
@@ -173,25 +204,25 @@ namespace Tweaker.Utilities
         ///   - Interrupt Moderation, Menu Delay, Win32 Priority, etc.
         /// 
         /// Servicios: ~5 tweaks
-        ///   - Telemetría, DiagTrack, servicios de background
+        ///   - Telemetrï¿½a, DiagTrack, servicios de background
         /// 
         /// TOTAL: 58 TWEAKS
         /// </summary>
         public int TotalTweaksCount => 58;
 
         /// <summary>
-        /// Porcentaje de optimización aplicado
+        /// Porcentaje de optimizaciï¿½n aplicado
         /// </summary>
-        public int OptimizationPercentage => 
+        public int OptimizationPercentage =>
             TotalTweaksCount > 0 ? (ActiveTweaksCount * 100) / TotalTweaksCount : 0;
 
         /// <summary>
-        /// Obtiene el conteo de tweaks activos (método auxiliar para compatibilidad)
+        /// Obtiene el conteo de tweaks activos (mï¿½todo auxiliar para compatibilidad)
         /// </summary>
         public int GetActiveTweaksCount() => ActiveTweaksCount;
 
         /// <summary>
-        /// Tweaks agrupados por categoría
+        /// Tweaks agrupados por categorï¿½a
         /// </summary>
         public Dictionary<string, int> TweaksByCategory
         {
@@ -205,7 +236,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Obtiene los tweaks más recientes
+        /// Obtiene los tweaks mï¿½s recientes
         /// </summary>
         public List<TweakState> GetRecentTweaks(int count = 5)
         {
@@ -225,10 +256,14 @@ namespace Tweaker.Utilities
             SaveState();
             OnPropertyChanged(nameof(ActiveTweaksCount));
             OnPropertyChanged(nameof(TweaksByCategory));
+            OnPropertyChanged(nameof(OptimizationPercentage));
+            OnPropertyChanged(nameof(EstimatedFpsGain));
+            OnPropertyChanged(nameof(EstimatedLatencyReduction));
+            OnPropertyChanged(nameof(EstimatedRamFreed));
         }
 
         /// <summary>
-        /// Obtiene estadísticas completas
+        /// Obtiene estadï¿½sticas completas
         /// </summary>
         public DashboardStats GetDashboardStats()
         {
@@ -245,6 +280,11 @@ namespace Tweaker.Utilities
             stats.EstimatedFpsGain = CalculateEstimatedFpsGain();
             stats.EstimatedLatencyReduction = CalculateEstimatedLatencyReduction();
             stats.EstimatedRamFreed = CalculateEstimatedRamFreed();
+
+            // PoblaciÃ³n de mÃ©tricas reales
+            stats.CpuUsage = _hardwareMonitor?.CpuLoadPercent ?? 0;
+            stats.RamUsageGb = (float)(_hardwareMonitor?.RamUsagePercent ?? 0); // Using percent for now as GB is not exposed
+            stats.GpuUsage = _hardwareMonitor?.GpuLoadPercent ?? 0;
 
             return stats;
         }
@@ -277,7 +317,7 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Calcula reducción estimada de latencia
+        /// Calcula reducciï¿½n estimada de latencia
         /// </summary>
         private int CalculateEstimatedLatencyReduction()
         {
@@ -324,16 +364,16 @@ namespace Tweaker.Utilities
             try
             {
                 System.Diagnostics.Debug.WriteLine("?? REVIRTIENDO ESTADO DE TODOS LOS TWEAKS");
-                
+
                 // Limpiar todos los estados
                 _tweakStates.Clear();
-                
+
                 // Guardar estado limpio
                 SaveState();
-                
+
                 // Notificar cambios
                 OnPropertyChanged(nameof(DashboardStats));
-                
+
                 System.Diagnostics.Debug.WriteLine("? Estado de tweaks completamente limpio");
             }
             catch (Exception ex)
@@ -353,26 +393,30 @@ namespace Tweaker.Utilities
     /// </summary>
     public class TweakState
     {
-        public string Id { get; set; }
-        public string Category { get; set; }
+        public string? Id { get; set; }
+        public string? Category { get; set; }
         public bool IsEnabled { get; set; }
         public DateTime LastModified { get; set; }
     }
 
     /// <summary>
-    /// Estadísticas para el Dashboard
+    /// Estadï¿½sticas para el Dashboard
     /// </summary>
     public class DashboardStats
     {
         public int TotalTweaks { get; set; }
         public int ActiveTweaks { get; set; }
         public int OptimizationPercentage { get; set; }
-        public Dictionary<string, int> TweaksByCategory { get; set; }
+        public Dictionary<string, int>? TweaksByCategory { get; set; }
         public DateTime LastUpdated { get; set; }
-        
+
         // Beneficios estimados
         public int EstimatedFpsGain { get; set; }
         public int EstimatedLatencyReduction { get; set; }
         public double EstimatedRamFreed { get; set; }
+
+        public float CpuUsage { get; set; }
+        public float RamUsageGb { get; set; }
+        public float GpuUsage { get; set; }
     }
 }

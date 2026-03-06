@@ -1,13 +1,14 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+
 using Tweaker.Models;
 
 namespace Tweaker.Controls
 {
     /// <summary>
     /// UserControl reutilizable para representar un tweak individual
-    /// Elimina la duplicación de código en MainWindow.xaml
+    /// Elimina la duplicaciÃ³n de cÃ³digo en MainWindow.xaml
     /// </summary>
     public partial class TweakItem : UserControl
     {
@@ -73,7 +74,8 @@ namespace Tweaker.Controls
         public bool UseApplyMode
         {
             get { return (bool)GetValue(UseApplyModeProperty); }
-            set { 
+            set
+            {
                 SetValue(UseApplyModeProperty, value);
                 UpdateButtonVisibility();
             }
@@ -147,10 +149,10 @@ namespace Tweaker.Controls
 
             try
             {
-                // TODO: Implementar verificación de estado real del tweak
+                // TODO: Implementar verificaciÃ³n de estado real del tweak
                 // Por ahora, asume que el toggle ya tiene el estado correcto
                 // bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
-                
+
                 // TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
                 // TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
 
@@ -197,7 +199,7 @@ namespace Tweaker.Controls
         protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
         {
             base.OnPropertyChanged(e);
-            
+
             if (e.Property == UseApplyModeProperty)
             {
                 UpdateButtonVisibility();

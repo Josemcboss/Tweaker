@@ -4,10 +4,10 @@ using System.Text;
 namespace Tweaker.License
 {
     /// <summary>
-    /// B髒eda segura para claves criptogr醘icas
-    /// Implementa seguridad por oscuridad para dificultar ingenier韆 inversa
+    /// B贸veda segura para claves criptogr谩ficas
+    /// Implementa seguridad por oscuridad para dificultar ingenier铆a inversa
     /// </summary>
-    internal static class KeyVault
+    internal class KeyVault : IKeyVault
     {
         // Fragmentos ofuscados en Base64
         private static readonly string[] _fragments = new[]
@@ -20,14 +20,14 @@ namespace Tweaker.License
             "OTg3NjU0Mw=="            // "9876543"
         };
 
-        // Semilla XOR para ofuscaci髇 adicional
+        // Semilla XOR para ofuscaci贸n adicional
         private static readonly byte[] _xorSeed = { 0x42, 0x7A, 0x3F, 0x91, 0xC8 };
 
         /// <summary>
-        /// Reconstruye la clave maestra de forma din醡ica
-        /// La clave nunca aparece completa en el c骴igo
+        /// Reconstruye la clave maestra de forma din谩mica
+        /// La clave nunca aparece completa en el c贸digo
         /// </summary>
-        public static string GetMasterSecret()
+        public string GetMasterSecret()
         {
             try
             {
@@ -39,10 +39,10 @@ namespace Tweaker.License
                 var part5 = DecodeFragment(_fragments[4]); // "Key"
                 var part6 = DecodeFragment(_fragments[5]); // "9876543"
 
-                // Paso 2: Aplicar transformaci髇 XOR (ofuscaci髇 adicional)
+                // Paso 2: Aplicar transformaci贸n XOR (ofuscaci贸n adicional)
                 var seed = GetXorSeed();
-                
-                // Paso 3: Reconstruir la clave en orden espec韋ico
+
+                // Paso 3: Reconstruir la clave en orden espec铆fico
                 var builder = new StringBuilder(64);
                 builder.Append(part1);  // "Tweaker"
                 builder.Append(part2);  // "Lic"
@@ -53,7 +53,7 @@ namespace Tweaker.License
 
                 // Paso 4: Validar integridad (checksum simple)
                 var result = builder.ToString();
-                if (result.Length != 32)
+                if (result.Length != 30)
                 {
                     throw new InvalidOperationException("Key integrity check failed");
                 }
@@ -62,7 +62,7 @@ namespace Tweaker.License
             }
             catch
             {
-                // En caso de error, retornar clave de fallback (tambi閚 ofuscada)
+                // En caso de error, retornar clave de fallback (tambi茅n ofuscada)
                 return DecodeFallbackKey();
             }
         }
@@ -70,7 +70,7 @@ namespace Tweaker.License
         /// <summary>
         /// Decodifica un fragmento Base64
         /// </summary>
-        private static string DecodeFragment(string encoded)
+        private string DecodeFragment(string encoded)
         {
             try
             {
@@ -86,30 +86,30 @@ namespace Tweaker.License
         /// <summary>
         /// Obtiene la semilla XOR de forma ofuscada
         /// </summary>
-        private static byte[] GetXorSeed()
+        private byte[] GetXorSeed()
         {
-            // Clonar para evitar modificaci髇 del original
+            // Clonar para evitar modificaci贸n del original
             var seed = new byte[_xorSeed.Length];
             Array.Copy(_xorSeed, seed, _xorSeed.Length);
-            
-            // Aplicar transformaci髇 adicional basada en timestamp
+
+            // Aplicar transformaci贸n adicional basada en timestamp
             var modifier = (byte)(DateTime.Now.Year % 256);
             for (int i = 0; i < seed.Length; i++)
             {
                 seed[i] ^= modifier;
             }
-            
+
             return seed;
         }
 
         /// <summary>
         /// Clave de fallback ofuscada (backup de emergencia)
         /// </summary>
-        private static string DecodeFallbackKey()
+        private string DecodeFallbackKey()
         {
             // "TweakerLic2024SecretKey9876543" en Base64
             var fallback = "VHdlYWtlckxpYzIwMjRTZWNyZXRLZXk5ODc2NTQz";
-            
+
             try
             {
                 var bytes = Convert.FromBase64String(fallback);
@@ -117,15 +117,15 @@ namespace Tweaker.License
             }
             catch
             {
-                // 趌timo recurso: reconstrucci髇 manual
+                // 脷ltimo recurso: reconstrucci贸n manual
                 return "Tweaker" + "Lic" + "2024" + "Secret" + "Key" + "9876543";
             }
         }
 
         /// <summary>
-        /// Genera hash de validaci髇 de la clave
+        /// Genera hash de validaci贸n de la clave
         /// </summary>
-        private static int GetKeyHash()
+        private int GetKeyHash()
         {
             // Checksum simple para validar integridad
             unchecked
@@ -143,18 +143,18 @@ namespace Tweaker.License
         /// <summary>
         /// Valida que la clave reconstruida sea correcta
         /// </summary>
-        public static bool ValidateKeyIntegrity()
+        public bool ValidateKeyIntegrity()
         {
             try
             {
                 var key = GetMasterSecret();
-                
+
                 // Validaciones de integridad
                 if (string.IsNullOrEmpty(key)) return false;
-                if (key.Length != 32) return false;
+                if (key.Length != 30) return false;
                 if (!key.StartsWith("Tweaker")) return false;
                 if (!key.EndsWith("9876543")) return false;
-                
+
                 return true;
             }
             catch

@@ -1,5 +1,6 @@
-using Microsoft.Win32;
 using System;
+
+using Microsoft.Win32;
 
 namespace Tweaker.Optimizations
 {
@@ -14,26 +15,26 @@ namespace Tweaker.Optimizations
         private const string GAME_CONFIG_STORE = @"System\GameConfigStore";
 
         /// <summary>
-        /// OPTIMIZACIÓN CRÍTICA: System Profile Games Priority
+        /// OPTIMIZACIï¿½N CRï¿½TICA: System Profile Games Priority
         /// 
-        /// GPU Priority: 8 (Máximo = 8)
+        /// GPU Priority: 8 (Mï¿½ximo = 8)
         ///   - Da prioridad absoluta a la GPU para procesar frames de juegos
         ///   - Reduce micro-stuttering y mejora frame pacing
         ///   - Esencial para juegos competitivos (Valorant, CS2, COD)
         /// 
         /// Priority: 6 (Escala 1-10)
         ///   - Prioridad de CPU para procesos de gaming
-        ///   - Valores mayores = más tiempo de CPU dedicado al juego
+        ///   - Valores mayores = mï¿½s tiempo de CPU dedicado al juego
         ///   - Reduce latencia del sistema (system latency)
         /// 
         /// Scheduling Category: "High"
-        ///   - Categoría de programación del Task Scheduler de Windows
+        ///   - Categorï¿½a de programaciï¿½n del Task Scheduler de Windows
         ///   - "High" asegura que el juego se ejecute antes que procesos de fondo
         ///   - Mejora consistencia de FPS y reduce input lag
         /// 
         /// IMPACTO EN ESPORTS:
-        /// - Reduce input lag en 3-8ms (crítico en shooters)
-        /// - Mejora 1% y 0.1% low FPS (frame times más estables)
+        /// - Reduce input lag en 3-8ms (crï¿½tico en shooters)
+        /// - Mejora 1% y 0.1% low FPS (frame times mï¿½s estables)
         /// - Elimina micro-stutters causados por procesos en background
         /// </summary>
         public static bool EnableSystemProfileOptimization()
@@ -96,9 +97,9 @@ namespace Tweaker.Optimizations
         /// <summary>
         /// DESHABILITA GameDVR (Xbox Game Bar)
         /// 
-        /// ¿Qué es GameDVR?
-        /// - Sistema de grabación en background de Windows 10/11
-        /// - Captura gameplay automáticamente (Game Bar overlay)
+        /// ï¿½Quï¿½ es GameDVR?
+        /// - Sistema de grabaciï¿½n en background de Windows 10/11
+        /// - Captura gameplay automï¿½ticamente (Game Bar overlay)
         /// - Consume recursos de GPU y CPU constantemente
         /// 
         /// PROBLEMA EN ESPORTS:
@@ -117,13 +118,13 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                // Deshabilitar GameDVR via Policies (método más efectivo)
+                // Deshabilitar GameDVR via Policies (mï¿½todo mï¿½s efectivo)
                 using (RegistryKey key = Registry.LocalMachine.CreateSubKey(GAME_DVR_KEY))
                 {
                     key?.SetValue("AllowGameDVR", 0, RegistryValueKind.DWord);
                 }
 
-                // Deshabilitar en configuración de usuario actual
+                // Deshabilitar en configuraciï¿½n de usuario actual
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"System\GameConfigStore"))
                 {
                     key?.SetValue("GameDVR_Enabled", 0, RegistryValueKind.DWord);
@@ -133,7 +134,7 @@ namespace Tweaker.Optimizations
                     key?.SetValue("GameDVR_EFSEFeatureFlags", 0, RegistryValueKind.DWord);
                 }
 
-                // Deshabilitar captures automáticas
+                // Deshabilitar captures automï¿½ticas
                 using (RegistryKey key = Registry.CurrentUser.CreateSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR"))
                 {
                     key?.SetValue("AppCaptureEnabled", 0, RegistryValueKind.DWord);
@@ -226,7 +227,52 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// MÉTODOS DE COMPATIBILIDAD PARA PRESETS
+        /// DESHABILITA Multi-Plane Overlay (MPO)
+        /// 
+        /// Â¿QuÃ© es MPO?
+        /// - Una caracterÃ­stica de Windows que permite a la GPU mostrar mÃºltiples capas de imagen.
+        /// - PROBLEMA: Causa flickering, stuttering y pantallazos negros en navegadores y juegos.
+        /// - SoluciÃ³n estÃ¡ndar recomendada por NVIDIA y AMD para problemas de estabilidad.
+        /// </summary>
+        public static bool EnableMPOFix()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows\Dwm"))
+                {
+                    key?.SetValue("OverlayTestMode", 0x00000005, RegistryValueKind.DWord);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al aplicar MPO Fix: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// RESTAURA MPO (comportamiento por defecto)
+        /// </summary>
+        public static bool DisableMPOFix()
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\Dwm", true))
+                {
+                    key?.DeleteValue("OverlayTestMode", false);
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error al restaurar MPO: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// MÃ‰TODOS DE COMPATIBILIDAD PARA PRESETS
         /// </summary>
 
         /// <summary>
@@ -238,7 +284,7 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
-        /// Verifica si GPU Scheduling está habilitado
+        /// Verifica si GPU Scheduling estï¿½ habilitado
         /// </summary>
         public static bool IsGpuSchedulingEnabled()
         {

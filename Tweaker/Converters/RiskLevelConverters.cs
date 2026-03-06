@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows.Data;
 using System.Windows.Media;
+
 using Tweaker.Models;
 
 namespace Tweaker.Converters
@@ -29,7 +30,7 @@ namespace Tweaker.Converters
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException("RiskLevelToBrushConverter solo soporta conversión unidireccional");
+            throw new NotImplementedException("RiskLevelToBrushConverter solo soporta conversiÃ³n unidireccional");
         }
     }
 

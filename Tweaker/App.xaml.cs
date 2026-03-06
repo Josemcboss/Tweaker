@@ -1,16 +1,18 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
-using System.Windows;
-using System.Threading.Tasks;
-using System.Net.NetworkInformation;
-using Microsoft.Win32;
-using System;
 using System.IO;
+using System.Net.NetworkInformation;
 using System.Text;
-using Tweaker.Utilities;
+using System.Threading.Tasks;
+using System.Windows;
+
+using Microsoft.Win32;
+
 using Tweaker.License;
+using Tweaker.Utilities;
 
 namespace Tweaker
 {
@@ -22,6 +24,9 @@ namespace Tweaker
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            // EVITAR QUE LA APP SE CIERRE AL CERRAR LA VENTANA DE ACTIVACIÓN
+            this.ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
             Debug.WriteLine("🚀 GHOST OPTIMIZER v2.3.1 - SEGURIDAD MEJORADA");
@@ -40,7 +45,39 @@ namespace Tweaker
             if (!LicenseManager.ValidateLicenseOnStartup())
             {
                 // No hay licencia válida, mostrar ventana de activación
-                LicenseManager.ShowActivationWindow(showCancelOption: false);
+                bool? activated = LicenseManager.ShowActivationWindow(showCancelOption: false);
+
+                // Si el usuario no activó (cerró la ventana), cerrar la app
+                if (activated != true)
+                {
+                    Debug.WriteLine("❌ Activación cancelada o fallida. Cerrando aplicación.");
+                    Shutdown();
+                    return;
+                }
+
+                Debug.WriteLine("✅ Aplicación activada exitosamente. Continuando inicio...");
+            }
+
+            // Crear y mostrar la ventana principal explícitamente
+            Debug.WriteLine("🏠 Mostrando ventana principal...");
+            MainWindow mainWin;
+            try
+            {
+                mainWin = new MainWindow();
+                mainWin.Show();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ ERROR FATAL al crear MainWindow: {ex}");
+                MessageBox.Show(
+                    $"❌ Error al iniciar la ventana principal:\n\n{ex.Message}\n\n" +
+                    $"Detalles: {ex.InnerException?.Message}\n\n" +
+                    "Intenta ejecutar como Administrador o reinstalar la aplicación.",
+                    "Error de Inicio",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                Shutdown();
+                return;
             }
 
             // 🌐 DIAGNÓSTICO Y FIX AUTOMÁTICO DE NAVEGADORES AL INICIO
@@ -72,7 +109,7 @@ namespace Tweaker
                 Debug.WriteLine("⚠️ ADVERTENCIA: SERVICIOS CRÍTICOS DESHABILITADOS DETECTADOS");
 
                 Debug.WriteLine("═══════════════════════════════════════════════════════════════");
-                
+
                 foreach (string service in disabledServices)
                 {
                     Debug.WriteLine($"  ❌ {service}");
@@ -86,7 +123,7 @@ namespace Tweaker
                 // Mostrar advertencia al usuario
                 string message = $"⚠️ ADVERTENCIA DE SEGURIDAD\n\n" +
                                 $"Se detectaron {disabledServices.Count} servicio(s) crítico(s) deshabilitado(s):\n\n";
-                
+
                 foreach (string service in disabledServices)
                 {
                     message += $"  • {service}\n";
@@ -106,7 +143,7 @@ namespace Tweaker
                 {
                     Debug.WriteLine("Usuario eligió RESTAURAR servicios críticos...");
                     bool restored = CriticalServicesValidator.RestoreCriticalServices(disabledServices);
-                    
+
                     if (restored)
                     {
                         MessageBox.Show(
@@ -176,13 +213,14 @@ namespace Tweaker
             try
             {
                 Debug.WriteLine("🔍 Verificando problemas de navegadores...");
-                
-                bool hasBrowserIssues = await BrowserSpeedFix.HasBrowserIssues();
-                
+
+                var scanResult = await BrowserSpeedFix.HasBrowserIssues();
+                bool hasBrowserIssues = scanResult.Item1;
+
                 if (hasBrowserIssues)
                 {
                     Debug.WriteLine("🚨 PROBLEMAS DE NAVEGADORES DETECTADOS");
-                    
+
                     // Mostrar prompt al usuario
                     bool shouldFix = false;
                     Dispatcher.Invoke(() =>
@@ -199,7 +237,7 @@ namespace Tweaker
                             "Fix Navegadores Disponible",
                             MessageBoxButton.YesNo,
                             MessageBoxImage.Question);
-                        
+
                         shouldFix = (result == MessageBoxResult.Yes);
                     });
 
@@ -287,7 +325,10 @@ namespace Tweaker
         {
             // Finalizar sesión de backup al cerrar la app
             OptimizationBackup.EndSession();
-            
+
+            // Liberar recursos de servicios
+            TweakStateManager.Instance.Dispose();
+
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
             Debug.WriteLine("👋 GHOST OPTIMIZER TWEAKER - CERRANDO");
             Debug.WriteLine("═══════════════════════════════════════════════════════════════");
