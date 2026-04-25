@@ -26,7 +26,12 @@ namespace Tweaker.Factories
                 ShowInfoButton = true,
                 TweakId = tweakId,
                 UseApplyMode = useApplyMode,
-                Risk = tweakInfo.Risk  // ? OBTENER RISK DESDE LA BASE DE DATOS
+                Risk = tweakInfo.Risk,
+                RequiresRestart = tweakInfo.RequiresRestart,
+                FpsGain = tweakInfo.FpsGain,
+                PingReduction = tweakInfo.PingReduction,
+                RamFreedGB = tweakInfo.RamFreedGB,
+                IsVisible = tweakInfo.IsCompatible
             };
         }
         /// <summary>
@@ -185,8 +190,8 @@ namespace Tweaker.Factories
             var section = new TweakSectionModel
             {
                 Title = "Sistema & GPU",
-                Subtitle = "GPU, CPU y Configuraci�n del Sistema",
-                Icon = "??",
+                Subtitle = "GPU, CPU y Configuración del Sistema",
+                Icon = "💻",
                 Category = "System"
             };
 
@@ -210,9 +215,73 @@ namespace Tweaker.Factories
 
             section.Tweaks.Add(CreateTweakModel(
                 "high_performance",
-                "Plan de Energ�a: Alto Rendimiento",
-                "CPU siempre a m�xima frecuencia"
+                "Plan de Energía: Alto Rendimiento",
+                "CPU siempre a máxima frecuencia"
             ));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para GPU & Display
+        /// </summary>
+        public static TweakSectionModel CreateGpuDisplaySection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "GPU & Display",
+                Subtitle = "Optimización de GPU, pantalla y audio",
+                Icon = "🎮",
+                Category = "GPUDisplay"
+            };
+
+            section.Tweaks.Add(CreateTweakModel("nvidia_low_latency_ultra", "NVIDIA Low Latency Ultra", "Fuerza modo Ultra Low Latency en NVIDIA. Reduce input lag GPU."));
+            section.Tweaks.Add(CreateTweakModel("shader_cache_disable", "Shader Cache Limpieza", "Limpia y desactiva shader cache para eliminar stutters de compilación."));
+            section.Tweaks.Add(CreateTweakModel("gpu_hw_scheduling_v2", "GPU HW Scheduling Agresivo", "Modo 2 de Hardware Scheduling. Mejor frame pacing en DX12/Vulkan."));
+            section.Tweaks.Add(CreateTweakModel("disable_ipv6", "Deshabilitar IPv6", "Elimina overhead del stack IPv6 si solo usas IPv4."));
+            section.Tweaks.Add(CreateTweakModel("wasapi_exclusive_mode", "WASAPI Exclusive Mode", "Audio exclusivo para gaming. Reduce latencia de audio hasta 20ms."));
+            section.Tweaks.Add(CreateTweakModel("audio_enhancements_off", "Audio Enhancements OFF", "Desactiva procesamiento de audio de Windows. CPU -2-5%."));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para Almacenamiento
+        /// </summary>
+        public static TweakSectionModel CreateStorageSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "Almacenamiento",
+                Subtitle = "SSD, TRIM y optimización NTFS",
+                Icon = "💾",
+                Category = "Storage"
+            };
+
+            section.Tweaks.Add(CreateTweakModel("ssd_write_cache", "SSD Write Cache", "Activa caché de escritura en disco. Velocidad de escritura +30-50%."));
+            section.Tweaks.Add(CreateTweakModel("trim_optimization", "TRIM Forzado SSD", "Fuerza TRIM en SSD para mantener velocidades máximas."));
+            section.Tweaks.Add(CreateTweakModel("ntfs_mft_zone", "NTFS MFT Zone Reserva", "Reserva más espacio para MFT. Reduce fragmentación en gaming."));
+
+            return section;
+        }
+
+        /// <summary>
+        /// Crea todos los tweaks para CPU Avanzado
+        /// </summary>
+        public static TweakSectionModel CreateCpuAdvancedSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "CPU Avanzado",
+                Subtitle = "IRQ, afinidad y anti-throttling",
+                Icon = "⚙️",
+                Category = "CPUAdvanced"
+            };
+
+            section.Tweaks.Add(CreateTweakModel("irq_network_priority", "IRQ Network Priority", "Prioriza interrupciones de red sobre otros dispositivos."));
+            section.Tweaks.Add(CreateTweakModel("nagle_algorithm_off", "Nagle Algorithm OFF", "Elimina buffering de paquetes TCP. Respuesta de red instantánea."));
+            section.Tweaks.Add(CreateTweakModel("cpu_affinity_auto_gaming", "CPU Affinity Auto-Gaming", "Asigna juegos a núcleos físicos automáticamente. Sin hyperthreading."));
+            section.Tweaks.Add(CreateTweakModel("cpu_anti_throttling", "CPU Anti-Throttling", "Fuerza CPU a 100% sin throttling. Máximo rendimiento constante."));
 
             return section;
         }
@@ -256,7 +325,7 @@ namespace Tweaker.Factories
             {
                 Title = "GHOST Pack",
                 Subtitle = "Optimizaciones Extremas (Requiere Reinicio)",
-                Icon = "??",
+                Icon = "👻",
                 Category = "Ghost"
             };
 
@@ -277,6 +346,28 @@ namespace Tweaker.Factories
                 "MPO Fix (Anti-Flicker)",
                 "Elimina stuttering y pantallazos negros en navegadores/juegos\nFuerza modo legacy estable en composición de ventanas"
             ));
+
+/* PLANES FUTUROS:
+            section.Tweaks.Add(CreateTweakModel(
+                "system_driver_priority",
+                "Prioridad de Controlador del Sistema",
+                "Ajusta la prioridad del controlador del sistema para mejorar el rendimiento en juegos."
+            ));
+            section.Tweaks.Add(CreateTweakModel(
+                "interrupt_priority_levels",
+                "Niveles de Prioridad de Interrupción",
+                "Optimiza los niveles de prioridad de interrupción para dispositivos críticos."
+            ));
+            section.Tweaks.Add(CreateTweakModel(
+                "pci_express_aspm",
+                "PCI Express ASPM",
+                "Ajusta la configuración de ASPM de PCI Express para un menor consumo de energía."
+            ));
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_power_management",
+                "Gestión de Energía de GPU",
+                "Ajusta la gestión de energía de la GPU para un mejor rendimiento en juegos."
+            ));*/
 
             return section;
         }
@@ -453,6 +544,9 @@ namespace Tweaker.Factories
                 CreateInputVisualsSection(),
                 CreateNetworkSection(),
                 CreateSystemGpuSection(),
+                CreateGpuDisplaySection(),
+                CreateStorageSection(),
+                CreateCpuAdvancedSection(),
                 CreateCleanupSection(),
                 CreateGhostPackSection(),
                 CreateAdvancedSection(),

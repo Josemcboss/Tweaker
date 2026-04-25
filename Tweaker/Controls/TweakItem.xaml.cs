@@ -91,10 +91,10 @@ namespace Tweaker.Controls
 
         #region Events
 
-        public event RoutedEventHandler OnClicked;
-        public event RoutedEventHandler OffClicked;
-        public event RoutedEventHandler ApplyClicked;
-        public event RoutedEventHandler InfoClicked;
+        public event RoutedEventHandler? OnClicked;
+        public event RoutedEventHandler? OffClicked;
+        public event RoutedEventHandler? ApplyClicked;
+        public event RoutedEventHandler? InfoClicked;
 
         #endregion
 
@@ -149,7 +149,7 @@ namespace Tweaker.Controls
 
             try
             {
-                // TODO: Implementar verificación de estado real del tweak
+                
                 // Por ahora, asume que el toggle ya tiene el estado correcto
                 // bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
 

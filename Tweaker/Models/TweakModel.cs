@@ -31,18 +31,25 @@ namespace Tweaker.Models
     /// </summary>
     public class TweakModel : INotifyPropertyChanged
     {
-        private string? _title;
-        private string? _description;
+        private string _title = string.Empty;
+        private string _description = string.Empty;
         private bool _isRecommended;
         private bool _isEnabled;
-        private string? _tweakId;
+        private string _tweakId = string.Empty;
         private RiskLevel _risk;
+        private bool _requiresRestart;
+        private int _fpsGain;
+        private int _pingReduction;
+        private double _ramFreedGB;
+        private bool _isVisible = true;
 
         public string Title
         {
             get => _title;
             set => SetProperty(ref _title, value);
         }
+
+        public string DisplayName => Title;
 
         public string Description
         {
@@ -83,6 +90,36 @@ namespace Tweaker.Models
             set => SetProperty(ref _risk, value);
         }
 
+        public bool RequiresRestart
+        {
+            get => _requiresRestart;
+            set => SetProperty(ref _requiresRestart, value);
+        }
+
+        public int FpsGain
+        {
+            get => _fpsGain;
+            set => SetProperty(ref _fpsGain, value);
+        }
+
+        public int PingReduction
+        {
+            get => _pingReduction;
+            set => SetProperty(ref _pingReduction, value);
+        }
+
+        public double RamFreedGB
+        {
+            get => _ramFreedGB;
+            set => SetProperty(ref _ramFreedGB, value);
+        }
+
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set => SetProperty(ref _isVisible, value);
+        }
+
         public bool ShowInfoButton { get; set; }
         public bool UseApplyMode { get; set; }
 
@@ -115,11 +152,11 @@ namespace Tweaker.Models
     /// </summary>
     public class TweakSectionModel
     {
-        public string Title { get; set; }
-        public string Subtitle { get; set; }
-        public string SectionName { get; set; } // Added to resolve compilation error
-        public string Icon { get; set; }
-        public string Category { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Subtitle { get; set; } = string.Empty;
+        public string SectionName { get; set; } = string.Empty;
+        public string Icon { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public System.Collections.ObjectModel.ObservableCollection<TweakModel> Tweaks { get; set; }
 
         public TweakSectionModel()

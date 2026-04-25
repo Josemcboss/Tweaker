@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using Microsoft.Win32;
 using Tweaker.Optimizations.Base;

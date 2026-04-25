@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -12,9 +12,9 @@ namespace Tweaker.Optimizations
     /// </summary>
     public static class ProTweaks
     {
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // NTDLL IMPORTS - TIMER RESOLUTION
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         [DllImport("ntdll.dll", SetLastError = true)]
         private static extern int NtSetTimerResolution(
@@ -31,9 +31,9 @@ namespace Tweaker.Optimizations
         private const int STATUS_SUCCESS = 0;
         private static uint _currentTimerResolution = 0;
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // HIGH RESOLUTION TIMER
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Establece la resolución del temporizador del sistema a 0.5ms
@@ -168,9 +168,9 @@ namespace Tweaker.Optimizations
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // NETWORK ADAPTER POWER SAVING
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Desactiva ahorro de energía en TODOS los adaptadores de red
@@ -347,9 +347,9 @@ namespace Tweaker.Optimizations
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // STICKY KEYS & ACCESSIBILITY SHORTCUTS
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Desactiva atajos de accesibilidad molestos
@@ -483,25 +483,25 @@ namespace Tweaker.Optimizations
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // APLICAR/REVERTIR TODO
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Aplica todas las optimizaciones profesionales
         /// </summary>
         public static bool ApplyAllProTweaks()
         {
-            Debug.WriteLine("═══════════════════════════════════════");
-            Debug.WriteLine("🚀 APLICANDO TODOS LOS PRO TWEAKS");
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
+            Debug.WriteLine("\U0001F680 APLICANDO TODOS LOS PRO TWEAKS");
+            Debug.WriteLine("─");
 
             bool success = true;
             success &= SetMaxTimerResolution();
             success &= DisableNetworkPowerSaving();
             success &= DisableStickyKeys();
 
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
             if (success)
             {
                 Debug.WriteLine("✅ TODOS LOS PRO TWEAKS APLICADOS");
@@ -511,7 +511,7 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("⚠️ ALGUNOS TWEAKS FALLARON");
             }
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
 
             return success;
         }
@@ -521,16 +521,16 @@ namespace Tweaker.Optimizations
         /// </summary>
         public static bool RevertAllProTweaks()
         {
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
             Debug.WriteLine("🔄 REVIRTIENDO TODOS LOS PRO TWEAKS");
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
 
             bool success = true;
             success &= RevertTimerResolution();
             success &= RevertNetworkPowerSaving();
             success &= RevertStickyKeys();
 
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
             if (success)
             {
                 Debug.WriteLine("✅ TODOS LOS PRO TWEAKS REVERTIDOS");
@@ -540,14 +540,14 @@ namespace Tweaker.Optimizations
             {
                 Debug.WriteLine("⚠️ ALGUNAS REVERSIONES FALLARON");
             }
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
 
             return success;
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // TIMER RESOLUTION PERSISTENCE (NEW)
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         private const string TIMER_RUN_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
         private const string TIMER_RUN_VALUE = "GhostOptimizerTimerResolution";

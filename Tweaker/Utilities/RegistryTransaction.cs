@@ -18,12 +18,12 @@ namespace Tweaker.Utilities
     {
         public string KeyPath { get; }
         public string ValueName { get; }
-        public object OriginalValue { get; }
+        public object? OriginalValue { get; }
         public RegistryValueKind OriginalValueKind { get; }
         public bool OriginalValueExisted { get; }
         public TransactionalRegistryOperation Operation { get; }
 
-        public TransactionalRegistryChange(string keyPath, string valueName, object originalValue, RegistryValueKind originalValueKind, bool originalValueExisted, TransactionalRegistryOperation operation)
+        public TransactionalRegistryChange(string keyPath, string valueName, object? originalValue, RegistryValueKind originalValueKind, bool originalValueExisted, TransactionalRegistryOperation operation)
         {
             KeyPath = keyPath;
             ValueName = valueName;
@@ -119,7 +119,7 @@ namespace Tweaker.Utilities
         {
             if (_disposed) throw new ObjectDisposedException(nameof(RegistryTransaction));
 
-            object originalValue = null;
+            object? originalValue = null;
             RegistryValueKind originalValueKind = RegistryValueKind.None;
             bool originalValueExisted = false;
 
@@ -160,7 +160,7 @@ namespace Tweaker.Utilities
         {
             if (_disposed) throw new ObjectDisposedException(nameof(RegistryTransaction));
 
-            object originalValue = null;
+            object? originalValue = null;
             RegistryValueKind originalValueKind = RegistryValueKind.None;
             bool originalValueExisted = false;
 
@@ -204,7 +204,7 @@ namespace Tweaker.Utilities
             }
         }
 
-        private RegistryKey GetRootKey(string fullPath, out string subKeyPath, bool writable)
+        private RegistryKey? GetRootKey(string fullPath, out string subKeyPath, bool writable)
         {
             subKeyPath = string.Empty;
             if (string.IsNullOrEmpty(fullPath)) return null;
@@ -213,7 +213,7 @@ namespace Tweaker.Utilities
             string rootName = parts[0].ToUpper();
             subKeyPath = parts.Length > 1 ? parts[1] : string.Empty;
 
-            RegistryKey rootKey;
+            RegistryKey? rootKey;
             switch (rootName)
             {
                 case "HKEY_CLASSES_ROOT":

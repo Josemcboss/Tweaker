@@ -28,16 +28,16 @@ namespace Tweaker.Utilities
         /// </summary>
         private class RegistryBackupEntry
         {
-            public string KeyPath { get; set; }
-            public string ValueName { get; set; }
-            public object OriginalValue { get; set; }
+            public string KeyPath { get; set; } = string.Empty;
+            public string ValueName { get; set; } = string.Empty;
+            public object? OriginalValue { get; set; }
             public RegistryValueKind ValueKind { get; set; }
             public DateTime BackupDate { get; set; }
-            public string TweakId { get; set; }
+            public string TweakId { get; set; } = string.Empty;
 
             public RegistryBackupEntry() { }
 
-            public RegistryBackupEntry(string keyPath, string valueName, object originalValue,
+            public RegistryBackupEntry(string keyPath, string valueName, object? originalValue,
                                       RegistryValueKind valueKind, string tweakId)
             {
                 KeyPath = keyPath;
@@ -72,7 +72,7 @@ namespace Tweaker.Utilities
                     LoadFromDisk();
 
                     _isInitialized = true;
-                    Debug.WriteLine("??? RegistryBackupService inicializado correctamente");
+                    Debug.WriteLine("── RegistryBackupService inicializado correctamente");
                     Debug.WriteLine($"   ?? Archivo de backup: {BackupFilePath}");
                     Debug.WriteLine($"   ?? Backups cargados: {_backups.Count}");
                 }
@@ -224,9 +224,9 @@ namespace Tweaker.Utilities
                 int restored = 0;
                 int failed = 0;
 
-                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                Debug.WriteLine("──────────────────────────────────────────");
                 Debug.WriteLine("?? RESTAURANDO TODOS LOS VALORES DEL REGISTRO...");
-                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                Debug.WriteLine("──────────────────────────────────────────");
 
                 foreach (var kvp in _backups)
                 {
@@ -255,11 +255,11 @@ namespace Tweaker.Utilities
                     }
                 }
 
-                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                Debug.WriteLine("──────────────────────────────────────────");
                 Debug.WriteLine($"? Restauración completada:");
                 Debug.WriteLine($"   • Exitosos: {restored}");
                 Debug.WriteLine($"   • Fallidos: {failed}");
-                Debug.WriteLine("???????????????????????????????????????????????????????????????");
+                Debug.WriteLine("──────────────────────────────────────────");
 
                 // Limpiar backups después de restaurar
                 _backups.Clear();
@@ -405,7 +405,7 @@ namespace Tweaker.Utilities
             {
                 _backups.Clear();
                 SaveToDisk();
-                Debug.WriteLine("??? Todos los backups han sido eliminados");
+                Debug.WriteLine("── Todos los backups han sido eliminados");
             }
         }
 

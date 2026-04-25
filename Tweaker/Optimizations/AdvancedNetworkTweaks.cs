@@ -54,16 +54,19 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(TCP_PARAMETERS))
+                using (RegistryKey? key = Registry.LocalMachine.CreateSubKey(TCP_PARAMETERS))
                 {
-                    key.SetValue("Tcp1323Opts", 3, RegistryValueKind.DWord);
-                    key.SetValue("SackOpts", 1, RegistryValueKind.DWord);
-                    key.SetValue("TcpMaxDataRetransmissions", 3, RegistryValueKind.DWord);
-                    key.SetValue("SynAttackProtect", 1, RegistryValueKind.DWord);
-                    key.SetValue("KeepAliveTime", 300000, RegistryValueKind.DWord);
-                    key.SetValue("DefaultTTL", 128, RegistryValueKind.DWord);
-                    key.SetValue("TcpMaxDupAcks", 2, RegistryValueKind.DWord);
-                    key.SetValue("TcpInitialRtt", 300, RegistryValueKind.DWord);
+                    if (key != null)
+                    {
+                        key.SetValue("Tcp1323Opts", 3, RegistryValueKind.DWord);
+                        key.SetValue("SackOpts", 1, RegistryValueKind.DWord);
+                        key.SetValue("TcpMaxDataRetransmissions", 3, RegistryValueKind.DWord);
+                        key.SetValue("SynAttackProtect", 1, RegistryValueKind.DWord);
+                        key.SetValue("KeepAliveTime", 300000, RegistryValueKind.DWord);
+                        key.SetValue("DefaultTTL", 128, RegistryValueKind.DWord);
+                        key.SetValue("TcpMaxDupAcks", 2, RegistryValueKind.DWord);
+                        key.SetValue("TcpInitialRtt", 300, RegistryValueKind.DWord);
+                    }
                 }
 
                 // Habilitar RSS y otras descargas por hardware
@@ -81,16 +84,19 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(TCP_PARAMETERS))
+                using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(TCP_PARAMETERS, true))
                 {
-                    key.DeleteValue("Tcp1323Opts", false);
-                    key.DeleteValue("SackOpts", false);
-                    key.DeleteValue("TcpMaxDataRetransmissions", false);
-                    key.DeleteValue("SynAttackProtect", false);
-                    key.DeleteValue("KeepAliveTime", false);
-                    key.DeleteValue("DefaultTTL", false);
-                    key.DeleteValue("TcpMaxDupAcks", false);
-                    key.DeleteValue("TcpInitialRtt", false);
+                    if (key != null)
+                    {
+                        key.DeleteValue("Tcp1323Opts", false);
+                        key.DeleteValue("SackOpts", false);
+                        key.DeleteValue("TcpMaxDataRetransmissions", false);
+                        key.DeleteValue("SynAttackProtect", false);
+                        key.DeleteValue("KeepAliveTime", false);
+                        key.DeleteValue("DefaultTTL", false);
+                        key.DeleteValue("TcpMaxDupAcks", false);
+                        key.DeleteValue("TcpInitialRtt", false);
+                    }
                 }
 
                 ExecuteCommand("netsh", "interface tcp set global chimney=automatic");
@@ -167,8 +173,9 @@ namespace Tweaker.Optimizations
                     RedirectStandardError = true
                 };
 
-                using (Process process = Process.Start(psi))
+                using (Process? process = Process.Start(psi))
                 {
+                    if (process == null) return false;
                     process.WaitForExit();
                     return process.ExitCode == 0;
                 }

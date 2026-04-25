@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Tweaker.Controls;
 using Tweaker.Data;
@@ -11,6 +15,7 @@ using Tweaker.Factories;
 using Tweaker.Models;
 using Tweaker.Services;
 using Tweaker.Utilities;
+using Tweaker.Views;
 
 namespace Tweaker.ViewModels
 {
@@ -18,14 +23,18 @@ namespace Tweaker.ViewModels
     {
         #region Fields
 
-        private TweakSectionModel _currentSection;
+        private TweakSectionModel? _currentSection;
         private string _currentPageName = "Dashboard";
         private readonly TweakStateManager _stateManager;
         private readonly GameBoosterService _gameBooster;
         private readonly SmartScanService _smartScanService;
         private readonly StartupManagerService _startupManagerService;
+        private readonly IProfileManager _profileManager;
         private bool _isAutoBoosterEnabled = false;
         private string _currentStatus = "Modo: Escritorio";
+        private HardwareInfo _hardwareInfo = new();
+        private ObservableCollection<HistoryEntry> _recentHistory = new();
+        private ObservableCollection<TweakerProfile> _savedProfiles = new();
 
         // Smart Scan fields
         private bool _isScanning = false;
@@ -33,7 +42,7 @@ namespace Tweaker.ViewModels
         private int _scanScore = 0;
         private string _scanSummary = "";
         private bool _showOptimizeButton = false;
-        private List<ScanResult> _lastScanResults;
+        private List<ScanResult>? _lastScanResults;
 
         #endregion
 
@@ -43,7 +52,19 @@ namespace Tweaker.ViewModels
         public ObservableCollection<TweakSectionModel> AllSections { get; }
         public ObservableCollection<StartupItem> StartupItems { get; } = new ObservableCollection<StartupItem>();
 
-        public TweakSectionModel CurrentSection
+        public ObservableCollection<HistoryEntry> RecentHistory
+        {
+            get => _recentHistory;
+            set { _recentHistory = value; OnPropertyChanged(); }
+        }
+
+        public ObservableCollection<TweakerProfile> SavedProfiles
+        {
+            get => _savedProfiles;
+            set { _savedProfiles = value; OnPropertyChanged(); }
+        }
+
+        public TweakSectionModel? CurrentSection
         {
             get => _currentSection;
             set
@@ -83,11 +104,46 @@ namespace Tweaker.ViewModels
             }
         }
 
+        public HardwareInfo HardwareInfo
+        {
+            get => _hardwareInfo;
+            private set
+            {
+                _hardwareInfo = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HardwareSummary));
+                OnPropertyChanged(nameof(DetectedAntiCheatsSummary));
+                OnPropertyChanged(nameof(DetectedAntiCheatNames));
+                OnPropertyChanged(nameof(HasDetectedAntiCheats));
+            }
+        }
+
+        public string HardwareSummary =>
+            $"{HardwareInfo.GPUName} | {HardwareInfo.CPUName} | {HardwareInfo.TotalRAMGB}GB RAM | {(HardwareInfo.IsSSD ? "SSD" : "HDD")} | {HardwareInfo.WindowsVersion}";
+
+        public string DetectedAntiCheatsSummary => HardwareInfo.DetectedAntiCheats.Count > 0
+            ? string.Join(", ", HardwareInfo.DetectedAntiCheats)
+            : "Ninguno";
+
+        public bool HasDetectedAntiCheats => HardwareInfo.DetectedAntiCheats.Count > 0;
+
+        public string DetectedAntiCheatNames => HardwareInfo.DetectedAntiCheats.Count > 0
+            ? string.Join(", ", HardwareInfo.DetectedAntiCheats)
+            : string.Empty;
+
         public int ActiveTweaksCount => _stateManager.ActiveTweaksCount;
-        public int TotalTweaksCount => 58; // Total tweaks disponibles
+        public int ActiveTweakCount => ActiveTweaksCount;
+        public int TotalTweaksCount => AllSections.Sum(s => s.Tweaks.Count);
+        public int TotalTweakCount => TotalTweaksCount;
         public double OptimizationPercentage => TotalTweaksCount > 0 ? (double)ActiveTweaksCount / TotalTweaksCount * 100 : 0;
         public int EstimatedFpsGain => CalculateEstimatedFpsGain();
+        public int TotalFpsGain => EstimatedFpsGain;
+        public int EstimatedPingReduction => CalculateEstimatedLatencyReduction();
+        public int TotalPingReduction => EstimatedPingReduction;
         public double RamFreedGB => CalculateRamFreed();
+        public double TotalRamFreed => RamFreedGB;
+        public int PendingRestartCount => GetPendingRestartTweaks().Count;
+        public ObservableCollection<TweakModel> PendingRestartTweaks => new(GetPendingRestartTweaks());
 
         // Game Booster Properties
         public bool IsGameModeActive => _gameBooster.IsGameModeActive;
@@ -146,6 +202,12 @@ namespace Tweaker.ViewModels
         public IAsyncCommand OptimizeNowCommand { get; }
         public ICommand RefreshStartupCommand { get; }
         public ICommand DisableStartupCommand { get; }
+        public ICommand SaveProfileCommand { get; }
+        public ICommand LoadProfileCommand { get; }
+        public ICommand DeleteProfileCommand { get; }
+        public ICommand LoadPresetCommand { get; }
+        public ICommand ExportLogCommand { get; }
+        public ICommand ClearHistoryCommand { get; }
 
         #endregion
 
@@ -159,6 +221,7 @@ namespace Tweaker.ViewModels
             _gameBooster.GameModeChanged += GameBooster_GameModeChanged;
             _smartScanService = new SmartScanService();
             _startupManagerService = new StartupManagerService();
+            _profileManager = App.ServiceProvider.GetRequiredService<IProfileManager>();
 
             // Inicializar colecciones
             NavigationItems = new ObservableCollection<NavigationItem>
@@ -167,23 +230,36 @@ namespace Tweaker.ViewModels
                 new NavigationItem { Name = "Input & Visuals", Icon = "Mouse", Page = "Input" },
                 new NavigationItem { Name = "Red & Ping", Icon = "Network", Page = "Network" },
                 new NavigationItem { Name = "Sistema & GPU", Icon = "Cpu", Page = "System" },
+                new NavigationItem { Name = "GPU & Display", Icon = "Display", Page = "GPUDisplay" },
+                new NavigationItem { Name = "Almacenamiento", Icon = "Drive", Page = "Storage" },
+                new NavigationItem { Name = "CPU Avanzado", Icon = "Chip", Page = "CPUAdvanced" },
                 new NavigationItem { Name = "Limpieza", Icon = "Trash", Page = "Cleanup" },
                 new NavigationItem { Name = "GHOST Pack", Icon = "Ghost", Page = "Ghost" },
-                new NavigationItem { Name = "Advanced", Icon = "Settings", Page = "Advanced" }
+                new NavigationItem { Name = "Advanced", Icon = "Settings", Page = "Advanced" },
+                new NavigationItem { Name = "Perfiles", Icon = "Folder", Page = "Profiles" },
+                new NavigationItem { Name = "Historial", Icon = "History", Page = "History" }
             };
 
             AllSections = new ObservableCollection<TweakSectionModel>(TweakFactory.GetAllSections());
             CurrentSection = AllSections.FirstOrDefault();
+            HardwareInfo = HardwareDetector.Detect();
+            RecentHistory = LoadHistoryEntries();
+            SavedProfiles = new ObservableCollection<TweakerProfile>(_profileManager.GetAllProfiles());
 
             // Comandos
             NavigateCommand = new RelayCommand(p => Navigate(p?.ToString()));
             ApplyAllCommand = new RelayCommand(_ => ApplyAllInCurrentSection());
             RevertAllCommand = new RelayCommand(_ => RevertAllInCurrentSection());
-
             StartScanCommand = new AsyncRelayCommand(StartScanAsync);
             OptimizeNowCommand = new AsyncRelayCommand(OptimizeNowAsync);
             RefreshStartupCommand = new RelayCommand(_ => RefreshStartupList());
             DisableStartupCommand = new RelayCommand(p => DisableStartupItem(p as StartupItem));
+            SaveProfileCommand = new RelayCommand(_ => SaveCurrentProfile());
+            LoadProfileCommand = new RelayCommand(p => LoadProfile(p as TweakerProfile));
+            DeleteProfileCommand = new RelayCommand(p => DeleteProfile(p as TweakerProfile));
+            LoadPresetCommand = new RelayCommand(p => LoadPreset(p?.ToString()));
+            ExportLogCommand = new RelayCommand(_ => ExportLog());
+            ClearHistoryCommand = new RelayCommand(_ => ClearHistory());
 
             // Cargar datos iniciales
             RefreshStartupList();
@@ -217,10 +293,9 @@ namespace Tweaker.ViewModels
                 IsScanning = false;
                 ShowScanResults = true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 IsScanning = false;
-                // Log error
             }
         }
 
@@ -250,10 +325,9 @@ namespace Tweaker.ViewModels
                 await Task.Delay(3000);
                 ShowScanResults = false;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 ShowOptimizeButton = true;
-                // Log error
             }
         }
 
@@ -270,7 +344,6 @@ namespace Tweaker.ViewModels
             }
             catch
             {
-                // Log error
             }
         }
 
@@ -283,18 +356,32 @@ namespace Tweaker.ViewModels
             }
         }
 
-        private void StateManager_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void StateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(TweakStateManager.ActiveTweaksCount))
+            if (e.PropertyName == nameof(TweakStateManager.ActiveTweaksCount) ||
+                e.PropertyName == nameof(TweakStateManager.TweaksByCategory) ||
+                e.PropertyName == nameof(TweakStateManager.OptimizationPercentage) ||
+                e.PropertyName == nameof(TweakStateManager.EstimatedFpsGain) ||
+                e.PropertyName == nameof(TweakStateManager.EstimatedLatencyReduction) ||
+                e.PropertyName == nameof(TweakStateManager.EstimatedRamFreed))
             {
                 OnPropertyChanged(nameof(ActiveTweaksCount));
+                OnPropertyChanged(nameof(ActiveTweakCount));
+                OnPropertyChanged(nameof(TotalTweaksCount));
+                OnPropertyChanged(nameof(TotalTweakCount));
                 OnPropertyChanged(nameof(OptimizationPercentage));
                 OnPropertyChanged(nameof(EstimatedFpsGain));
+                OnPropertyChanged(nameof(TotalFpsGain));
+                OnPropertyChanged(nameof(EstimatedPingReduction));
+                OnPropertyChanged(nameof(TotalPingReduction));
                 OnPropertyChanged(nameof(RamFreedGB));
+                OnPropertyChanged(nameof(TotalRamFreed));
+                OnPropertyChanged(nameof(PendingRestartCount));
+                OnPropertyChanged(nameof(PendingRestartTweaks));
             }
         }
 
-        private void GameBooster_GameModeChanged(object sender, GameModeChangedEventArgs e)
+        private void GameBooster_GameModeChanged(object? sender, GameModeChangedEventArgs e)
         {
             OnPropertyChanged(nameof(IsGameModeActive));
             CurrentStatus = e.IsActive ? "Modo: Gaming (Optimizado)" : "Modo: Escritorio";
@@ -303,15 +390,23 @@ namespace Tweaker.ViewModels
         private void Navigate(string page)
         {
             if (string.IsNullOrEmpty(page)) return;
+
+            if (page is "Dashboard" or "Profiles" or "History")
+            {
+                CurrentSection = null;
+                CurrentPageName = page;
+                if (page == "History")
+                {
+                    LoadRecentHistory();
+                }
+                return;
+            }
+
             var section = AllSections.FirstOrDefault(s => s.SectionName.Contains(page, StringComparison.OrdinalIgnoreCase));
             if (section != null)
             {
                 CurrentSection = section;
-            }
-            else if (page == "Dashboard")
-            {
-                CurrentPageName = "Dashboard";
-                CurrentSection = null;
+                CurrentPageName = section.SectionName;
             }
         }
 
@@ -335,12 +430,217 @@ namespace Tweaker.ViewModels
 
         private int CalculateEstimatedFpsGain()
         {
-            return _stateManager.EstimatedFpsGain;
+            return GetActiveTweakModels().Sum(t => t.FpsGain);
+        }
+
+        private int CalculateEstimatedLatencyReduction()
+        {
+            return GetActiveTweakModels().Sum(t => t.PingReduction);
         }
 
         private double CalculateRamFreed()
         {
-            return _stateManager.EstimatedRamFreed;
+            return Math.Round(GetActiveTweakModels().Sum(t => t.RamFreedGB), 1);
+        }
+
+        private List<TweakModel> GetActiveTweakModels()
+        {
+            return AllSections
+                .SelectMany(s => s.Tweaks)
+                .Where(t => _stateManager.IsTweakEnabled(t.TweakId))
+                .ToList();
+        }
+
+        private List<TweakModel> GetPendingRestartTweaks()
+        {
+            return AllSections
+                .SelectMany(s => s.Tweaks)
+                .Where(t => t.RequiresRestart && _stateManager.IsTweakEnabled(t.TweakId))
+                .ToList();
+        }
+
+        private ObservableCollection<HistoryEntry> LoadHistoryEntries()
+        {
+            var entries = new ObservableCollection<HistoryEntry>();
+            foreach (string line in TweakHistoryLogger.GetRecent(50))
+            {
+                if (TryParseHistoryLine(line, out HistoryEntry? entry) && entry != null)
+                {
+                    entries.Add(entry);
+                }
+            }
+
+            return entries;
+        }
+
+        public void LoadRecentHistory()
+        {
+            RecentHistory = LoadHistoryEntries();
+        }
+
+        private static bool TryParseHistoryLine(string line, out HistoryEntry? entry)
+        {
+            entry = null;
+            try
+            {
+                int firstClose = line.IndexOf('>');
+                int secondOpen = line.IndexOf('[', firstClose + 1);
+                int secondClose = line.IndexOf(']', secondOpen + 1);
+                if (firstClose < 0 || secondOpen < 0 || secondClose < 0)
+                {
+                    return false;
+                }
+
+                string timestampText = line[1..firstClose];
+                string action = line[(secondOpen + 1)..secondClose];
+                string remainder = line[(secondClose + 2)..];
+                string tweakName = remainder;
+                string category = string.Empty;
+                int separator = remainder.LastIndexOf(" - ", StringComparison.Ordinal);
+                if (separator >= 0)
+                {
+                    tweakName = remainder[..separator];
+                    category = remainder[(separator + 3)..];
+                }
+
+                if (!DateTime.TryParse(timestampText, out DateTime timestamp))
+                {
+                    timestamp = DateTime.Now;
+                }
+
+                entry = new HistoryEntry
+                {
+                    Timestamp = timestamp,
+                    Action = action,
+                    TweakName = tweakName,
+                    Category = category
+                };
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void SaveCurrentProfile()
+        {
+            var dialog = new InputDialog
+            {
+                Owner = Application.Current?.MainWindow
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var enabledIds = AllSections
+                .SelectMany(s => s.Tweaks)
+                .Where(t => _stateManager.IsTweakEnabled(t.TweakId))
+                .Select(t => t.Id)
+                .ToList();
+
+            var profile = new TweakerProfile
+            {
+                Name = dialog.ProfileName,
+                Description = dialog.Description,
+                Created = DateTime.Now,
+                Tweaks = enabledIds
+            };
+
+            _profileManager.SaveProfile(profile);
+            SavedProfiles = new ObservableCollection<TweakerProfile>(_profileManager.GetAllProfiles());
+        }
+
+        private void LoadProfile(TweakerProfile? profile)
+        {
+            if (profile == null) return;
+            var result = MessageBox.Show(
+                $"¿Cargar perfil '{profile.Name}'?\nSe activarán {profile.TweakIds.Count} tweaks.",
+                "Cargar perfil", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes) return;
+
+            var tweakIds = profile.TweakIds.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in AllSections)
+            {
+                foreach (var tweak in section.Tweaks)
+                {
+                    if (tweakIds.Contains(tweak.Id))
+                    {
+                        _stateManager.SetTweakEnabled(tweak.Id, section.SectionName);
+                    }
+                    else if (_stateManager.IsTweakEnabled(tweak.Id))
+                    {
+                        _stateManager.SetTweakDisabled(tweak.Id);
+                    }
+                }
+            }
+        }
+
+        private void DeleteProfile(TweakerProfile? profile)
+        {
+            if (profile == null) return;
+            _profileManager.DeleteProfile(profile.Name);
+            SavedProfiles.Remove(profile);
+        }
+
+        private void LoadPreset(string? presetName)
+        {
+            if (string.IsNullOrWhiteSpace(presetName)) return;
+            var preset = _profileManager.GetBuiltInProfiles().FirstOrDefault(p => p.Name.Equals(presetName, StringComparison.OrdinalIgnoreCase));
+            if (preset == null) return;
+
+            var presetIds = preset.Tweaks.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var section in AllSections)
+            {
+                foreach (var tweak in section.Tweaks)
+                {
+                    if (presetIds.Contains(tweak.Id))
+                    {
+                        _stateManager.SetTweakEnabled(tweak.Id, section.SectionName);
+                    }
+                    else if (_stateManager.IsTweakEnabled(tweak.Id))
+                    {
+                        _stateManager.SetTweakDisabled(tweak.Id);
+                    }
+                }
+            }
+        }
+
+        private void ExportLog()
+        {
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = "ghost_optimizer_log.txt",
+                Filter = "Text files|*.txt"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                string exportPath = TweakHistoryLogger.ExportToDesktop();
+                if (!string.IsNullOrWhiteSpace(exportPath))
+                {
+                    try
+                    {
+                        System.IO.File.Copy(exportPath, dlg.FileName, true);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+        }
+
+        private void ClearHistory()
+        {
+            var r = MessageBox.Show("¿Limpiar todo el historial?", "Confirmar",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (r == MessageBoxResult.Yes)
+            {
+                TweakHistoryLogger.Clear();
+                RecentHistory.Clear();
+            }
         }
 
         #region INotifyPropertyChanged

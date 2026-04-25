@@ -10,7 +10,7 @@ namespace Tweaker.Windows
     public partial class UpdateWindow : Window
     {
         private readonly UpdateInfo _updateInfo;
-        private UpdateDownloader _downloader;
+        private UpdateDownloader? _downloader;
         private bool _isDownloading = false;
 
         public UpdateWindow(UpdateInfo updateInfo)
@@ -138,7 +138,7 @@ namespace Tweaker.Windows
             }
         }
 
-        private void Downloader_ProgressChanged(object sender, DownloadProgressEventArgs e)
+        private void Downloader_ProgressChanged(object? sender, DownloadProgressEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
@@ -147,13 +147,14 @@ namespace Tweaker.Windows
             });
         }
 
-        private void Downloader_StatusChanged(object sender, string status)
+        private void Downloader_StatusChanged(object? sender, string status)
         {
             Dispatcher.Invoke(() =>
             {
                 TxtProgressStatus.Text = status;
             });
         }
+
 
         private void BtnLater_Click(object sender, RoutedEventArgs e)
         {

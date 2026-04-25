@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -212,8 +212,8 @@ namespace Tweaker.Services
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════");
-                Debug.WriteLine("🔍 HARDWARE MONITOR - Sensores disponibles:");
+                Debug.WriteLine("─");
+                Debug.WriteLine("\U0001F50D HARDWARE MONITOR - Sensores disponibles:");
                 foreach (var hardware in _computer.Hardware)
                 {
                     Debug.WriteLine($"\n📦 {hardware.Name} ({hardware.HardwareType})");
@@ -223,7 +223,7 @@ namespace Tweaker.Services
                         Debug.WriteLine($"   → {sensor.SensorType,-15} | {sensor.Name,-30} | {sensor.Value:F1}");
                     }
                 }
-                Debug.WriteLine("═══════════════════════════════════════");
+                Debug.WriteLine("─");
             }
             catch (Exception ex)
             {
