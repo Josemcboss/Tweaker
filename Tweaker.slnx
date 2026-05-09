@@ -1,4 +1,3 @@
 <Solution>
-  <Project Path="Tweaker.Tests/Tweaker.Tests.csproj" />
   <Project Path="Tweaker/Tweaker.csproj" />
 </Solution>
