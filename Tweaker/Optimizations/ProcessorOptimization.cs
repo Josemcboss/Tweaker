@@ -39,9 +39,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("AMD PROCESSOR OPTIMIZATION - Optimizando procesador AMD");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 bool success = true;
 
@@ -164,9 +164,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("INTEL PROCESSOR OPTIMIZATION - Optimizando procesador Intel");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 bool success = true;
 

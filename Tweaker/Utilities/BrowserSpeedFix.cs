@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 // Removed System.Windows to prevent direct MessageBox.Show calls
@@ -48,7 +48,7 @@ namespace Tweaker.Utilities
                            "• NetworkThrottling: Parcialmente restaurado\n" +
                            "• SystemResponsiveness: Mejorado para multitarea\n" +
                            "• DNS Cache: Optimizado para navegadores\n\n" +
-                           "🚀 Los navegadores deberían cargar MUCHO más rápido ahora\n" +
+                           "\U0001F680 Los navegadores deberían cargar MUCHO más rápido ahora\n" +
                            "🎮 Gaming mantiene ~90% del rendimiento";
                 }
                 else

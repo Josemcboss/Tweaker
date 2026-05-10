@@ -3,168 +3,76 @@ using System.Windows;
 
 namespace Tweaker.License
 {
-    /// <summary>
-    /// Gestor central del sistema de licencias
-    /// </summary>
-    public static class LicenseManager
+    public class LicenseManager : ILicenseManager
     {
-        private static LicenseData? currentLicense;
-        private static bool isValidated = false;
+        private readonly ILicenseValidator _validator;
+        private readonly ILicenseStorage _storage;
+        private LicenseData? _currentLicense;
+        private bool _isValidated = false;
 
-        /// <summary>
-        /// Indica si la aplicación tiene una licencia válida
-        /// </summary>
-        public static bool IsLicenseValid => isValidated && currentLicense != null && currentLicense.IsValid;
+        public LicenseManager(ILicenseValidator validator, ILicenseStorage storage)
+        {
+            _validator = validator;
+            _storage = storage;
+        }
 
-        /// <summary>
-        /// Obtiene los datos de la licencia actual
-        /// </summary>
-        public static LicenseData? CurrentLicense => currentLicense;
+        public bool IsLicenseValid => _isValidated && _currentLicense != null && _currentLicense.IsValid;
+        public LicenseData? CurrentLicense => _currentLicense;
 
-        /// <summary>
-        /// Valida la licencia al inicio de la aplicación
-        /// </summary>
-        /// <returns>True si la licencia es válida, False si no lo es</returns>
-        public static bool ValidateLicenseOnStartup()
+        public bool ValidateLicenseOnStartup()
         {
             try
             {
-                // Obtener fingerprint actual
                 var currentFingerprint = HardwareFingerprint.GetFingerprint();
+                var (licenseKey, savedLicense) = _storage.LoadLicense();
 
-                // Cargar licencia guardada
-                var (licenseKey, savedLicense) = LicenseStorage.LoadLicense();
+                if (licenseKey == null || savedLicense == null) return false;
+                if (savedLicense.HardwareFingerprint != currentFingerprint) return false;
+                if (savedLicense.IsExpired) return false;
 
-                if (licenseKey == null || savedLicense == null)
-                {
-                    // No hay licencia guardada
-                    isValidated = false;
-                    return false;
-                }
+                var validatedLicense = _validator.ValidateLicenseKey(licenseKey, currentFingerprint, DateTime.Now, savedLicense.CreatedDate);
+                if (validatedLicense == null) return false;
 
-                // Verificar que el fingerprint coincida
-                if (savedLicense.HardwareFingerprint != currentFingerprint)
-                {
-                    // Hardware cambió, licencia inválida
-                    isValidated = false;
-                    return false;
-                }
-
-                // Verificar que no esté expirada
-                if (savedLicense.IsExpired)
-                {
-                    // Licencia expirada
-                    isValidated = false;
-                    return false;
-                }
-
-                // TODO: Refactor this to use dependency injection
-                var keyVault = new KeyVault();
-                var securityChecks = new SecurityChecks();
-                var validator = new LicenseValidator(keyVault, securityChecks);
-
-                // Re-validar la llave completa (usando la fecha de creación guardada)
-                var validatedLicense = validator.ValidateLicenseKey(licenseKey, currentFingerprint, DateTime.Now, savedLicense.CreatedDate);
-                if (validatedLicense == null)
-                {
-                    // Llave no válida (archivo corrupto/modificado)
-                    isValidated = false;
-                    return false;
-                }
-
-                // Licencia válida
-                currentLicense = validatedLicense;
-                isValidated = true;
+                _currentLicense = validatedLicense;
+                _isValidated = true;
                 return true;
             }
-            catch
-            {
-                isValidated = false;
-                return false;
-            }
+            catch { return false; }
         }
 
-        /// <summary>
-        /// Muestra la ventana de activación
-        /// </summary>
-        /// <param name="showCancelOption">Si se permite cancelar (false = cerrar app si se cancela)</param>
-        /// <returns>True si se activó correctamente</returns>
-        public static bool ShowActivationWindow(bool showCancelOption = true)
+        public bool ShowActivationWindow(bool showCancelOption = true)
         {
-            var activationWindow = new ActivationWindow();
+            var activationWindow = new ActivationWindow(); 
             var result = activationWindow.ShowDialog();
 
             if (result == true && activationWindow.ActivationSuccessful)
             {
-                // Re-validar después de la activación
                 return ValidateLicenseOnStartup();
             }
 
             if (!showCancelOption && result != true)
             {
-                // Si no se permite cancelar y el usuario canceló, cerrar la aplicación
-                MessageBox.Show(
-                    "⚠️ Tweaker requiere una licencia válida para funcionar.\n\n" +
-                    "La aplicación se cerrará.",
-                    "Licencia Requerida",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
-
+                MessageBox.Show("Tweaker requiere una licencia válida.", "Licencia Requerida", MessageBoxButton.OK, MessageBoxImage.Warning);
                 Application.Current.Shutdown();
             }
 
             return result == true;
         }
 
-        /// <summary>
-        /// Verifica y solicita activación si es necesario
-        /// </summary>
-        /// <returns>True si hay licencia válida, False si no</returns>
-        public static bool EnsureValidLicense()
+        public bool EnsureValidLicense() => IsLicenseValid || ShowActivationWindow(false);
+
+        public void DeactivateLicense()
         {
-            if (!IsLicenseValid)
-            {
-                return ShowActivationWindow(showCancelOption: false);
-            }
-            return true;
+            _storage.DeleteLicense();
+            _currentLicense = null;
+            _isValidated = false;
         }
 
-        /// <summary>
-        /// Desactiva la licencia actual (elimina archivo de licencia)
-        /// </summary>
-        public static void DeactivateLicense()
+        public string GetLicenseInfo()
         {
-            LicenseStorage.DeleteLicense();
-            currentLicense = null;
-            isValidated = false;
-        }
-
-        /// <summary>
-        /// Obtiene información de la licencia para mostrar
-        /// </summary>
-        public static string GetLicenseInfo()
-        {
-            if (!IsLicenseValid || currentLicense == null)
-            {
-                return "Sin licencia activa";
-            }
-
-            var info = "Licencia Activa\n";
-            info += $"Hardware ID: {HardwareFingerprint.GetDisplayFingerprint()}\n";
-
-            if (currentLicense.IsPerpetual)
-            {
-                info += "Tipo: Perpetua ♾️\n";
-            }
-            else
-            {
-                info += $"Expira: {currentLicense.ExpirationDate:yyyy-MM-dd}\n";
-                var daysRemaining = (currentLicense.ExpirationDate!.Value - DateTime.Now).Days;
-                info += $"Días restantes: {daysRemaining}\n";
-            }
-
-            info += $"Activada: {currentLicense.CreatedDate:yyyy-MM-dd}";
-
+            if (!IsLicenseValid || _currentLicense == null) return "Sin licencia activa";
+            var info = $"Licencia Activa\nID: {HardwareFingerprint.GetDisplayFingerprint()}\n";
+            info += _currentLicense.IsPerpetual ? "Tipo: Perpetua ♾️" : $"Expira: {_currentLicense.ExpirationDate:yyyy-MM-dd}";
             return info;
         }
     }

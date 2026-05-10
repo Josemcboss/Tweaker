@@ -91,7 +91,7 @@ namespace Tweaker.Optimizations.Base
         /// <summary>
         /// Helper para leer valores del registro de forma segura
         /// </summary>
-        protected T GetRegistryValue<T>(RegistryKey hive, string keyPath, string valueName, T defaultValue = default(T))
+        protected T? GetRegistryValue<T>(RegistryKey hive, string keyPath, string valueName, T? defaultValue = default(T))
         {
             return RegistryHelper.GetRegistryValue(hive, keyPath, valueName, defaultValue);
         }
@@ -131,10 +131,14 @@ namespace Tweaker.Optimizations.Base
                         psi.RedirectStandardError = true;
                     }
 
-                    using (Process process = Process.Start(psi))
+                    using (Process? process = Process.Start(psi))
                     {
-                        process?.WaitForExit();
-                        return process?.ExitCode == 0;
+                        if (process != null)
+                        {
+                            process.WaitForExit();
+                            return process.ExitCode == 0;
+                        }
+                        return false;
                     }
                 }
                 catch (Exception ex)
@@ -151,7 +155,7 @@ namespace Tweaker.Optimizations.Base
         /// </summary>
         protected void ShowOperationSummary(bool success, string successMessage, string failureMessage)
         {
-            Debug.WriteLine("????????????????????????????????????????");
+            Debug.WriteLine("──────────────────────────?");
             if (success)
             {
                 Debug.WriteLine($"? {OptimizationName} - {successMessage}");
@@ -160,7 +164,7 @@ namespace Tweaker.Optimizations.Base
             {
                 Debug.WriteLine($"? {OptimizationName} - {failureMessage}");
             }
-            Debug.WriteLine("????????????????????????????????????????");
+            Debug.WriteLine("──────────────────────────?");
         }
 
         /// <summary>

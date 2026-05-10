@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 
 using Microsoft.Win32;
@@ -64,9 +64,9 @@ namespace Tweaker.Optimizations
                 // PASO 4: Deshabilitar Game Bar / DVR
                 DisableGameBar();
 
-                Debug.WriteLine("════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("✅ Ghost METHOD APLICADO");
-                Debug.WriteLine("════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 return success;
             }

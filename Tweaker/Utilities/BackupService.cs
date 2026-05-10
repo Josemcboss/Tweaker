@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Windows;
+using Tweaker.Services;
 
 namespace Tweaker.Utilities
 {
@@ -12,16 +12,15 @@ namespace Tweaker.Utilities
     /// Servicio para Backup y Restore de configuraciones de tweaks
     /// Permite guardar, cargar y exportar el estado de todos los tweaks
     /// </summary>
-    public class BackupService
+    public class BackupService : IBackupService
     {
-        private static BackupService? _instance;
         private readonly string _backupDirectory;
         private readonly TweakStateManager _stateManager;
+        private readonly ITweakDispatcher _dispatcher;
 
-        public static BackupService Instance => _instance ??= new BackupService();
-
-        private BackupService()
+        public BackupService(ITweakDispatcher dispatcher)
         {
+            _dispatcher = dispatcher;
             _stateManager = TweakStateManager.Instance;
 
             // Crear directorio de backups en AppData
@@ -30,7 +29,7 @@ namespace Tweaker.Utilities
 
             Directory.CreateDirectory(_backupDirectory);
 
-            Debug.WriteLine($"?? Backup directory: {_backupDirectory}");
+            Debug.WriteLine($"[BackupService] Backup directory: {_backupDirectory}");
         }
 
         /// <summary>
@@ -62,12 +61,12 @@ namespace Tweaker.Utilities
 
                 File.WriteAllText(filePath, json);
 
-                Debug.WriteLine($"? Backup creado: {filePath}");
+                Debug.WriteLine($"[BackupService] Backup creado: {filePath}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error creando backup: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error creando backup: {ex.Message}");
                 return false;
             }
         }
@@ -79,11 +78,12 @@ namespace Tweaker.Utilities
         {
             try
             {
-                string filePath = Path.Combine(_backupDirectory, $"{backupName}.json");
+                string fileName = backupName.EndsWith(".json") ? backupName : $"{backupName}.json";
+                string filePath = Path.Combine(_backupDirectory, fileName);
 
                 if (!File.Exists(filePath))
                 {
-                    Debug.WriteLine($"? Backup no encontrado: {filePath}");
+                    Debug.WriteLine($"[BackupService] Backup no encontrado: {filePath}");
                     return false;
                 }
 
@@ -92,24 +92,31 @@ namespace Tweaker.Utilities
 
                 if (backup == null)
                 {
-                    Debug.WriteLine("? Error deserializando backup");
+                    Debug.WriteLine("[BackupService] Error deserializando backup");
                     return false;
                 }
+
+                Debug.WriteLine($"[BackupService] Restaurando backup: {backup.Name}");
 
                 // Restaurar cada tweak según su estado en el backup
                 foreach (var tweak in backup.Tweaks)
                 {
-                    // TODO: Implementar lógica de restauración
-                    // Por ahora solo logging
-                    Debug.WriteLine($"Restaurando tweak: {tweak.Id} - Activo: {tweak.IsEnabled}");
+                    if (tweak.IsEnabled)
+                    {
+                        _dispatcher.ApplyTweak(tweak.Id);
+                    }
+                    else
+                    {
+                        _dispatcher.RevertTweak(tweak.Id);
+                    }
                 }
 
-                Debug.WriteLine($"? Backup restaurado: {backupName}");
+                Debug.WriteLine($"[BackupService] Backup restaurado exitosamente: {backupName}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error restaurando backup: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error restaurando backup: {ex.Message}");
                 return false;
             }
         }
@@ -146,7 +153,7 @@ namespace Tweaker.Utilities
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"? Error leyendo backup {file}: {ex.Message}");
+                        Debug.WriteLine($"[BackupService] Error leyendo backup {file}: {ex.Message}");
                     }
                 }
 
@@ -154,7 +161,7 @@ namespace Tweaker.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error obteniendo backups: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error obteniendo backups: {ex.Message}");
                 return new List<BackupInfo>();
             }
         }
@@ -166,12 +173,13 @@ namespace Tweaker.Utilities
         {
             try
             {
-                string filePath = Path.Combine(_backupDirectory, $"{backupName}.json");
+                string fileName = backupName.EndsWith(".json") ? backupName : $"{backupName}.json";
+                string filePath = Path.Combine(_backupDirectory, fileName);
 
                 if (File.Exists(filePath))
                 {
                     File.Delete(filePath);
-                    Debug.WriteLine($"? Backup eliminado: {backupName}");
+                    Debug.WriteLine($"[BackupService] Backup eliminado: {backupName}");
                     return true;
                 }
 
@@ -179,7 +187,7 @@ namespace Tweaker.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error eliminando backup: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error eliminando backup: {ex.Message}");
                 return false;
             }
         }
@@ -191,18 +199,19 @@ namespace Tweaker.Utilities
         {
             try
             {
-                string sourcePath = Path.Combine(_backupDirectory, $"{backupName}.json");
+                string fileName = backupName.EndsWith(".json") ? backupName : $"{backupName}.json";
+                string sourcePath = Path.Combine(_backupDirectory, fileName);
 
                 if (!File.Exists(sourcePath))
                     return false;
 
                 File.Copy(sourcePath, exportPath, overwrite: true);
-                Debug.WriteLine($"? Backup exportado: {exportPath}");
+                Debug.WriteLine($"[BackupService] Backup exportado: {exportPath}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error exportando backup: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error exportando backup: {ex.Message}");
                 return false;
             }
         }
@@ -221,12 +230,12 @@ namespace Tweaker.Utilities
                 string destPath = Path.Combine(_backupDirectory, fileName);
 
                 File.Copy(importPath, destPath, overwrite: true);
-                Debug.WriteLine($"? Backup importado: {fileName}");
+                Debug.WriteLine($"[BackupService] Backup importado: {fileName}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"? Error importando backup: {ex.Message}");
+                Debug.WriteLine($"[BackupService] Error importando backup: {ex.Message}");
                 return false;
             }
         }
@@ -247,7 +256,6 @@ namespace Tweaker.Utilities
 
         private double GetTotalMemoryGB()
         {
-            // Método alternativo sin Microsoft.VisualBasic
             try
             {
                 return GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024.0 / 1024.0 / 1024.0;
@@ -293,4 +301,3 @@ namespace Tweaker.Utilities
         public double SizeMB { get; set; }
     }
 }
-

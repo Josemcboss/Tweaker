@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -247,7 +247,7 @@ namespace Tweaker.Services
                     var processName = foregroundProcess.ProcessName.ToLower();
 
                     // DEBUG: Log del proceso actual
-                    Debug.WriteLine($"🔍 Proceso en foreground: {processName}");
+                    Debug.WriteLine($"\U0001F50D Proceso en foreground: {processName}");
 
                     // Verificar si es un juego conocido
                     bool isGame = IsKnownGame(processName);

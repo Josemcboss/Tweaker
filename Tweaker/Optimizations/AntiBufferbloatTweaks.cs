@@ -63,17 +63,20 @@ namespace Tweaker.Optimizations
             try
             {
                 // Habilitar etiquetado DSCP (Anti-NLA)
-                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\services\Tcpip\QoS", true))
+                using (RegistryKey? key = Registry.LocalMachine.CreateSubKey(@"SYSTEM\CurrentControlSet\services\Tcpip\QoS", true))
                 {
                     if (key != null) key.SetValue("Do not use NLA", "1", RegistryValueKind.String);
                 }
 
                 // Deshabilitar reserva de ancho de banda (20% default)
-                using (RegistryKey key = Registry.LocalMachine.CreateSubKey(TCP_PARAMETERS, true))
+                using (RegistryKey? key = Registry.LocalMachine.CreateSubKey(TCP_PARAMETERS, true))
                 {
-                    key.SetValue("NonBestEffortLimit", 0, RegistryValueKind.DWord);
-                    key.SetValue("DisableUserTOSSetting", 0, RegistryValueKind.DWord);
-                    key.SetValue("DefaultTOSValue", 0, RegistryValueKind.DWord);
+                    if (key != null)
+                    {
+                        key.SetValue("NonBestEffortLimit", 0, RegistryValueKind.DWord);
+                        key.SetValue("DisableUserTOSSetting", 0, RegistryValueKind.DWord);
+                        key.SetValue("DefaultTOSValue", 0, RegistryValueKind.DWord);
+                    }
                 }
 
                 return true;
@@ -89,12 +92,12 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\services\Tcpip\QoS", true))
+                using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\services\Tcpip\QoS", true))
                 {
                     if (key != null) key.DeleteValue("Do not use NLA", false);
                 }
 
-                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(TCP_PARAMETERS, true))
+                using (RegistryKey? key = Registry.LocalMachine.OpenSubKey(TCP_PARAMETERS, true))
                 {
                     if (key != null)
                     {
@@ -143,8 +146,9 @@ namespace Tweaker.Optimizations
                     RedirectStandardError = true
                 };
 
-                using (Process process = Process.Start(psi))
+                using (Process? process = Process.Start(psi))
                 {
+                    if (process == null) return false;
                     process.WaitForExit();
                     return process.ExitCode == 0;
                 }

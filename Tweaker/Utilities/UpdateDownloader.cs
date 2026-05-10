@@ -17,8 +17,8 @@ namespace Tweaker.Utilities
         private static readonly HttpClient _httpClient = new HttpClient();
         private readonly UpdateInfo _updateInfo;
 
-        public event EventHandler<DownloadProgressEventArgs> DownloadProgressChanged;
-        public event EventHandler<string> StatusChanged;
+        public event EventHandler<DownloadProgressEventArgs>? DownloadProgressChanged;
+        public event EventHandler<string>? StatusChanged;
 
         static UpdateDownloader()
         {

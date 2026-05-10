@@ -3,15 +3,17 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Tweaker.License
 {
     /// <summary>
-    /// Sistema anti-debugging para dificultar an�lisis de ingenier�a inversa
-    /// Detecta debuggers y termina el proceso si se detecta manipulaci�n
+    /// Sistema anti-debugging para dificultar análisis de ingeniería inversa
+    /// Detecta debuggers y termina el proceso si se detecta manipulación
     /// </summary>
     internal static class AntiDebugger
     {
-        // Windows API para detecci�n avanzada
+        // Windows API para detección avanzada
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
         private static extern bool CheckRemoteDebuggerPresent(IntPtr hProcess, ref bool isDebuggerPresent);
 
@@ -44,27 +46,27 @@ namespace Tweaker.License
         private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(5);
 
         /// <summary>
-        /// Verifica si hay un debugger adjunto (m�ltiples m�todos)
+        /// Verifica si hay un debugger adjunto (múltiples métodos)
         /// </summary>
         public static bool IsDebuggerAttached()
         {
             try
             {
-                // M�todo 1: Debugger.IsAttached de .NET
+                // Método 1: Debugger.IsAttached de .NET
                 if (Debugger.IsAttached)
                 {
                     LogDebuggerDetection("Debugger.IsAttached");
                     return true;
                 }
 
-                // M�todo 2: Windows API IsDebuggerPresent
+                // Método 2: Windows API IsDebuggerPresent
                 if (IsDebuggerPresent())
                 {
                     LogDebuggerDetection("IsDebuggerPresent API");
                     return true;
                 }
 
-                // M�todo 3: CheckRemoteDebuggerPresent
+                // Método 3: CheckRemoteDebuggerPresent
                 bool isDebuggerPresent = false;
                 CheckRemoteDebuggerPresent(GetCurrentProcess(), ref isDebuggerPresent);
                 if (isDebuggerPresent)
@@ -73,17 +75,17 @@ namespace Tweaker.License
                     return true;
                 }
 
-                // M�todo 4: Verificar proceso padre (debuggers suelen ser padres)
+                // Método 4: Verificar proceso padre (debuggers suelen ser padres)
                 if (IsRunningUnderDebuggerProcess())
                 {
                     LogDebuggerDetection("Proceso padre sospechoso");
                     return true;
                 }
 
-                // M�todo 5: Timing attack (debuggers ralentizan ejecuci�n)
+                // Método 5: Timing attack (debuggers ralentizan ejecución)
                 if (DetectTimingAnomaly())
                 {
-                    LogDebuggerDetection("Anomal�a de timing detectada");
+                    LogDebuggerDetection("Anomalía de timing detectada");
                     return true;
                 }
 
@@ -91,13 +93,13 @@ namespace Tweaker.License
             }
             catch
             {
-                // Si falla la verificaci�n, asumir que hay debugger (medida de seguridad)
+                // Si falla la verificación, asumir que hay debugger (medida de seguridad)
                 return true;
             }
         }
 
         /// <summary>
-        /// Verifica si el proceso est� siendo ejecutado desde un debugger conocido
+        /// Verifica si el proceso está siendo ejecutado desde un debugger conocido
         /// </summary>
         private static bool IsRunningUnderDebuggerProcess()
         {
@@ -177,7 +179,7 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Detecta anomal�as en el tiempo de ejecuci�n (debuggers ralentizan el c�digo)
+        /// Detecta anomalías en el tiempo de ejecución (debuggers ralentizan el código)
         /// </summary>
         private static bool DetectTimingAnomaly()
         {
@@ -185,7 +187,7 @@ namespace Tweaker.License
             {
                 var sw = Stopwatch.StartNew();
 
-                // Operaci�n simple que deber�a ejecutarse r�pido
+                // Operación simple que debería ejecutarse rápido
                 int sum = 0;
                 for (int i = 0; i < 1000; i++)
                 {
@@ -194,7 +196,7 @@ namespace Tweaker.License
 
                 sw.Stop();
 
-                // Si toma m�s de 10ms para una operaci�n tan simple, probablemente hay un debugger
+                // Si toma más de 10ms para una operación tan simple, probablemente hay un debugger
                 if (sw.ElapsedMilliseconds > 10)
                 {
                     return true;
@@ -221,7 +223,7 @@ namespace Tweaker.License
 
                     if (IsDebuggerAttached())
                     {
-                        // Debugger detectado - tomar acci�n
+                        // Debugger detectado - tomar acción
                         HandleDebuggerDetection();
                     }
                 }
@@ -235,14 +237,14 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Maneja la detecci�n de debugger
+        /// Maneja la detección de debugger
         /// </summary>
         internal static void HandleDebuggerDetection()
         {
             try
             {
-                // Log para auditor�a
-                Debug.WriteLine("?? DEBUGGER DETECTADO - Terminando proceso por seguridad");
+                // Log para auditoría
+                Debug.WriteLine("🚨 DEBUGGER DETECTADO - Terminando proceso por seguridad");
 
                 // Invalidar licencia
                 InvalidateLicense();
@@ -261,36 +263,34 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Invalida la licencia actual por detecci�n de debugger
+        /// Invalida la licencia actual por detección de debugger
         /// </summary>
         private static void InvalidateLicense()
         {
             try
             {
                 // Eliminar licencia almacenada
-                LicenseStorage.DeleteLicense();
+                if (App.ServiceProvider != null)
+                {
+                    var storage = App.ServiceProvider.GetRequiredService<ILicenseStorage>();
+                    storage.DeleteLicense();
+                }
             }
-            catch
-            {
-                // Silenciar errores
-            }
+            catch (System.Exception ex) { System.Diagnostics.Debug.WriteLine($"[Error] Excepcion capturada: {ex.Message}"); }
         }
 
         /// <summary>
-        /// Registra la detecci�n de debugger (para auditor�a)
+        /// Registra la detección de debugger (para auditoría)
         /// </summary>
         private static void LogDebuggerDetection(string method)
         {
             try
             {
-                Debug.WriteLine($"?? ALERTA DE SEGURIDAD: Debugger detectado via {method}");
+                Debug.WriteLine($"🚨 ALERTA DE SEGURIDAD: Debugger detectado via {method}");
                 Debug.WriteLine($"   Timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
                 Debug.WriteLine($"   Proceso: {Process.GetCurrentProcess().ProcessName}");
             }
-            catch
-            {
-                // Silenciar errores de logging
-            }
+            catch (System.Exception ex) { System.Diagnostics.Debug.WriteLine($"[Error] Excepcion capturada: {ex.Message}"); }
         }
 
         /// <summary>
@@ -300,7 +300,7 @@ namespace Tweaker.License
         {
             if (DateTime.Now - _lastCheck < CheckInterval)
             {
-                return false; // No verificar a�n
+                return false; // No verificar aún
             }
 
             _lastCheck = DateTime.Now;
@@ -308,7 +308,7 @@ namespace Tweaker.License
         }
 
         /// <summary>
-        /// Verifica si el entorno es de desarrollo (para permitir debugging leg�timo)
+        /// Verifica si el entorno es de desarrollo (para permitir debugging legítimo)
         /// </summary>
         public static bool IsDevelopmentEnvironment()
         {
@@ -338,10 +338,7 @@ namespace Tweaker.License
                 return false;
 #endif
             }
-            catch
-            {
-                return false;
-            }
+            catch (System.Exception ex) { System.Diagnostics.Debug.WriteLine($"[Error] Excepcion capturada: {ex.Message}"); return false; }
         }
     }
 }

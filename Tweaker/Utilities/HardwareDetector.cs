@@ -1,0 +1,236 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Management;
+
+namespace Tweaker.Utilities;
+
+public sealed class HardwareInfo
+{
+    public string GPUName { get; set; } = string.Empty;
+    public bool IsNvidia { get; set; }
+    public bool IsAMD { get; set; }
+    public bool IsSSD { get; set; }
+    public long TotalRAMGB { get; set; }
+    public int CPUCores { get; set; }
+    public string WindowsVersion { get; set; } = string.Empty;
+    public bool IsWindows11 { get; set; }
+    public string CPUName { get; set; } = string.Empty;
+    public bool IsRyzen { get; set; }
+    public bool IsIntel { get; set; }
+    public List<string> DetectedAntiCheats { get; set; } = new();
+}
+
+public static class HardwareDetector
+{
+    public static HardwareInfo Detect()
+    {
+        var info = new HardwareInfo
+        {
+            TotalRAMGB = DetectTotalRamGb(),
+            CPUCores = Environment.ProcessorCount,
+            WindowsVersion = DetectWindowsVersion(),
+            IsWindows11 = IsWindows11(),
+            DetectedAntiCheats = AntiCheatDetector.DetectRunningAntiCheats()
+        };
+
+        DetectGpu(info);
+        DetectCpu(info);
+        DetectStorage(info);
+
+        return info;
+    }
+
+    public static bool HasNvidiaGpu() => Detect().IsNvidia;
+
+    public static bool HasSsd() => Detect().IsSSD;
+
+    private static void DetectGpu(HardwareInfo info)
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT Name FROM Win32_VideoController");
+            foreach (ManagementObject gpu in searcher.Get())
+            {
+                string name = gpu["Name"]?.ToString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                info.GPUName = name;
+                info.IsNvidia |= name.Contains("NVIDIA", StringComparison.OrdinalIgnoreCase) || name.Contains("GeForce", StringComparison.OrdinalIgnoreCase);
+                info.IsAMD |= name.Contains("AMD", StringComparison.OrdinalIgnoreCase) || name.Contains("Radeon", StringComparison.OrdinalIgnoreCase);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ GPU detection failed: {ex.Message}");
+        }
+    }
+
+    private static void DetectCpu(HardwareInfo info)
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT Name, NumberOfCores FROM Win32_Processor");
+            foreach (ManagementObject cpu in searcher.Get())
+            {
+                string name = cpu["Name"]?.ToString() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    continue;
+                }
+
+                info.CPUName = name.Trim();
+                info.IsRyzen |= name.Contains("Ryzen", StringComparison.OrdinalIgnoreCase) || name.Contains("AMD", StringComparison.OrdinalIgnoreCase);
+                info.IsIntel |= name.Contains("Intel", StringComparison.OrdinalIgnoreCase);
+
+                if (cpu["NumberOfCores"] is uint coreCount)
+                {
+                    info.CPUCores = (int)coreCount;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ CPU detection failed: {ex.Message}");
+        }
+    }
+
+    private static void DetectStorage(HardwareInfo info)
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher("SELECT MediaType, Model FROM Win32_DiskDrive");
+            foreach (ManagementObject disk in searcher.Get())
+            {
+                string mediaType = disk["MediaType"]?.ToString() ?? string.Empty;
+                string model = disk["Model"]?.ToString() ?? string.Empty;
+
+                bool isSsd = mediaType.Contains("SSD", StringComparison.OrdinalIgnoreCase)
+                    || mediaType.Contains("Solid", StringComparison.OrdinalIgnoreCase)
+                    || model.Contains("SSD", StringComparison.OrdinalIgnoreCase)
+                    || model.Contains("NVMe", StringComparison.OrdinalIgnoreCase);
+
+                if (isSsd)
+                {
+                    info.IsSSD = true;
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ Storage detection failed: {ex.Message}");
+        }
+    }
+
+    private static long DetectTotalRamGb()
+    {
+        try
+        {
+            ulong totalBytes = 0;
+            using var searcher = new ManagementObjectSearcher("SELECT Capacity FROM Win32_PhysicalMemory");
+            foreach (ManagementObject memory in searcher.Get())
+            {
+                if (memory["Capacity"] == null)
+                {
+                    continue;
+                }
+
+                totalBytes += Convert.ToUInt64(memory["Capacity"]);
+            }
+
+            return totalBytes > 0 ? (long)(totalBytes / 1024 / 1024 / 1024) : 0;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ RAM detection failed: {ex.Message}");
+            return 0;
+        }
+    }
+
+    private static string DetectWindowsVersion()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            string productName = key?.GetValue("ProductName")?.ToString() ?? Environment.OSVersion.VersionString;
+            string build = key?.GetValue("CurrentBuildNumber")?.ToString() ?? string.Empty;
+            return string.IsNullOrWhiteSpace(build) ? productName : $"{productName} (Build {build})";
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ Windows version detection failed: {ex.Message}");
+            return Environment.OSVersion.VersionString;
+        }
+    }
+
+    private static bool IsWindows11()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+            string productName = key?.GetValue("ProductName")?.ToString() ?? string.Empty;
+            if (productName.Contains("Windows 11", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            string buildText = key?.GetValue("CurrentBuildNumber")?.ToString() ?? "0";
+            return int.TryParse(buildText, NumberStyles.Integer, CultureInfo.InvariantCulture, out int build) && build >= 22000;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+}
+
+public static class AntiCheatDetector
+{
+    private static readonly Dictionary<string, string> AntiCheats = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["vgc"] = "Valorant (Vanguard)",
+        ["EasyAntiCheat"] = "EAC (Fortnite/Apex/Rust)",
+        ["BEService"] = "BattlEye (PUBG/R6/DayZ)",
+        ["ESEA"] = "ESEA Client",
+        ["faceit"] = "FACEIT AC"
+    };
+
+    public static List<string> DetectRunningAntiCheats()
+    {
+        var detected = new List<string>();
+
+        try
+        {
+            foreach (var process in Process.GetProcesses())
+            {
+                using (process)
+                {
+                    foreach (var entry in AntiCheats)
+                    {
+                        if (process.ProcessName.Contains(entry.Key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            detected.Add(entry.Value);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"⚠️ AntiCheat detection failed: {ex.Message}");
+        }
+
+        return detected.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    public static bool IsRunning()
+    {
+        return DetectRunningAntiCheats().Count > 0;
+    }
+}

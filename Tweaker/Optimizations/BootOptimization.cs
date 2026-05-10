@@ -29,9 +29,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("BOOT OPTIMIZATION - Optimizando configuración de arranque");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 bool success = true;
 

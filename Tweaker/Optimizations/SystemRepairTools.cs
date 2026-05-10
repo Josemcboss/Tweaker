@@ -25,9 +25,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("SYSTEM REPAIR TOOLS - Reparación de archivos del sistema");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 // Paso 1: DISM RestoreHealth
                 Debug.WriteLine("→ Paso 1/2: Ejecutando DISM /Online /Cleanup-Image /RestoreHealth...");
@@ -70,7 +70,7 @@ namespace Tweaker.Optimizations
                 bool overallSuccess = dismSuccess && sfcSuccess;
 
                 Debug.WriteLine("");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 if (overallSuccess)
                 {
                     Debug.WriteLine("✓ REPARACIÓN COMPLETA - Sistema revisado y reparado");
@@ -80,7 +80,7 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine("⚠ REPARACIÓN PARCIAL - Algunos pasos fallaron");
                     Debug.WriteLine("   → Revisa los logs de eventos de Windows para más detalles");
                 }
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 return overallSuccess;
             }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.ServiceProcess;
@@ -48,9 +48,9 @@ namespace Tweaker.Utilities
         private const string BACKUP_REG_KEY =
             @"SOFTWARE\GhostOptimizer\ServiceStripper\Backups";
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // STRIP — Deshabilitar + bloquear permisos
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Deshabilita un servicio y bloquea sus permisos para que no pueda
@@ -60,7 +60,7 @@ namespace Tweaker.Utilities
         /// <param name="displayName">Nombre legible para logs</param>
         public static bool Strip(string serviceName, string displayName)
         {
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
             Debug.WriteLine($"🔒 SERVICE STRIPPER 2.0 → {displayName}");
 
             if (ServiceGuard.IsProtected(serviceName))
@@ -101,16 +101,16 @@ namespace Tweaker.Utilities
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // RESTORE — Restaurar permisos y estado original
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Restaura el servicio a su estado original (StartType y SDDL guardados).
         /// </summary>
         public static bool Restore(string serviceName, string displayName)
         {
-            Debug.WriteLine("═══════════════════════════════════════");
+            Debug.WriteLine("─");
             Debug.WriteLine($"🔓 SERVICE STRIPPER 2.0 RESTORE → {displayName}");
 
             try
@@ -160,9 +160,9 @@ namespace Tweaker.Utilities
             return LoadBackup(serviceName) != null;
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // INTERNALS
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         private static bool RunScSdSet(string serviceName, string sddl)
         {
@@ -323,9 +323,9 @@ namespace Tweaker.Utilities
             catch { }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
         // BATCH OPERATIONS — listas predefinidas
-        // ═══════════════════════════════════════════════════════════════════
+        // ─
 
         /// <summary>
         /// Lista de servicios de telemetría/bloatware seguros para Strip.

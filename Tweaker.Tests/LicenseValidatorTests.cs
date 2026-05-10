@@ -33,7 +33,7 @@ namespace Tweaker.Tests
         [InlineData("  ", false)]
         public void IsValidFormat_ShouldReturnExpectedResult(string? licenseKey, bool expected)
         {
-            var result = LicenseValidator.IsValidFormat(licenseKey);
+            var result = _validator.IsValidFormat(licenseKey);
             Assert.Equal(expected, result);
         }
 

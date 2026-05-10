@@ -24,7 +24,7 @@ namespace Tweaker.Utilities
         {
             try
             {
-                using (RegistryKey key = hive.CreateSubKey(keyPath))
+                using (RegistryKey? key = hive.CreateSubKey(keyPath))
                 {
                     if (key != null)
                     {
@@ -54,7 +54,7 @@ namespace Tweaker.Utilities
         {
             try
             {
-                using (RegistryKey key = hive.CreateSubKey(keyPath))
+                using (RegistryKey? key = hive.CreateSubKey(keyPath))
                 {
                     if (key != null)
                     {
@@ -80,15 +80,15 @@ namespace Tweaker.Utilities
         /// <summary>
         /// Lee un valor del registro de forma segura
         /// </summary>
-        public static T GetRegistryValue<T>(RegistryKey hive, string keyPath, string valueName, T defaultValue = default(T))
+        public static T? GetRegistryValue<T>(RegistryKey hive, string keyPath, string valueName, T? defaultValue = default(T))
         {
             try
             {
-                using (RegistryKey key = hive.OpenSubKey(keyPath, false))
+                using (RegistryKey? key = hive.OpenSubKey(keyPath, false))
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue(valueName);
+                        object? value = key.GetValue(valueName);
                         if (value != null)
                         {
                             return (T)Convert.ChangeType(value, typeof(T));
@@ -112,11 +112,11 @@ namespace Tweaker.Utilities
         {
             try
             {
-                using (RegistryKey key = hive.OpenSubKey(keyPath, false))
+                using (RegistryKey? key = hive.OpenSubKey(keyPath, false))
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue(valueName);
+                        object? value = key.GetValue(valueName);
                         return value != null && value.ToString() == expectedValue.ToString();
                     }
                 }
@@ -139,7 +139,7 @@ namespace Tweaker.Utilities
             try
             {
                 // Determinar el hive base
-                RegistryKey hive;
+                RegistryKey? hive;
                 string keyPath;
 
                 if (fullPath.StartsWith("HKEY_LOCAL_MACHINE\\", StringComparison.OrdinalIgnoreCase))
@@ -158,11 +158,11 @@ namespace Tweaker.Utilities
                     return null;
                 }
 
-                using (RegistryKey key = hive.OpenSubKey(keyPath, false))
+                using (RegistryKey? key = hive.OpenSubKey(keyPath, false))
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue(valueName);
+                        object? value = key.GetValue(valueName);
                         if (value is int intValue)
                             return (uint)intValue;
                         else if (value is uint uintValue)
@@ -185,7 +185,7 @@ namespace Tweaker.Utilities
         {
             try
             {
-                using (RegistryKey key = hive.OpenSubKey(keyPath, true))
+                using (RegistryKey? key = hive.OpenSubKey(keyPath, true))
                 {
                     if (key != null)
                     {

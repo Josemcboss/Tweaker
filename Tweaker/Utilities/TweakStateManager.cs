@@ -16,7 +16,7 @@ namespace Tweaker.Utilities
         private static TweakStateManager? _instance;
         private static readonly object _lock = new object();
 
-        private Dictionary<string, TweakState> _tweakStates;
+        private Dictionary<string, TweakState> _tweakStates = new Dictionary<string, TweakState>();
         private readonly string _stateFilePath;
         private readonly Services.HardwareMonitorService _hardwareMonitor;
 
@@ -189,7 +189,7 @@ namespace Tweaker.Utilities
         /// Total de tweaks disponibles
         /// 
         /// DESGLOSE DE TWEAKS:
-        /// ????????????????????????????????????????????????????????????????
+        /// ──────────────────────────────────────────?
         /// Input & Visuals: ~12 tweaks
         ///   - Aceleraci�n de mouse, teclado, efectos visuales, etc.
         /// 

@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Media;
+
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tweaker.License
 {
@@ -11,18 +13,20 @@ namespace Tweaker.License
     public partial class ActivationWindow : Window
     {
         private string currentHardwareFingerprint;
+        private readonly ILicenseValidator _validator;
+        private readonly ILicenseStorage _storage;
 
         public bool ActivationSuccessful { get; private set; }
 
         public ActivationWindow()
         {
             InitializeComponent();
+            _validator = App.ServiceProvider.GetRequiredService<ILicenseValidator>();
+            _storage = App.ServiceProvider.GetRequiredService<ILicenseStorage>();
 
-            // Obtener y mostrar el fingerprint del hardware
             try
             {
                 currentHardwareFingerprint = HardwareFingerprint.GetFingerprint();
-                // MOSTRAR FINGERPRINT COMPLETO (no solo los primeros 16 caracteres)
                 TxtHardwareId.Text = currentHardwareFingerprint;
             }
             catch (Exception ex)
@@ -32,73 +36,41 @@ namespace Tweaker.License
             }
         }
 
-        /// <summary>
-        /// Maneja el cambio de texto en el campo de llave de licencia
-        /// </summary>
         private void TxtLicenseKey_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            // Auto-formatear con guiones
             var text = TxtLicenseKey.Text.Replace("-", "").ToUpper();
-
-            if (text.Length > 20)
-            {
-                text = text.Substring(0, 20);
-            }
-
+            if (text.Length > 20) text = text.Substring(0, 20);
             var formatted = "";
             for (int i = 0; i < text.Length; i++)
             {
-                if (i > 0 && i % 5 == 0)
-                {
-                    formatted += "-";
-                }
+                if (i > 0 && i % 5 == 0) formatted += "-";
                 formatted += text[i];
             }
-
             if (formatted != TxtLicenseKey.Text)
             {
                 var cursorPos = TxtLicenseKey.SelectionStart;
                 TxtLicenseKey.Text = formatted;
-                TxtLicenseKey.SelectionStart = Math.Min(cursorPos + (formatted.Length - TxtLicenseKey.Text.Length + formatted.Length), formatted.Length);
+                TxtLicenseKey.SelectionStart = Math.Min(cursorPos + 1, formatted.Length);
             }
-
-            // Habilitar botón de activar si el formato es válido
-            BtnActivate.IsEnabled = LicenseValidator.IsValidFormat(TxtLicenseKey.Text);
-
-            // Limpiar mensaje de estado al editar
-            if (BorderStatus.Visibility == Visibility.Visible)
-            {
-                BorderStatus.Visibility = Visibility.Collapsed;
-            }
+            BtnActivate.IsEnabled = _validator.IsValidFormat(TxtLicenseKey.Text);
+            if (BorderStatus.Visibility == Visibility.Visible) BorderStatus.Visibility = Visibility.Collapsed;
         }
 
-        /// <summary>
-        /// Maneja el clic en el botón de activar
-        /// </summary>
         private void BtnActivate_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 var licenseKey = TxtLicenseKey.Text.Trim();
-
-                // Validar formato
-                if (!LicenseValidator.IsValidFormat(licenseKey))
+                if (!_validator.IsValidFormat(licenseKey))
                 {
-                    ShowStatus("❌ Formato de llave inválido. Use: XXXXX-XXXXX-XXXXX-XXXXX", false);
+                    ShowStatus("❌ Formato de llave inválido.", false);
                     return;
                 }
 
-                // TODO: Refactor this to use dependency injection
-                var keyVault = new KeyVault();
-                var securityChecks = new SecurityChecks();
-                var validator = new LicenseValidator(keyVault, securityChecks);
-
-                // Validar llave
-                var licenseData = validator.ValidateLicenseKey(licenseKey, currentHardwareFingerprint, DateTime.Now);
-
+                var licenseData = _validator.ValidateLicenseKey(licenseKey, currentHardwareFingerprint, DateTime.Now);
                 if (licenseData == null)
                 {
-                    ShowStatus("❌ Llave de licencia inválida o no coincide con este hardware.", false);
+                    ShowStatus("❌ Llave de licencia inválida o no coincide.", false);
                     return;
                 }
 
@@ -108,44 +80,19 @@ namespace Tweaker.License
                     return;
                 }
 
-                // Guardar licencia
-                LicenseStorage.SaveLicense(licenseKey, licenseData);
-
-                // Mostrar mensaje de éxito
-                var expirationMsg = licenseData.IsPerpetual
-                    ? "Licencia Perpetua ♾️"
-                    : $"Válida hasta: {licenseData.ExpirationDate:yyyy-MM-dd}";
-
-                MessageBox.Show(
-                    $"✅ ¡Licencia activada exitosamente!\n\n" +
-                    $"{expirationMsg}\n\n" +
-                    $"Tweaker está ahora activado en este equipo.",
-                    "Activación Exitosa",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                _storage.SaveLicense(licenseKey, licenseData);
+                var expirationMsg = licenseData.IsPerpetual ? "Licencia Perpetua ♾️" : $"Válida hasta: {licenseData.ExpirationDate:yyyy-MM-dd}";
+                MessageBox.Show($"✅ ¡Licencia activada exitosamente!\n\n{expirationMsg}", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 ActivationSuccessful = true;
                 DialogResult = true;
                 Close();
             }
-            catch (Exception ex)
-            {
-                ShowStatus($"❌ Error al activar: {ex.Message}", false);
-            }
+            catch (Exception ex) { ShowStatus($"❌ Error al activar: {ex.Message}", false); }
         }
 
-        /// <summary>
-        /// Maneja el clic en el botón de cancelar
-        /// </summary>
-        private void BtnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            DialogResult = false;
-            Close();
-        }
+        private void BtnCancel_Click(object sender, RoutedEventArgs e) { DialogResult = false; Close(); }
 
-        /// <summary>
-        /// Copia el fingerprint completo al portapapeles
-        /// </summary>
         private void BtnCopyFingerprint_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -153,51 +100,19 @@ namespace Tweaker.License
                 if (!string.IsNullOrEmpty(currentHardwareFingerprint))
                 {
                     Clipboard.SetText(currentHardwareFingerprint);
-                    ShowStatus("✅ Fingerprint copiado al portapapeles", true);
-
-                    // Cambiar temporalmente el texto del botón
-                    var button = sender as System.Windows.Controls.Button;
-                    if (button != null)
-                    {
-                        var originalContent = button.Content;
-                        button.Content = "✅ Copiado";
-
-                        // Restaurar después de 2 segundos
-                        var timer = new System.Windows.Threading.DispatcherTimer();
-                        timer.Interval = TimeSpan.FromSeconds(2);
-                        timer.Tick += (s, args) =>
-                        {
-                            button.Content = originalContent;
-                            timer.Stop();
-                        };
-                        timer.Start();
-                    }
+                    ShowStatus("✅ Fingerprint copiado", true);
                 }
             }
-            catch (Exception ex)
-            {
-                ShowStatus($"❌ Error al copiar: {ex.Message}", false);
-            }
+            catch (Exception ex) { ShowStatus($"❌ Error al copiar: {ex.Message}", false); }
         }
 
-        /// <summary>
-        /// Muestra un mensaje de estado
-        /// </summary>
         private void ShowStatus(string message, bool isSuccess)
         {
             TxtStatus.Text = message;
             BorderStatus.Visibility = Visibility.Visible;
-
-            if (isSuccess)
-            {
-                BorderStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(0, 150, 0));
-                TxtStatus.Foreground = new SolidColorBrush(Color.FromRgb(0, 200, 0));
-            }
-            else
-            {
-                BorderStatus.BorderBrush = new SolidColorBrush(Color.FromRgb(200, 0, 0));
-                TxtStatus.Foreground = new SolidColorBrush(Color.FromRgb(255, 100, 100));
-            }
+            var color = isSuccess ? Color.FromRgb(0, 150, 0) : Color.FromRgb(200, 0, 0);
+            BorderStatus.BorderBrush = new SolidColorBrush(color);
+            TxtStatus.Foreground = new SolidColorBrush(isSuccess ? Color.FromRgb(0, 200, 0) : Color.FromRgb(255, 100, 100));
         }
     }
 }

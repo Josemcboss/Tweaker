@@ -31,9 +31,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("AUDIO OPTIMIZATION - Optimizando latencia de audio");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 bool success = true;
 

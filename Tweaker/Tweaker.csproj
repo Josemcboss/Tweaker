@@ -46,6 +46,7 @@
 
   <ItemGroup>
     <!-- Referencia para ServiceController (gestión de servicios de Windows) -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="9.0.0" />
     <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.7-pre690" />
     <!-- LiveCharts2 removed due to restore conflicts; using custom WPF rendering for TemperatureGraph -->

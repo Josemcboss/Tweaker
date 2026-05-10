@@ -18,7 +18,7 @@ namespace Tweaker.ViewModels
         private int _estimatedRamFreed;
         private int _estimatedDiskFreed;
         private bool _isExecuting;
-        private string _statusMessage;
+        private string _statusMessage = string.Empty;
 
         public ObservableCollection<DebloatItem> DebloatItems { get; set; }
 
@@ -249,7 +249,7 @@ namespace Tweaker.ViewModels
             }
         }
 
-        private void OnItemSelectionChanged(object sender, PropertyChangedEventArgs e)
+        private void OnItemSelectionChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(DebloatItem.IsSelected))
             {

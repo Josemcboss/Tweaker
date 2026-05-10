@@ -42,9 +42,9 @@ namespace Tweaker.Optimizations
         {
             try
             {
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
                 Debug.WriteLine("NVIDIA GPU OPTIMIZATION - Optimizando GPU NVIDIA GeForce");
-                Debug.WriteLine("═══════════════════════════════════════════════════════════");
+                Debug.WriteLine("─");
 
                 bool anyApplied = false;
 

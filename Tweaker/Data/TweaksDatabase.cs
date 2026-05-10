@@ -18,6 +18,11 @@ namespace Tweaker.Data
         public bool Recommended { get; set; }
         public string? Category { get; set; }
         public RiskLevel Risk { get; set; } = RiskLevel.Safe; // Por defecto Safe
+        public bool RequiresRestart { get; set; }
+        public int FpsGain { get; set; }
+        public int PingReduction { get; set; }
+        public double RamFreedGB { get; set; }
+        public bool IsCompatible { get; set; } = true;
     }
 
     /// <summary>
@@ -27,9 +32,9 @@ namespace Tweaker.Data
     {
         private static readonly Dictionary<string, TweakInfo> _tweaks = new Dictionary<string, TweakInfo>
         {
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
             // INPUT & VISUALS TWEAKS
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
 
             ["mouse_acceleration"] = new TweakInfo
             {
@@ -103,9 +108,9 @@ namespace Tweaker.Data
                 Risk = RiskLevel.Safe
             },
 
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
             // NETWORK TWEAKS
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
 
             ["network_optimization"] = new TweakInfo
             {
@@ -218,9 +223,9 @@ namespace Tweaker.Data
                 Risk = RiskLevel.Moderate
             },
 
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
             // SISTEMA & GPU TWEAKS
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
 
             ["system_profile"] = new TweakInfo
             {
@@ -270,32 +275,40 @@ namespace Tweaker.Data
                 Risk = RiskLevel.Safe
             },
 
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
             // GHOST PACK TWEAKS  
-            // ???????????????????????????????????????????????????????????????????
+            // ────────────────────────────────────────────?
 
             ["core_isolation"] = new TweakInfo
             {
                 Id = "core_isolation",
                 Title = "Deshabilitar Core Isolation (VBS)",
                 Category = "GHOST Pack",
-                Description = "Desactiva Virtualization Based Security y Memory Integrity. Elimina overhead de virtualizaci�n que causa p�rdidas de FPS significativas.",
-                Benefits = "� FPS +10-30% (especialmente Ryzen)\n� Input lag -3-5ms\n� Latencia de memoria reducida\n� Sin overhead de VBS\n� Mejor para gaming competitivo",
-                Warnings = "� REQUIERE REINICIO\n� Reduce seguridad del sistema\n� Menor protecci�n contra malware\n� Solo para PCs dedicados gaming",
+                Description = "Desactiva Virtualization Based Security y Memory Integrity. Elimina overhead de virtualización que causa pérdidas de FPS significativas.",
+                Benefits = "• FPS +10-30% (especialmente Ryzen)\n• Input lag -3-5ms\n• Latencia de memoria reducida\n• Sin overhead de VBS\n• Mejor para gaming competitivo",
+                Warnings = "• REQUIERE REINICIO\n• Reduce seguridad del sistema\n• Menor protección contra malware\n• Solo para PCs dedicados gaming",
                 Recommended = false,
-                Risk = RiskLevel.Advanced
+                Risk = RiskLevel.Advanced,
+                RequiresRestart = true,
+                FpsGain = 18,
+                PingReduction = 0,
+                RamFreedGB = 0
             },
 
             ["hpet_optimization"] = new TweakInfo
             {
                 Id = "hpet_optimization",
-                Title = "Optimizaci�n HPET",
+                Title = "Optimización HPET",
                 Category = "GHOST Pack",
-                Description = "Forza uso de timers TSC m�s r�pidos en lugar de HPET lento. Especialmente beneficioso en CPUs AMD Ryzen donde HPET causa stuttering.",
-                Benefits = "� Micro-stuttering -80% (Ryzen)\n� Frame times m�s consistentes\n� 0.1% low FPS +15-25%\n� Timer ultra-preciso\n� Elimina hiccups de timer",
-                Warnings = "� REQUIERE REINICIO OBLIGATORIO\n� Comando bcdedit (requiere admin)\n� Algunos sistemas pueden no beneficiarse",
+                Description = "Forza uso de timers TSC más rápidos en lugar de HPET lento. Especialmente beneficioso en CPUs AMD Ryzen donde HPET causa stuttering.",
+                Benefits = "• Micro-stuttering -80% (Ryzen)\n• Frame times más consistentes\n• 0.1% low FPS +15-25%\n• Timer ultra-preciso\n• Elimina hiccups de timer",
+                Warnings = "• REQUIERE REINICIO OBLIGATORIO\n• Comando bcdedit (requiere admin)\n• Algunos sistemas pueden no beneficiarse",
                 Recommended = false,
-                Risk = RiskLevel.Advanced
+                Risk = RiskLevel.Advanced,
+                RequiresRestart = true,
+                FpsGain = 12,
+                PingReduction = 0,
+                RamFreedGB = 0
             },
 
             ["mpo_fix"] = new TweakInfo
@@ -303,11 +316,15 @@ namespace Tweaker.Data
                 Id = "mpo_fix",
                 Title = "MPO Fix (Anti-Flicker)",
                 Category = "GHOST Pack",
-                Description = "Deshabilita Multiplane Overlay para eliminar stuttering y pantallazos negros. Fuerza modo legacy ms estable en composicin de ventanas.",
+                Description = "Deshabilita Multiplane Overlay para eliminar stuttering y pantallazos negros. Fuerza modo legacy ms estable en composición de ventanas.",
                 Benefits = " Elimina stuttering por MPO\n Sin pantallazos negros\n Frame pacing ms consistente\n Overlays funcionan sin problemas\n Mejor compatibilidad G-Sync/FreeSync",
                 Warnings = " REQUIERE REINICIO\n Posible ligero aumento uso GPU\n Algunos sistemas pueden no necesitarlo",
                 Recommended = false,
-                Risk = RiskLevel.Moderate
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                FpsGain = 2,
+                PingReduction = 0,
+                RamFreedGB = 0
             },
 
             // ———————————————————————————————————————————————————————————————————
@@ -323,7 +340,8 @@ namespace Tweaker.Data
                 Benefits = "• Libera 500MB - 5GB+ de espacio\n• Mejora velocidad de acceso al disco\n• Reduce carga en el sistema de archivos\n• Limpieza profunda de %TEMP% y Prefetch",
                 Warnings = "• Puede borrar historiales de búsqueda locales\n• Primer inicio de algunas apps puede ser lento",
                 Recommended = true,
-                Risk = RiskLevel.Safe
+                Risk = RiskLevel.Safe,
+                RamFreedGB = 2
             },
 
             ["win_update_cache"] = new TweakInfo
@@ -351,7 +369,11 @@ namespace Tweaker.Data
                 Benefits = "• Input lag reducido 5-15ms\n• Frame pacing consistente en Fullscreen\n• Elimina micro-stuttering en juegos\n• Bypass total del compositor DWM",
                 Warnings = "• Alt+Tab será ligeramente más lento\n• No podrás usar el overlay de Game Bar\n• REQUIERE REINICIO",
                 Recommended = true,
-                Risk = RiskLevel.Moderate
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                PingReduction = 0,
+                FpsGain = 6,
+                RamFreedGB = 0
             },
 
             ["uac_disable"] = new TweakInfo
@@ -375,7 +397,8 @@ namespace Tweaker.Data
                 Benefits = "• Libera espacio (4GB - 16GB según tu RAM)\n• Reduce escritura en el SSD (alarga vida útil)\n• Inicio limpio de Windows cada vez\n• Elimina procesos de hibernación de fondo",
                 Warnings = "• No podrás usar el modo 'Hibernar'\n• El inicio rápido (Fast Startup) se desactivará",
                 Recommended = true,
-                Risk = RiskLevel.Safe
+                Risk = RiskLevel.Safe,
+                RamFreedGB = 8
             },
 
             // ———————————————————————————————————————————————————————————————————
@@ -391,7 +414,8 @@ namespace Tweaker.Data
                 Benefits = "• Máxima respuesta de CPU y GPU\n• Latencia de hardware mínima\n• Estabilidad total en frecuencias\n• Ideal para gaming competitivo extremo",
                 Warnings = "• Alto consumo de batería en laptops\n• Genera más calor en el equipo\n• Ventiladores girarán más rápido",
                 Recommended = true,
-                Risk = RiskLevel.Safe
+                Risk = RiskLevel.Safe,
+                FpsGain = 8
             },
 
             ["usb_selective_suspend"] = new TweakInfo
@@ -399,9 +423,9 @@ namespace Tweaker.Data
                 Id = "usb_selective_suspend",
                 Title = "Desactivar Suspensin USB",
                 Category = "Laptop & Power",
-                Description = "Evita que Windows apague los puertos USB para ahorrar energa. Crucial para evitar que el mouse o teclado se 'duerman' durante el juego.",
+                Description = "Evita que Windows apague los puertos USB para ahorrar Energía. Crucial para evitar que el mouse o teclado se 'duerman' durante el juego.",
                 Benefits = " Mouse/Teclado siempre activos al 100%\n Elimina desconexiones USB aleatorias\n Latencia de perifricos constante\n Estabilidad en polling rate (1000Hz+)",
-                Warnings = " Ligero aumento en consumo de batera",
+                Warnings = " Ligero aumento en consumo de batería",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -578,9 +602,9 @@ namespace Tweaker.Data
                 Risk = RiskLevel.Safe
             },
 
-            // ═══════════════════════════════════════════════════════════════════
+            // ─
             // ADVANCED LATENCY TWEAKS
-            // ═══════════════════════════════════════════════════════════════════
+            // ─
 
             ["interrupt_moderation"] = new TweakInfo
             {
@@ -639,7 +663,154 @@ namespace Tweaker.Data
                 Benefits = "• DPC latency reducida\n• Frame times más consistentes\n• GPU interrupciones en core dedicado\n• Mejor separación de workloads CPU/GPU\n• Detectable con LatencyMon",
                 Warnings = "• REQUIERE REINICIO OBLIGATORIO\n• Requiere mínimo 4 cores físicos\n• Puede requerir ajuste manual según tu hardware\n• Efecto varía entre sistemas",
                 Recommended = false,
-                Risk = RiskLevel.Moderate
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                FpsGain = 4
+            },
+
+            ["gpu_hw_scheduling_v2"] = new TweakInfo
+            {
+                Id = "gpu_hw_scheduling_v2",
+                Title = "GPU HW Scheduling Agresivo",
+                Category = "Sistema & GPU",
+                Description = "Modo 2 de Hardware Scheduling. Mejor frame pacing en DX12/Vulkan.",
+                Benefits = "• Mejor frame pacing\n• Menor overhead del scheduler\n• Optimización agresiva para GPUs modernas",
+                Warnings = "• REQUIERE REINICIO\n• Solo GPUs compatibles",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                FpsGain = 8
+            },
+            ["shader_cache_disable"] = new TweakInfo
+            {
+                Id = "shader_cache_disable",
+                Title = "Shader Cache Limpieza",
+                Category = "Sistema & GPU",
+                Description = "Limpia y desactiva shader cache para eliminar stutters de compilación.",
+                Benefits = "• Menos stutters por compilación\n• Caché limpia y coherente",
+                Warnings = "• Puede aumentar compilación inicial de shaders",
+                Recommended = false,
+                Risk = RiskLevel.Safe,
+                FpsGain = 3
+            },
+            ["disable_ipv6"] = new TweakInfo
+            {
+                Id = "disable_ipv6",
+                Title = "Deshabilitar IPv6",
+                Category = "Red & Ping",
+                Description = "Elimina overhead del stack IPv6 si solo usas IPv4.",
+                Benefits = "• Menor overhead de red\n• Conexiones IPv4 más directas",
+                Warnings = "• Puede romper redes que dependan de IPv6",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                PingReduction = 5
+            },
+            ["wasapi_exclusive_mode"] = new TweakInfo
+            {
+                Id = "wasapi_exclusive_mode",
+                Title = "WASAPI Exclusive Mode",
+                Category = "Sistema & GPU",
+                Description = "Audio exclusivo para gaming. Reduce latencia de audio hasta 20ms.",
+                Benefits = "• Menor latencia de audio\n• Menor mixing overhead",
+                Warnings = "• Otras apps no tendrán sonido mientras el juego esté activo",
+                Recommended = false,
+                Risk = RiskLevel.Safe
+            },
+            ["audio_enhancements_off"] = new TweakInfo
+            {
+                Id = "audio_enhancements_off",
+                Title = "Audio Enhancements OFF",
+                Category = "Sistema & GPU",
+                Description = "Desactiva procesamiento de audio de Windows. CPU -2-5%.",
+                Benefits = "• Menor uso de CPU\n• Menor procesamiento de audio",
+                Warnings = "• Sin mejoras de audio de Windows",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 2
+            },
+            ["ssd_write_cache"] = new TweakInfo
+            {
+                Id = "ssd_write_cache",
+                Title = "SSD Write Cache",
+                Category = "Limpieza",
+                Description = "Activa caché de escritura en disco. Velocidad de escritura +30-50%.",
+                Benefits = "• Escritura más rápida\n• Mejor throughput de disco",
+                Warnings = "• No recomendado sin UPS o con cortes de luz frecuentes",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                FpsGain = 3
+            },
+            ["trim_optimization"] = new TweakInfo
+            {
+                Id = "trim_optimization",
+                Title = "TRIM Forzado SSD",
+                Category = "Limpieza",
+                Description = "Fuerza TRIM en SSD para mantener velocidades máximas.",
+                Benefits = "• Mantiene rendimiento SSD\n• Menor degradación de escritura",
+                Warnings = "• Solo para SSD",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 2
+            },
+            ["ntfs_mft_zone"] = new TweakInfo
+            {
+                Id = "ntfs_mft_zone",
+                Title = "NTFS MFT Zone Reserva",
+                Category = "Limpieza",
+                Description = "Reserva más espacio para MFT. Reduce fragmentación en gaming.",
+                Benefits = "• Menor fragmentación\n• Mejor acceso a metadata NTFS",
+                Warnings = "• Cambia el comportamiento de reserva NTFS",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 1
+            },
+            ["irq_network_priority"] = new TweakInfo
+            {
+                Id = "irq_network_priority",
+                Title = "IRQ Network Priority",
+                Category = "Advanced",
+                Description = "Prioriza interrupciones de red sobre otros dispositivos.",
+                Benefits = "• Ping más bajo\n• Menos latencia de red",
+                Warnings = "• Puede afectar otros dispositivos",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                PingReduction = 8
+            },
+            ["nagle_algorithm_off"] = new TweakInfo
+            {
+                Id = "nagle_algorithm_off",
+                Title = "Nagle Algorithm OFF",
+                Category = "Advanced",
+                Description = "Elimina buffering de paquetes TCP. Respuesta de red instantánea.",
+                Benefits = "• Menor latencia TCP\n• Paquetes más inmediatos",
+                Warnings = "• Incrementa el número de paquetes pequeños",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                PingReduction = 15
+            },
+            ["cpu_affinity_auto_gaming"] = new TweakInfo
+            {
+                Id = "cpu_affinity_auto_gaming",
+                Title = "CPU Affinity Auto-Gaming",
+                Category = "Advanced",
+                Description = "Asigna juegos a núcleos físicos automáticamente. Sin hyperthreading.",
+                Benefits = "• Mejor consistencia de FPS\n• Núcleos físicos prioritarios",
+                Warnings = "⚠️ Puede causar inestabilidad en algunos juegos. Prueba primero.",
+                Recommended = false,
+                Risk = RiskLevel.Advanced,
+                FpsGain = 5
+            },
+            ["cpu_anti_throttling"] = new TweakInfo
+            {
+                Id = "cpu_anti_throttling",
+                Title = "CPU Anti-Throttling",
+                Category = "Advanced",
+                Description = "Fuerza CPU a 100% sin throttling. Máximo rendimiento constante.",
+                Benefits = "• Rendimiento constante\n• Sin throttling de CPU",
+                Warnings = "• Mayor consumo y temperatura",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                FpsGain = 10
             }
         };
 
@@ -653,10 +824,10 @@ namespace Tweaker.Data
             return new TweakInfo
             {
                 Id = tweakId,
-                Title = "Informaci�n no disponible",
-                Description = "La informaci�n detallada para este tweak a�n no est� disponible.",
-                Benefits = "Consulta la documentaci�n para m�s detalles.",
-                Warnings = "Revisa la documentaci�n antes de aplicar.",
+                Title = "Información no disponible",
+                Description = "La información detallada para este tweak aún no está disponible.",
+                Benefits = "Consulta la documentación para más detalles.",
+                Warnings = "Revisa la documentación antes de aplicar.",
                 Recommended = true
             };
         }
