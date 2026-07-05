@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -16,6 +16,7 @@ namespace Tweaker.Services
         private readonly Computer _computer;
         private readonly System.Timers.Timer _timer;
         private readonly SynchronizationContext _uiContext;
+        private readonly AioScreenService _aioScreenService;
 
         private float _cpuLoadPercent;
         private float _ramUsagePercent;
@@ -48,6 +49,9 @@ namespace Tweaker.Services
                 System.Diagnostics.Debug.WriteLine("💡 Si los sensores devuelven 0°C, ejecuta la app como Administrador");
                 // Continue without hardware monitoring - the timer will just get 0 values
             }
+
+            _aioScreenService = new AioScreenService();
+            _aioScreenService.Start();
 
             _timer = new System.Timers.Timer(1000);
             _timer.Elapsed += Timer_Elapsed;
@@ -168,6 +172,28 @@ namespace Tweaker.Services
                 physicalMemory?.Update();
                 float ramLoadPercent = physicalMemory?.Sensors.FirstOrDefault(s => s.Name == "Memory" && s.SensorType == SensorType.Load)?.Value ?? 0f;
 
+                // Read additional sensors for the AIO screen telemetry
+                float cpuPower = cpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && (s.Name.Contains("Package") || s.Name.Contains("Total") || s.Name.Contains("Cores")))?.Value ?? 45f;
+                float cpuFreq = cpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Clock && (s.Name.Contains("Core #1") || s.Name.Contains("Core Average") || s.Name.Contains("Clock Average")))?.Value ?? 3600f;
+                float cpuVolt = cpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Voltage && (s.Name.Contains("Core") || s.Name.Contains("Vid")))?.Value ?? 1.2f;
+                float gpuPower = gpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Power && (s.Name.Contains("Package") || s.Name.Contains("Total") || s.Name.Contains("GPU") || s.Name.Contains("Core")))?.Value ?? 150f;
+                float gpuFreq = gpu?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Clock && s.Name.Contains("Core"))?.Value ?? 1500f;
+
+                var mb = _computer.Hardware.FirstOrDefault(h => h.HardwareType == HardwareType.Motherboard);
+                mb?.Update();
+                float fanSpeed = mb?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Fan && s.Name.Contains("CPU"))?.Value ?? 0f;
+                if (fanSpeed == 0f)
+                {
+                    fanSpeed = mb?.Sensors.FirstOrDefault(s => s.SensorType == SensorType.Fan)?.Value ?? 0f;
+                }
+
+                // Update the telemetry values for the background send thread
+                _aioScreenService.UpdateValues(
+                    cpuTemp, cpuLoad, cpuPower, cpuFreq, cpuVolt,
+                    gpuTemp, gpuLoad, gpuPower, gpuFreq,
+                    ramLoadPercent, fanSpeed, 0f
+                );
+
                 // Post the update back to the UI thread
                 _uiContext.Post(_ =>
                 {
@@ -194,6 +220,7 @@ namespace Tweaker.Services
         {
             _timer?.Stop();
             _timer?.Dispose();
+            _aioScreenService?.Dispose();
             try
             {
                 _computer?.Close();

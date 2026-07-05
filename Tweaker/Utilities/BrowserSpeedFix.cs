@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 // Removed System.Windows to prevent direct MessageBox.Show calls
@@ -111,7 +111,7 @@ namespace Tweaker.Utilities
                     using (var mmKey = Registry.LocalMachine.OpenSubKey(mmPath))
                     {
                         var throttling = mmKey?.GetValue("NetworkThrottlingIndex");
-                        if (throttling?.ToString().ToLowerInvariant() == "ffffffff")
+                        if (throttling?.ToString()?.ToLowerInvariant() == "ffffffff")
                         {
                             Debug.WriteLine("?? NetworkThrottlingIndex = FFFFFFFF detectado");
                             throttlingIssue = true;
@@ -195,7 +195,7 @@ namespace Tweaker.Utilities
                     using (var key = Registry.LocalMachine.OpenSubKey(path, true))
                     {
                         var currentValue = key?.GetValue("NetworkThrottlingIndex");
-                        if (currentValue?.ToString().ToLowerInvariant() == "ffffffff")
+                        if (currentValue?.ToString()?.ToLowerInvariant() == "ffffffff")
                         {
                             key?.SetValue("NetworkThrottlingIndex", 10, RegistryValueKind.DWord);
                             Debug.WriteLine("? NetworkThrottlingIndex: ffffffff -> 10");
@@ -276,13 +276,14 @@ namespace Tweaker.Utilities
                 {
                     Debug.WriteLine("?? Limpiando DNS Cache...");
 
-                    Process.Start(new ProcessStartInfo
+                    var proc = Process.Start(new ProcessStartInfo
                     {
                         FileName = "ipconfig",
                         Arguments = "/flushdns",
                         WindowStyle = ProcessWindowStyle.Hidden,
                         CreateNoWindow = true
-                    }).WaitForExit();
+                    });
+                    proc?.WaitForExit();
 
                     Debug.WriteLine("? DNS Cache limpiado");
                 }

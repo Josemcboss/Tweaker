@@ -126,6 +126,7 @@ namespace Tweaker.Optimizations
             success &= ConfigureQoS();
             success &= ConfigureAutoTuning();
             success &= ConfigureCongestionControl();
+            success &= DisableAdapterPowerSaving();
             return success;
         }
 
@@ -136,6 +137,7 @@ namespace Tweaker.Optimizations
             RevertQoS();
             RevertAutoTuning();
             RevertCongestionControl();
+            RestoreAdapterPowerSaving();
             return true;
         }
 
@@ -181,6 +183,183 @@ namespace Tweaker.Optimizations
                 }
             }
             catch { return false; }
+        }
+
+        // ---------------------------------------------------------------------------------------------------
+        // PER-ADAPTER POWER SAVING OPTIMIZATIONS
+        // ---------------------------------------------------------------------------------------------------
+        
+        /// <summary>
+        /// Disables power-saving features on all physical network adapters
+        /// </summary>
+        public static bool DisableAdapterPowerSaving()
+        {
+            try
+            {
+                const string adapterClassKeyPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}";
+                using (RegistryKey? classKey = Registry.LocalMachine.OpenSubKey(adapterClassKeyPath, true))
+                {
+                    if (classKey == null) return false;
+
+                    foreach (string subkeyName in classKey.GetSubKeyNames())
+                    {
+                        if (subkeyName.Length == 4 && int.TryParse(subkeyName, out _))
+                        {
+                            using (RegistryKey? adapterKey = classKey.OpenSubKey(subkeyName, true))
+                            {
+                                if (adapterKey == null) continue;
+
+                                object? characteristics = adapterKey.GetValue("Characteristics");
+                                if (characteristics == null) continue;
+                                
+                                int charVal = Convert.ToInt32(characteristics);
+                                if ((charVal & 0x4) == 0) continue; // Must be NCF_PHYSICAL
+
+                                // Disable "Allow the computer to turn off this device to save power"
+                                adapterKey.SetValue("*PnPCapabilities", 24, RegistryValueKind.DWord);
+
+                                // Disable Energy Efficient Ethernet (EEE)
+                                SafeSetRegistryValue(adapterKey, "*EEE", 0);
+                                SafeSetRegistryValue(adapterKey, "EEELinkAdvertisement", 0);
+
+                                // Disable Green Ethernet / Power Saving Modes
+                                SafeSetRegistryValue(adapterKey, "*GreenInternet", 0);
+                                SafeSetRegistryValue(adapterKey, "AutoPowerSaveModeEnabled", 0);
+                                SafeSetRegistryValue(adapterKey, "ReduceSpeedOnPowerDown", 0);
+                                SafeSetRegistryValue(adapterKey, "UltraLowPowerMode", 0);
+                                SafeSetRegistryValue(adapterKey, "*AoAcPacketCoalescing", 0);
+
+                                Debug.WriteLine($"✅ Power saving disabled for adapter: {adapterKey.GetValue("DriverDesc")}");
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error disabling adapter power saving: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool RestoreAdapterPowerSaving()
+        {
+            try
+            {
+                const string adapterClassKeyPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}";
+                using (RegistryKey? classKey = Registry.LocalMachine.OpenSubKey(adapterClassKeyPath, true))
+                {
+                    if (classKey == null) return false;
+
+                    foreach (string subkeyName in classKey.GetSubKeyNames())
+                    {
+                        if (subkeyName.Length == 4 && int.TryParse(subkeyName, out _))
+                        {
+                            using (RegistryKey? adapterKey = classKey.OpenSubKey(subkeyName, true))
+                            {
+                                if (adapterKey == null) continue;
+
+                                object? characteristics = adapterKey.GetValue("Characteristics");
+                                if (characteristics == null) continue;
+                                
+                                int charVal = Convert.ToInt32(characteristics);
+                                if ((charVal & 0x4) == 0) continue;
+
+                                // Restore standard settings
+                                adapterKey.DeleteValue("*PnPCapabilities", false);
+
+                                SafeSetRegistryValue(adapterKey, "*EEE", 1);
+                                SafeSetRegistryValue(adapterKey, "EEELinkAdvertisement", 1);
+                                SafeSetRegistryValue(adapterKey, "*GreenInternet", 1);
+                                SafeSetRegistryValue(adapterKey, "AutoPowerSaveModeEnabled", 1);
+                                SafeSetRegistryValue(adapterKey, "ReduceSpeedOnPowerDown", 1);
+                                SafeSetRegistryValue(adapterKey, "UltraLowPowerMode", 1);
+                                SafeSetRegistryValue(adapterKey, "*AoAcPacketCoalescing", 1);
+
+                                Debug.WriteLine($"✅ Power saving restored for adapter: {adapterKey.GetValue("DriverDesc")}");
+                            }
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error restoring adapter power saving: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool IsAdapterPowerSavingDisabled()
+        {
+            try
+            {
+                const string adapterClassKeyPath = @"SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}";
+                using (RegistryKey? classKey = Registry.LocalMachine.OpenSubKey(adapterClassKeyPath, false))
+                {
+                    if (classKey == null) return false;
+
+                    foreach (string subkeyName in classKey.GetSubKeyNames())
+                    {
+                        if (subkeyName.Length == 4 && int.TryParse(subkeyName, out _))
+                        {
+                            using (RegistryKey? adapterKey = classKey.OpenSubKey(subkeyName, false))
+                            {
+                                if (adapterKey == null) continue;
+
+                                object? characteristics = adapterKey.GetValue("Characteristics");
+                                if (characteristics == null) continue;
+                                
+                                int charVal = Convert.ToInt32(characteristics);
+                                if ((charVal & 0x4) == 0) continue;
+
+                                object? pnp = adapterKey.GetValue("*PnPCapabilities");
+                                if (pnp != null && Convert.ToInt32(pnp) == 24)
+                                {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static void SafeSetRegistryValue(RegistryKey key, string valueName, object value)
+        {
+            try
+            {
+                object? existing = key.GetValue(valueName);
+                if (existing != null)
+                {
+                    if (existing is string)
+                    {
+                        key.SetValue(valueName, value.ToString() ?? "0", RegistryValueKind.String);
+                    }
+                    else if (existing is int)
+                    {
+                        key.SetValue(valueName, Convert.ToInt32(value), RegistryValueKind.DWord);
+                    }
+                    else
+                    {
+                        key.SetValue(valueName, value);
+                    }
+                }
+                else
+                {
+                    // If property doesn't exist, we skip or set it to appropriate default if it's a known driver key
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error writing {valueName}: {ex.Message}");
+            }
         }
 
         // Aliases

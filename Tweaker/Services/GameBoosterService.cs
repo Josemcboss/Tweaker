@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -119,6 +119,11 @@ namespace Tweaker.Services
             "warframe",
             
             // Adicionales
+            "forzahorizon6",
+            "forza6",
+            "forzahorizon5",
+            "forzahorizon4",
+            "forzamotorsport",
             "elden ring",
             "eldenring",
             "cyberpunk2077",

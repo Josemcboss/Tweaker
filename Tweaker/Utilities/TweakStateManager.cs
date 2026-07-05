@@ -16,9 +16,11 @@ namespace Tweaker.Utilities
         private static TweakStateManager? _instance;
         private static readonly object _lock = new object();
 
-        private Dictionary<string, TweakState> _tweakStates = new Dictionary<string, TweakState>();
+        private Dictionary<string, TweakState> _tweakStates = new Dictionary<string, TweakState>(StringComparer.OrdinalIgnoreCase);
         private readonly string _stateFilePath;
         private readonly Services.HardwareMonitorService _hardwareMonitor;
+        private Services.ITweakDispatcher? _dispatcher;
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -62,6 +64,18 @@ namespace Tweaker.Utilities
 
         public Services.HardwareMonitorService HardwareMonitor => _hardwareMonitor;
 
+        /// <summary>
+        /// Injects the dispatcher so TotalTweaksCount can be derived dynamically.
+        /// Call this once during app startup after creating the TweakDispatcher.
+        /// </summary>
+        public void InjectDispatcher(Services.ITweakDispatcher dispatcher)
+        {
+            _dispatcher = dispatcher;
+            OnPropertyChanged(nameof(TotalTweaksCount));
+            OnPropertyChanged(nameof(OptimizationPercentage));
+        }
+
+
         public void Dispose()
         {
             _hardwareMonitor?.Dispose();
@@ -77,16 +91,19 @@ namespace Tweaker.Utilities
                 if (File.Exists(_stateFilePath))
                 {
                     string json = File.ReadAllText(_stateFilePath);
-                    _tweakStates = JsonSerializer.Deserialize<Dictionary<string, TweakState>>(json);
+                    var temp = JsonSerializer.Deserialize<Dictionary<string, TweakState>>(json);
+                    _tweakStates = temp != null 
+                        ? new Dictionary<string, TweakState>(temp, StringComparer.OrdinalIgnoreCase) 
+                        : new Dictionary<string, TweakState>(StringComparer.OrdinalIgnoreCase);
                 }
                 else
                 {
-                    _tweakStates = new Dictionary<string, TweakState>();
+                    _tweakStates = new Dictionary<string, TweakState>(StringComparer.OrdinalIgnoreCase);
                 }
             }
             catch
             {
-                _tweakStates = new Dictionary<string, TweakState>();
+                _tweakStates = new Dictionary<string, TweakState>(StringComparer.OrdinalIgnoreCase);
             }
         }
 
@@ -128,6 +145,8 @@ namespace Tweaker.Utilities
             _tweakStates[tweakId].IsEnabled = true;
             _tweakStates[tweakId].LastModified = DateTime.Now;
 
+            TweakHistoryLogger.Log("Activado", tweakId, category);
+
             SaveState();
             OnPropertyChanged(nameof(ActiveTweaksCount));
             OnPropertyChanged(nameof(TweaksByCategory));
@@ -146,6 +165,8 @@ namespace Tweaker.Utilities
             {
                 _tweakStates[tweakId].IsEnabled = false;
                 _tweakStates[tweakId].LastModified = DateTime.Now;
+
+                TweakHistoryLogger.Log("Desactivado", tweakId, _tweakStates[tweakId].Category ?? "General");
 
                 SaveState();
                 OnPropertyChanged(nameof(ActiveTweaksCount));
@@ -186,37 +207,14 @@ namespace Tweaker.Utilities
         public double EstimatedRamFreed => CalculateEstimatedRamFreed();
 
         /// <summary>
-        /// Total de tweaks disponibles
-        /// 
-        /// DESGLOSE DE TWEAKS:
-        /// ──────────────────────────────────────────?
-        /// Input & Visuals: ~12 tweaks
-        ///   - Aceleraci�n de mouse, teclado, efectos visuales, etc.
-        /// 
-        /// Red & Ping (Network): ~10 tweaks
-        ///   - DNS, NVDIA tweaks, TCP optimizer, QoS, etc.
-        /// 
-        /// Sistema & GPU: ~8 tweaks
-        ///   - Game Mode, GPU Scheduling, Game DVR, Power Profile, etc.
-        /// 
-        /// Limpieza (Cleanup): ~4 tweaks
-        ///   - Hibernation, Windows Search, SysMain, Temp Files
-        /// 
-        /// GHOST Pack: ~8 tweaks
-        ///   - Core Isolation, MPO, Ultimate Power, etc.
-        /// 
-        /// Advanced: ~11 tweaks (NUEVO)
-        ///   - Interrupt Moderation, Menu Delay, Win32 Priority, etc.
-        /// 
-        /// Servicios: ~5 tweaks
-        ///   - Telemetr�a, DiagTrack, servicios de background
-        /// 
-        /// TOTAL: 58 TWEAKS
+        /// Total tweaks available — derived dynamically from the dispatcher.
+        /// Falls back to 62 if dispatcher not yet injected.
         /// </summary>
-        public int TotalTweaksCount => 58;
+        public int TotalTweaksCount => _dispatcher?.GetCanonicalTweakIds().Count ?? 62;
+
 
         /// <summary>
-        /// Porcentaje de optimizaci�n aplicado
+        /// Porcentaje de optimizacin aplicado
         /// </summary>
         public int OptimizationPercentage =>
             TotalTweaksCount > 0 ? (ActiveTweaksCount * 100) / TotalTweaksCount : 0;
@@ -312,17 +310,19 @@ namespace Tweaker.Utilities
 
             // GHOST Pack
             if (IsTweakEnabled("CoreIsolation")) fpsGain += 20;
-            if (IsTweakEnabled("MPO")) fpsGain += 8;
+            if (IsTweakEnabled("MPOFix")) fpsGain += 8;
             if (IsTweakEnabled("UltimatePower")) fpsGain += 12;
 
             // Advanced
             if (IsTweakEnabled("SpectreMeltdown")) fpsGain += 10;
+            if (IsTweakEnabled("connected_standby_disable")) fpsGain += 5;
+            if (IsTweakEnabled("watchdog_disable")) fpsGain += 8;
 
             return fpsGain;
         }
 
         /// <summary>
-        /// Calcula reducci�n estimada de latencia
+        /// Calcula reduccin estimada de latencia
         /// </summary>
         private int CalculateEstimatedLatencyReduction()
         {
@@ -336,9 +336,12 @@ namespace Tweaker.Utilities
             // Input
             if (IsTweakEnabled("MouseAcceleration")) latencyReduction += 10;
             if (IsTweakEnabled("Keyboard")) latencyReduction += 5;
+            if (IsTweakEnabled("raw_aim_curve")) latencyReduction += 5;
 
             // Sistema
             if (IsTweakEnabled("CoreParking")) latencyReduction += 8;
+            if (IsTweakEnabled("connected_standby_disable")) latencyReduction += 2;
+            if (IsTweakEnabled("watchdog_disable")) latencyReduction += 3;
 
             return latencyReduction;
         }

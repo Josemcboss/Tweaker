@@ -114,6 +114,21 @@ namespace Tweaker.Models
             set => SetProperty(ref _ramFreedGB, value);
         }
 
+        private bool _isDisabled;
+        private string? _warningMessage;
+
+        public bool IsDisabled
+        {
+            get => _isDisabled;
+            set => SetProperty(ref _isDisabled, value);
+        }
+
+        public string? WarningMessage
+        {
+            get => _warningMessage;
+            set => SetProperty(ref _warningMessage, value);
+        }
+
         public bool IsVisible
         {
             get => _isVisible;

@@ -374,7 +374,7 @@ namespace Tweaker.Optimizations
                     if (key != null)
                     {
                         // Verificar el valor ValueMax
-                        object valueMax = key.GetValue("ValueMax");
+                        object? valueMax = key?.GetValue("ValueMax");
                         if (valueMax != null && valueMax.ToString() == "0")
                         {
                             return false; // Core Parking deshabilitado

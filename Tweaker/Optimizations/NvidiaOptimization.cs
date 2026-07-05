@@ -92,6 +92,30 @@ namespace Tweaker.Optimizations
                             deviceKey.SetValue("PowerMizerLevelAC", 1, RegistryValueKind.DWord);
                             Debug.WriteLine("   ✓ PowerMizer = Máximo rendimiento (AC + Battery)");
 
+                            // Ported from NVIDIA Profile Inspector:
+                            // Texture Filtering Quality: High Performance
+                            deviceKey.SetValue("OGL_TextureFilteringQuality", 2, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ✓ OGL_TextureFilteringQuality = 2 (High Performance)");
+
+                            // Vertical Sync: Force Off
+                            deviceKey.SetValue("OGL_VSyncMode", 0, RegistryValueKind.DWord);
+                            deviceKey.SetValue("ForceVSync", 0, RegistryValueKind.DWord);
+                            deviceKey.SetValue("VSyncMode", 0, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ✓ Vertical Sync = Force Off (OGL & DX)");
+
+                            // Preferred Refresh Rate: Highest Available
+                            deviceKey.SetValue("PreferredRefreshRate", 1, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ✓ PreferredRefreshRate = 1 (Highest Available)");
+
+                            // Maximum Pre-rendered Frames: 1
+                            deviceKey.SetValue("OGL_MaxFramesAllowed", 1, RegistryValueKind.DWord);
+                            deviceKey.SetValue("MaxPreRenderedFrames", 1, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ✓ Pre-rendered Frames / Low Latency = 1");
+
+                            // Multi-Threaded Shader Optimization (OpenGL)
+                            deviceKey.SetValue("OGL_ThreadControl", 2, RegistryValueKind.DWord);
+                            Debug.WriteLine("   ✓ OGL_ThreadControl = 2 (Force Multi-Threaded)");
+
                             anyApplied = true;
                         }
                     }
@@ -105,6 +129,10 @@ namespace Tweaker.Optimizations
                     Debug.WriteLine("   • P-States forzados a High Performance");
                     Debug.WriteLine("   • Dynamic P-States OFF - sin downclocking en juegos");
                     Debug.WriteLine("   • PowerMizer en máximo rendimiento");
+                    Debug.WriteLine("   • Calidad de filtrado de textura en Alto Rendimiento");
+                    Debug.WriteLine("   • Sincronización vertical forzada a Desactivado");
+                    Debug.WriteLine("   • Tasa de refresco preferida establecida al Máximo");
+                    Debug.WriteLine("   • Latencia ultra baja (Pre-rendered frames = 1)");
                     Debug.WriteLine("⚠ REQUIERE REINICIO para aplicar cambios");
                 }
                 else
@@ -208,6 +236,15 @@ namespace Tweaker.Optimizations
                             deviceKey.DeleteValue("PowerMizerEnable", false);
                             deviceKey.DeleteValue("PowerMizerLevel", false);
                             deviceKey.DeleteValue("PowerMizerLevelAC", false);
+                            
+                            deviceKey.DeleteValue("OGL_TextureFilteringQuality", false);
+                            deviceKey.DeleteValue("OGL_VSyncMode", false);
+                            deviceKey.DeleteValue("ForceVSync", false);
+                            deviceKey.DeleteValue("VSyncMode", false);
+                            deviceKey.DeleteValue("PreferredRefreshRate", false);
+                            deviceKey.DeleteValue("OGL_MaxFramesAllowed", false);
+                            deviceKey.DeleteValue("MaxPreRenderedFrames", false);
+                            deviceKey.DeleteValue("OGL_ThreadControl", false);
 
                             Debug.WriteLine("   ✓ Valores NVIDIA restaurados a default");
                             anyRestored = true;

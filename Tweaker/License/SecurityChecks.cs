@@ -17,8 +17,8 @@ namespace Tweaker.License
 #if DEBUG
             return false;
 #else
-            if (AnalysisToolDetector.IsDevelopmentEnvironment()) return false;
-            return AnalysisToolDetector.PerformFullCheck();
+            if (AntiDebugger.IsDevelopmentEnvironment()) return false;
+            return AnalysisToolDetector.IsAnalysisToolDetected();
 #endif
         }
     }

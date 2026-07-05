@@ -32,7 +32,7 @@ namespace Tweaker.ViewModels
         private readonly IProfileManager _profileManager;
         private bool _isAutoBoosterEnabled = false;
         private string _currentStatus = "Modo: Escritorio";
-        private HardwareInfo _hardwareInfo = new();
+        private Tweaker.Utilities.HardwareInfo _hardwareInfo = new();
         private ObservableCollection<HistoryEntry> _recentHistory = new();
         private ObservableCollection<TweakerProfile> _savedProfiles = new();
 
@@ -43,6 +43,22 @@ namespace Tweaker.ViewModels
         private string _scanSummary = "";
         private bool _showOptimizeButton = false;
         private List<ScanResult>? _lastScanResults;
+
+        // Phase 4: Auto-Maintenance & Performance Metrics
+        private readonly AutoMaintenanceService _autoMaintenance;
+        private readonly PerformanceMetricsService _performanceMetrics;
+        private string _maintenanceStatusText = "Inactivo";
+        private string _performanceSummaryText = "";
+
+        // System Info Modal fields
+        private bool _isSystemInfoOpen = false;
+        private string _selectedSystemTab = "CPU";
+
+        // System Corruption Check fields
+        private string _chkDskStatus = "Pending";
+        private string _sfcStatus = "Pending";
+        private string _dismStatus = "Pending";
+        private bool _isCorruptionCheckRunning = false;
 
         #endregion
 
@@ -91,6 +107,8 @@ namespace Tweaker.ViewModels
             }
         }
 
+        public HardwareMonitorService HardwareMonitor => _stateManager.HardwareMonitor;
+
         public string CurrentStatus
         {
             get => _currentStatus;
@@ -104,7 +122,7 @@ namespace Tweaker.ViewModels
             }
         }
 
-        public HardwareInfo HardwareInfo
+        public Tweaker.Utilities.HardwareInfo HardwareInfo
         {
             get => _hardwareInfo;
             private set
@@ -191,9 +209,68 @@ namespace Tweaker.ViewModels
             set { _showOptimizeButton = value; OnPropertyChanged(); }
         }
 
+        // Phase 4: Auto-Maintenance Properties
+        public AutoMaintenanceService AutoMaintenance => _autoMaintenance;
+        public PerformanceMetricsService PerformanceMetrics => _performanceMetrics;
+
+        public string MaintenanceStatusText
+        {
+            get => _maintenanceStatusText;
+            set { if (_maintenanceStatusText != value) { _maintenanceStatusText = value; OnPropertyChanged(); } }
+        }
+
+        public string PerformanceSummaryText
+        {
+            get => _performanceSummaryText;
+            set { if (_performanceSummaryText != value) { _performanceSummaryText = value; OnPropertyChanged(); } }
+        }
+
+        // System Info properties
+        public bool IsSystemInfoOpen
+        {
+            get => _isSystemInfoOpen;
+            set { _isSystemInfoOpen = value; OnPropertyChanged(); }
+        }
+
+        public string SelectedSystemTab
+        {
+            get => _selectedSystemTab;
+            set { _selectedSystemTab = value; OnPropertyChanged(); }
+        }
+
+        // System Corruption Check properties
+        public string ChkDskStatus
+        {
+            get => _chkDskStatus;
+            set { _chkDskStatus = value; OnPropertyChanged(); }
+        }
+
+        public string SfcStatus
+        {
+            get => _sfcStatus;
+            set { _sfcStatus = value; OnPropertyChanged(); }
+        }
+
+        public string DismStatus
+        {
+            get => _dismStatus;
+            set { _dismStatus = value; OnPropertyChanged(); }
+        }
+
+        public bool IsCorruptionCheckRunning
+        {
+            get => _isCorruptionCheckRunning;
+            set { _isCorruptionCheckRunning = value; OnPropertyChanged(); }
+        }
+
         #endregion
 
         #region Commands
+
+        public ICommand OpenSystemInfoCommand { get; }
+        public ICommand CloseSystemInfoCommand { get; }
+        public ICommand SelectSystemTabCommand { get; }
+        public IAsyncCommand BeginSystemCheckCommand { get; }
 
         public ICommand NavigateCommand { get; }
         public ICommand ApplyAllCommand { get; }
@@ -205,9 +282,18 @@ namespace Tweaker.ViewModels
         public ICommand SaveProfileCommand { get; }
         public ICommand LoadProfileCommand { get; }
         public ICommand DeleteProfileCommand { get; }
+        public ICommand ExportProfileCommand { get; }
+        public ICommand ImportProfileCommand { get; }
         public ICommand LoadPresetCommand { get; }
         public ICommand ExportLogCommand { get; }
         public ICommand ClearHistoryCommand { get; }
+        public ICommand RollbackTweakCommand { get; }
+
+        // Phase 4 Commands
+        public IAsyncCommand RunMaintenanceNowCommand { get; }
+        public ICommand TakeBaselineSnapshotCommand { get; }
+        public ICommand TakeOptimizedSnapshotCommand { get; }
+        public ICommand ClearMetricsHistoryCommand { get; }
 
         #endregion
 
@@ -222,6 +308,11 @@ namespace Tweaker.ViewModels
             _smartScanService = new SmartScanService();
             _startupManagerService = new StartupManagerService();
             _profileManager = App.ServiceProvider.GetRequiredService<IProfileManager>();
+
+            // Phase 4: Servicios avanzados
+            _autoMaintenance = AutoMaintenanceService.Instance;
+            _autoMaintenance.MaintenanceCompleted += AutoMaintenance_Completed;
+            _performanceMetrics = PerformanceMetricsService.Instance;
 
             // Inicializar colecciones
             NavigationItems = new ObservableCollection<NavigationItem>
@@ -247,6 +338,11 @@ namespace Tweaker.ViewModels
             SavedProfiles = new ObservableCollection<TweakerProfile>(_profileManager.GetAllProfiles());
 
             // Comandos
+            OpenSystemInfoCommand = new RelayCommand(_ => { IsSystemInfoOpen = true; SelectedSystemTab = "CPU"; });
+            CloseSystemInfoCommand = new RelayCommand(_ => IsSystemInfoOpen = false);
+            SelectSystemTabCommand = new RelayCommand(p => { if (p != null) SelectedSystemTab = p.ToString(); });
+            BeginSystemCheckCommand = new AsyncRelayCommand(ExecuteSystemCheckAsync);
+
             NavigateCommand = new RelayCommand(p => Navigate(p?.ToString()));
             ApplyAllCommand = new RelayCommand(_ => ApplyAllInCurrentSection());
             RevertAllCommand = new RelayCommand(_ => RevertAllInCurrentSection());
@@ -257,12 +353,28 @@ namespace Tweaker.ViewModels
             SaveProfileCommand = new RelayCommand(_ => SaveCurrentProfile());
             LoadProfileCommand = new RelayCommand(p => LoadProfile(p as TweakerProfile));
             DeleteProfileCommand = new RelayCommand(p => DeleteProfile(p as TweakerProfile));
+            ExportProfileCommand = new RelayCommand(p => ExportProfile(p as TweakerProfile));
+            ImportProfileCommand = new RelayCommand(_ => ImportProfile());
             LoadPresetCommand = new RelayCommand(p => LoadPreset(p?.ToString()));
             ExportLogCommand = new RelayCommand(_ => ExportLog());
             ClearHistoryCommand = new RelayCommand(_ => ClearHistory());
+            RollbackTweakCommand = new RelayCommand(p => RollbackTweak(p?.ToString()));
+
+            // Phase 4 Commands
+            RunMaintenanceNowCommand = new AsyncRelayCommand(async () => await _autoMaintenance.RunNowAsync());
+            TakeBaselineSnapshotCommand = new RelayCommand(_ => _performanceMetrics.TakeBaselineSnapshot());
+            TakeOptimizedSnapshotCommand = new RelayCommand(_ => _performanceMetrics.TakeOptimizedSnapshot());
+            ClearMetricsHistoryCommand = new RelayCommand(_ => _performanceMetrics.ClearHistory());
 
             // Cargar datos iniciales
             RefreshStartupList();
+        }
+
+        private void AutoMaintenance_Completed(object? sender, Models.MaintenanceLog log)
+        {
+            MaintenanceStatusText = log.Success
+                ? $"✅ {log.MBFreed}MB liberados, {log.FilesDeleted} archivos - {log.Timestamp:HH:mm}"
+                : $"❌ Error: {log.Details}";
         }
 
         private async Task StartScanAsync()
@@ -391,7 +503,7 @@ namespace Tweaker.ViewModels
         {
             if (string.IsNullOrEmpty(page)) return;
 
-            if (page is "Dashboard" or "Profiles" or "History")
+            if (page is "Dashboard" or "Profiles" or "History" or "Startup")
             {
                 CurrentSection = null;
                 CurrentPageName = page;
@@ -399,10 +511,17 @@ namespace Tweaker.ViewModels
                 {
                     LoadRecentHistory();
                 }
+                else if (page == "Startup")
+                {
+                    RefreshStartupList();
+                }
                 return;
             }
 
-            var section = AllSections.FirstOrDefault(s => s.SectionName.Contains(page, StringComparison.OrdinalIgnoreCase));
+            var section = AllSections.FirstOrDefault(s => 
+                s.Category.Equals(page, StringComparison.OrdinalIgnoreCase) ||
+                s.SectionName.Contains(page, StringComparison.OrdinalIgnoreCase) ||
+                s.Title.Contains(page, StringComparison.OrdinalIgnoreCase));
             if (section != null)
             {
                 CurrentSection = section;
@@ -585,6 +704,91 @@ namespace Tweaker.ViewModels
             SavedProfiles.Remove(profile);
         }
 
+        private void ExportProfile(TweakerProfile? profile)
+        {
+            if (profile == null) return;
+
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                FileName = $"{profile.Name}.json",
+                Filter = "JSON files (*.json)|*.json"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    var options = new System.Text.Json.JsonSerializerOptions { WriteIndented = true };
+                    string json = System.Text.Json.JsonSerializer.Serialize(profile, options);
+                    System.IO.File.WriteAllText(dlg.FileName, json);
+
+                    MessageBox.Show(
+                        Tweaker.Utilities.LocalizationService.Text("Perfil exportado exitosamente.", "Profile exported successfully."),
+                        Tweaker.Utilities.LocalizationService.Text("Éxito", "Success"),
+                        MessageBoxButton.OK, MessageBoxImage.Information
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        Tweaker.Utilities.LocalizationService.Text($"Error al exportar perfil: {ex.Message}", $"Error exporting profile: {ex.Message}"),
+                        Tweaker.Utilities.LocalizationService.Text("Error", "Error"),
+                        MessageBoxButton.OK, MessageBoxImage.Error
+                    );
+                }
+            }
+        }
+
+        private void ImportProfile()
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "JSON files (*.json)|*.json"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                try
+                {
+                    string json = System.IO.File.ReadAllText(dlg.FileName);
+                    var profile = System.Text.Json.JsonSerializer.Deserialize<TweakerProfile>(json, new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (profile == null || string.IsNullOrWhiteSpace(profile.Name))
+                    {
+                        MessageBox.Show(
+                            Tweaker.Utilities.LocalizationService.Text("El archivo de perfil no es válido.", "Invalid profile file."),
+                            Tweaker.Utilities.LocalizationService.Text("Error", "Error"),
+                            MessageBoxButton.OK, MessageBoxImage.Error
+                        );
+                        return;
+                    }
+
+                    // Guardar en el gestor de perfiles
+                    _profileManager.SaveProfile(profile);
+                    
+                    // Actualizar lista
+                    SavedProfiles = new ObservableCollection<TweakerProfile>(_profileManager.GetAllProfiles());
+
+                    MessageBox.Show(
+                        Tweaker.Utilities.LocalizationService.Text($"Perfil '{profile.Name}' importado exitosamente.", $"Profile '{profile.Name}' imported successfully."),
+                        Tweaker.Utilities.LocalizationService.Text("Éxito", "Success"),
+                        MessageBoxButton.OK, MessageBoxImage.Information
+                    );
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(
+                        Tweaker.Utilities.LocalizationService.Text($"Error al importar perfil: {ex.Message}", $"Error importing profile: {ex.Message}"),
+                        Tweaker.Utilities.LocalizationService.Text("Error", "Error"),
+                        MessageBoxButton.OK, MessageBoxImage.Error
+                    );
+                }
+            }
+        }
+
         private void LoadPreset(string? presetName)
         {
             if (string.IsNullOrWhiteSpace(presetName)) return;
@@ -641,6 +845,100 @@ namespace Tweaker.ViewModels
                 TweakHistoryLogger.Clear();
                 RecentHistory.Clear();
             }
+        }
+
+        private void RollbackTweak(string? tweakId)
+        {
+            if (string.IsNullOrEmpty(tweakId)) return;
+            var result = MessageBox.Show($"¿Deseas deshacer la optimización '{tweakId}'?", "Deshacer cambio",
+                MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+            {
+                _stateManager.SetTweakDisabled(tweakId);
+                LoadRecentHistory();
+                MessageBox.Show($"Cambio revertido para '{tweakId}'.", "Éxito", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
+        private async Task ExecuteSystemCheckAsync()
+        {
+            if (IsCorruptionCheckRunning) return;
+
+            IsCorruptionCheckRunning = true;
+            
+            // Step 1: ChkDsk
+            ChkDskStatus = "Running";
+            bool chkResult = await RunBackgroundSystemCommandAsync("chkdsk.exe", "c:");
+            ChkDskStatus = chkResult ? "Success" : "Failed";
+
+            // Step 2: SFC
+            SfcStatus = "Running";
+            bool sfcResult = await RunBackgroundSystemCommandAsync("sfc.exe", "/verifyonly");
+            SfcStatus = sfcResult ? "Success" : "Failed";
+
+            // Step 3: DISM
+            DismStatus = "Running";
+            bool dismResult = await RunBackgroundSystemCommandAsync("dism.exe", "/online /cleanup-image /checkhealth");
+            DismStatus = dismResult ? "Success" : "Failed";
+
+            IsCorruptionCheckRunning = false;
+        }
+
+        private Task<bool> RunBackgroundSystemCommandAsync(string fileName, string arguments)
+        {
+            var tcs = new TaskCompletionSource<bool>();
+
+            Task.Run(() =>
+            {
+                try
+                {
+                    string fullPath = GetSystem32Path(fileName);
+                    var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        Arguments = arguments,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true
+                    };
+
+                    using var process = System.Diagnostics.Process.Start(psi);
+                    if (process == null)
+                    {
+                        tcs.SetResult(false);
+                        return;
+                    }
+
+                    process.WaitForExit();
+                    // sfc /verifyonly returns 0 if no corruption, but can return 1 or other codes.
+                    // For safety, let's treat any clean exit (0 or 1/2 for check success) as completed.
+                    tcs.SetResult(process.ExitCode == 0 || process.ExitCode == 1);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error running {fileName}: {ex.Message}");
+                    tcs.SetResult(false);
+                }
+            });
+
+            return tcs.Task;
+        }
+
+        private string GetSystem32Path(string exeName)
+        {
+            string system32 = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "System32");
+            string sysnative = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Sysnative");
+            
+            string path = System.IO.Path.Combine(system32, exeName);
+            if (System.IO.Directory.Exists(sysnative))
+            {
+                string nativePath = System.IO.Path.Combine(sysnative, exeName);
+                if (System.IO.File.Exists(nativePath))
+                {
+                    return nativePath;
+                }
+            }
+            return path;
         }
 
         #region INotifyPropertyChanged

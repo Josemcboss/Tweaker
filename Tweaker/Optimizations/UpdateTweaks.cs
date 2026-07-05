@@ -291,6 +291,86 @@ namespace Tweaker.Optimizations
             }
         }
 
+
+
+        /// <summary>
+        /// DO Solo Mode: restricts Delivery Optimization cache sharing to local network only (DODownloadMode = 1)
+        /// </summary>
+        public static bool EnableDOSoloMode()
+        {
+            try
+            {
+                const string DO_CONFIG_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config";
+                using (var key = Registry.LocalMachine.CreateSubKey(DO_CONFIG_KEY))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("DODownloadMode", 1, RegistryValueKind.DWord);
+                        Debug.WriteLine("✅ DO Solo Mode Enabled: DODownloadMode = 1 (LAN only)");
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error enabling DO Solo Mode: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Disables DO Solo Mode: restores to standard behavior (deletes DODownloadMode override)
+        /// </summary>
+        public static bool DisableDOSoloMode()
+        {
+            try
+            {
+                const string DO_CONFIG_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config";
+                using (var key = Registry.LocalMachine.OpenSubKey(DO_CONFIG_KEY, true))
+                {
+                    if (key != null)
+                    {
+                        key.DeleteValue("DODownloadMode", false);
+                        Debug.WriteLine("✅ DO Solo Mode Disabled (Restored to default)");
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error disabling DO Solo Mode: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if DO Solo Mode is enabled (DODownloadMode == 1)
+        /// </summary>
+        public static bool IsDOSoloModeEnabled()
+        {
+            try
+            {
+                const string DO_CONFIG_KEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config";
+                using (var key = Registry.LocalMachine.OpenSubKey(DO_CONFIG_KEY, false))
+                {
+                    if (key != null)
+                    {
+                        var val = key.GetValue("DODownloadMode");
+                        if (val != null)
+                        {
+                            return Convert.ToInt32(val) == 1;
+                        }
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Diagnóstico completo del estado del sistema (alias para DiagnoseUpdateSettings)
         /// </summary>

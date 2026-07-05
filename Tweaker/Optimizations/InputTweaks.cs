@@ -489,6 +489,24 @@ namespace Tweaker.Optimizations
         }
 
         /// <summary>
+        /// Gets the current Win32PrioritySeparation registry value as integer.
+        /// </summary>
+        public static int GetCurrentCpuPriorityValue()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(PRIORITY_CONTROL_KEY))
+                {
+                    return key?.GetValue("Win32PrioritySeparation") as int? ?? 2;
+                }
+            }
+            catch
+            {
+                return 2;
+            }
+        }
+
+        /// <summary>
         /// REVERTIR Win32 Priority a valor por defecto de Windows
         /// </summary>
         public static bool RevertWin32Priority()
@@ -887,7 +905,7 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue("OverlayTestMode");
+                        object? value = key?.GetValue("OverlayTestMode");
                         if (value == null)
                         {
                             return "Windows Default (MPO Habilitado)";
@@ -1056,7 +1074,7 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue("Win32PrioritySeparation");
+                        object? value = key?.GetValue("Win32PrioritySeparation");
                         if (value != null)
                         {
                             int currentValue = Convert.ToInt32(value);
@@ -1442,6 +1460,63 @@ namespace Tweaker.Optimizations
             catch (Exception ex)
             {
                 Debug.WriteLine($"? ERROR RestoreMouseAccelerationKernelLevel: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Checks if kernel-level mouse acceleration curve is disabled.
+        /// </summary>
+        public static bool IsMouseAccelerationKernelLevelDisabled()
+        {
+            try
+            {
+                using var mouseKey = Registry.CurrentUser.OpenSubKey(MOUSE_ACCEL_KEY, writable: false);
+                if (mouseKey != null)
+                {
+                    string? speed = mouseKey?.GetValue("MouseSpeed")?.ToString();
+                    string? t1 = mouseKey?.GetValue("MouseThreshold1")?.ToString();
+                    string? t2 = mouseKey?.GetValue("MouseThreshold2")?.ToString();
+                    if (speed != "0" || t1 != "0" || t2 != "0")
+                        return false;
+                }
+
+                using var mouseKey2 = Registry.CurrentUser.OpenSubKey(MOUSE_CURVES_KEY, writable: false);
+                if (mouseKey2 != null)
+                {
+                    byte[] curve = mouseKey2.GetValue("SmoothMouseXCurve") as byte[];
+                    if (curve == null || curve.Length < 40 || curve[0] != 0x00 || curve[8] != 0x15)
+                        return false;
+                }
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Sets a custom CPU priority separation value (Win32PrioritySeparation).
+        /// </summary>
+        public static bool SetCpuPriorityValue(int priorityValue)
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.CreateSubKey(PRIORITY_CONTROL_KEY))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("Win32PrioritySeparation", priorityValue, RegistryValueKind.DWord);
+                        Debug.WriteLine($"✅ Custom CPU priority separation set to {priorityValue} (0x{priorityValue:X})");
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error setting custom CPU priority: {ex.Message}");
                 return false;
             }
         }

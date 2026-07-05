@@ -41,7 +41,7 @@ namespace Tweaker.License
 
                 // SEGURIDAD NIVEL 2: Verificar herramientas de análisis (solo en Release)
 #if !DEBUG
-                if (!AnalysisToolDetector.IsDevelopmentEnvironment() && AnalysisToolDetector.PerformFullCheck())
+                if (!AntiDebugger.IsDevelopmentEnvironment() && AnalysisToolDetector.IsAnalysisToolDetected())
                 {
                     System.Diagnostics.Debug.WriteLine("🚨 SEGURIDAD: Herramienta de análisis detectada en KeyGenerator");
                     throw new InvalidOperationException("Security violation detected");

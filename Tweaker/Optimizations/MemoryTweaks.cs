@@ -216,8 +216,8 @@ namespace Tweaker.Optimizations
                     if (key == null)
                         return "Error: No se pudo leer configuraci�n";
 
-                    object disablePaging = key.GetValue("DisablePagingExecutive");
-                    object largeCache = key.GetValue("LargeSystemCache");
+                    object? disablePaging = key?.GetValue("DisablePagingExecutive");
+                    object? largeCache = key?.GetValue("LargeSystemCache");
 
                     string pagingStatus = disablePaging?.ToString() == "1"
                         ? "Deshabilitado (Kernel en RAM)"

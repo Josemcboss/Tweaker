@@ -343,7 +343,7 @@ namespace Tweaker.Optimizations
             {
                 using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", false))
                 {
-                    object value = key?.GetValue("HwSchMode");
+                    object? value = key?.GetValue("HwSchMode");
                     return value != null && value.ToString() == "2";
                 }
             }

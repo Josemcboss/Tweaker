@@ -127,11 +127,11 @@ namespace Tweaker.Optimizations
                                 // ────────────────────────────────────?
 
                                 // Verificar si tiene DHCP habilitado
-                                object dhcpEnabled = interfaceKey.GetValue("EnableDHCP");
+                                object? dhcpEnabled = interfaceKey?.GetValue("EnableDHCP");
 
                                 // Verificar si tiene IP estática asignada
-                                object ipAddress = interfaceKey.GetValue("IPAddress");
-                                object dhcpIpAddress = interfaceKey.GetValue("DhcpIPAddress");
+                                object? ipAddress = interfaceKey?.GetValue("IPAddress");
+                                object? dhcpIpAddress = interfaceKey?.GetValue("DhcpIPAddress");
 
                                 // Es una interfaz activa si:
                                 // - Tiene DHCP habilitado (valor 1)
@@ -433,8 +433,8 @@ namespace Tweaker.Optimizations
 
                                 info += $"GUID: {guid}\n";
 
-                                object dhcp = interfaceKey.GetValue("EnableDHCP");
-                                object ip = interfaceKey.GetValue("DhcpIPAddress");
+                                object? dhcp = interfaceKey?.GetValue("EnableDHCP");
+                                object? ip = interfaceKey?.GetValue("DhcpIPAddress");
 
                                 if (dhcp != null)
                                     info += $"  DHCP: {dhcp}\n";
@@ -524,8 +524,8 @@ namespace Tweaker.Optimizations
                             if (interfaceKey == null) continue;
 
                             // Verificar si es una interfaz activa
-                            object enableDhcp = interfaceKey.GetValue("EnableDHCP");
-                            object dhcpIp = interfaceKey.GetValue("DhcpIPAddress");
+                            object? enableDhcp = interfaceKey?.GetValue("EnableDHCP");
+                            object? dhcpIp = interfaceKey?.GetValue("DhcpIPAddress");
 
                             if ((enableDhcp != null && enableDhcp.ToString() == "1" && dhcpIp != null && !string.IsNullOrEmpty(dhcpIp.ToString())) ||
                                 interfaceKey.GetValue("IPAddress") != null)
@@ -624,7 +624,7 @@ namespace Tweaker.Optimizations
                 {
                     if (key != null)
                     {
-                        object value = key.GetValue("NetworkThrottlingIndex");
+                        object? value = key?.GetValue("NetworkThrottlingIndex");
                         if (value != null)
                         {
                             int intValue = Convert.ToInt32(value);

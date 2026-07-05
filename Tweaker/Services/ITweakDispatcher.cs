@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Tweaker.Services
 {
@@ -8,5 +9,11 @@ namespace Tweaker.Services
         bool RevertTweak(string tweakId);
         bool IsTweakSupported(string tweakId);
         bool? GetRealState(string tweakId);
+
+        /// <summary>
+        /// Returns the canonical (non-alias) tweak IDs managed by this dispatcher.
+        /// Used to derive TotalTweaksCount dynamically.
+        /// </summary>
+        IReadOnlyCollection<string> GetCanonicalTweakIds();
     }
 }

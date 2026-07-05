@@ -53,6 +53,24 @@ namespace Tweaker.Controls
             set => SetValue(ValueUnitProperty, value);
         }
 
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register(nameof(Value), typeof(double), typeof(HardwareGraph),
+                new PropertyMetadata(0.0, OnValuePropertyChanged));
+
+        public double Value
+        {
+            get => (double)GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+
+        private static void OnValuePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is HardwareGraph graph)
+            {
+                graph.AddValue((double)e.NewValue);
+            }
+        }
+
         #endregion
 
         private readonly HardwareGraphViewModel _vm;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 using Tweaker.Data;
 using Tweaker.Models;
@@ -44,7 +44,8 @@ namespace Tweaker.Factories
                 Title = "Input & Visuals",
                 Subtitle = "Optimizaciones de Input Lag y FPS",
                 Icon = "??",
-                Category = "Input"
+                Category = "Input",
+                SectionName = "Input & Visuals"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -108,7 +109,8 @@ namespace Tweaker.Factories
                 Title = "Red & Ping",
                 Subtitle = "Optimizaciones TCP/IP para reducir ping y latencia",
                 Icon = "??",
-                Category = "Network"
+                Category = "Network",
+                SectionName = "Red & Ping"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -192,7 +194,8 @@ namespace Tweaker.Factories
                 Title = "Sistema & GPU",
                 Subtitle = "GPU, CPU y Configuración del Sistema",
                 Icon = "💻",
-                Category = "System"
+                Category = "System",
+                SectionName = "Sistema & GPU"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -232,7 +235,8 @@ namespace Tweaker.Factories
                 Title = "GPU & Display",
                 Subtitle = "Optimización de GPU, pantalla y audio",
                 Icon = "🎮",
-                Category = "GPUDisplay"
+                Category = "GPUDisplay",
+                SectionName = "GPU & Display"
             };
 
             section.Tweaks.Add(CreateTweakModel("nvidia_low_latency_ultra", "NVIDIA Low Latency Ultra", "Fuerza modo Ultra Low Latency en NVIDIA. Reduce input lag GPU."));
@@ -255,7 +259,8 @@ namespace Tweaker.Factories
                 Title = "Almacenamiento",
                 Subtitle = "SSD, TRIM y optimización NTFS",
                 Icon = "💾",
-                Category = "Storage"
+                Category = "Storage",
+                SectionName = "Almacenamiento"
             };
 
             section.Tweaks.Add(CreateTweakModel("ssd_write_cache", "SSD Write Cache", "Activa caché de escritura en disco. Velocidad de escritura +30-50%."));
@@ -275,7 +280,8 @@ namespace Tweaker.Factories
                 Title = "CPU Avanzado",
                 Subtitle = "IRQ, afinidad y anti-throttling",
                 Icon = "⚙️",
-                Category = "CPUAdvanced"
+                Category = "CPUAdvanced",
+                SectionName = "CPU Avanzado"
             };
 
             section.Tweaks.Add(CreateTweakModel("irq_network_priority", "IRQ Network Priority", "Prioriza interrupciones de red sobre otros dispositivos."));
@@ -296,7 +302,8 @@ namespace Tweaker.Factories
                 Title = "Limpieza",
                 Subtitle = "Optimización de espacio y archivos temporales",
                 Icon = "??",
-                Category = "Cleanup"
+                Category = "Cleanup",
+                SectionName = "Limpieza"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -326,7 +333,8 @@ namespace Tweaker.Factories
                 Title = "GHOST Pack",
                 Subtitle = "Optimizaciones Extremas (Requiere Reinicio)",
                 Icon = "👻",
-                Category = "Ghost"
+                Category = "Ghost",
+                SectionName = "GHOST Pack"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -382,7 +390,8 @@ namespace Tweaker.Factories
                 Title = "Advanced",
                 Subtitle = "Configuraciones avanzadas de Windows",
                 Icon = "??",
-                Category = "Advanced"
+                Category = "Advanced",
+                SectionName = "Advanced"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -416,7 +425,8 @@ namespace Tweaker.Factories
                 Title = "Laptop & Power",
                 Subtitle = "Planes de energía y optimización de batería",
                 Icon = "??",
-                Category = "Laptop"
+                Category = "Laptop",
+                SectionName = "Preset Laptop"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -445,7 +455,8 @@ namespace Tweaker.Factories
                 Title = "Competitive",
                 Subtitle = "Latencia ultra-baja y priorización de juegos",
                 Icon = "??",
-                Category = "Competitive"
+                Category = "Competitive",
+                SectionName = "Competitive Gaming"
             };
 
             section.Tweaks.Add(CreateTweakModel(
@@ -498,7 +509,8 @@ namespace Tweaker.Factories
                 Title = "Advanced Latency",
                 Subtitle = "Tweaks de latencia de bajo nivel del sistema",
                 Icon = "⚡",
-                Category = "AdvancedLatency"
+                Category = "AdvancedLatency",
+                SectionName = "Latency Tweaks"
             };
 
             section.Tweaks.Add(CreateTweakModel(

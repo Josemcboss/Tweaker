@@ -11,6 +11,15 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Icons.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Recursos de Tema Dinámicos -->
+            <Color x:Key="AccentColor">#00D9FF</Color>
+            <Color x:Key="SecondaryColor">#A970FF</Color>
+            <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}"/>
+            <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource SecondaryColor}"/>
+            <SolidColorBrush x:Key="ThemeBgBrush" Color="#0F0F0F"/>
+            <SolidColorBrush x:Key="ThemeSidebarBgBrush" Color="#1E1E1E"/>
+            <SolidColorBrush x:Key="ThemeHeaderBgBrush" Color="#151515"/>
             
             <!-- Converters globales -->
             <converters:BoolToRecommendationIconConverter x:Key="BoolToRecommendationIconConverter"/>
@@ -21,6 +30,8 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
             <local:BoolToStringConverter x:Key="BoolToStringConverter"/>
             <local:ActionToColorConverter x:Key="ActionToColorConverter"/>
             <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <converters:PageNameToVisibilityConverter x:Key="PageNameToVisibilityConverter"/>
+            <converters:PageNameToTagConverter x:Key="PageNameToTagConverter"/>
 
             <Style x:Key="PresetButton" TargetType="Button">
                 <Setter Property="Background" Value="#2D2B55"/>
@@ -121,8 +132,8 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
                         <Setter Property="BorderBrush">
                             <Setter.Value>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#00D9FF" Offset="0"/>
-                                    <GradientStop Color="#5865F2" Offset="1"/>
+                                    <GradientStop Color="{DynamicResource AccentColor}" Offset="0"/>
+                                    <GradientStop Color="{DynamicResource SecondaryColor}" Offset="1"/>
                                 </LinearGradientBrush>
                             </Setter.Value>
                         </Setter>
@@ -130,7 +141,7 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
                         <Setter Property="Effect">
                             <Setter.Value>
                                 <!-- Neon Glow Effect Cyan -->
-                                <DropShadowEffect Color="#00D9FF" 
+                                <DropShadowEffect Color="{DynamicResource AccentColor}" 
                                                 BlurRadius="20" 
                                                 ShadowDepth="0" 
                                                 Opacity="0.8"/>
@@ -183,8 +194,8 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
                                     <Setter TargetName="SwitchTrack" Property="Background">
                                         <Setter.Value>
                                             <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                                <GradientStop Color="#00D9FF" Offset="0"/>
-                                                <GradientStop Color="#5865F2" Offset="1"/>
+                                                <GradientStop Color="{DynamicResource AccentColor}" Offset="0"/>
+                                                <GradientStop Color="{DynamicResource SecondaryColor}" Offset="1"/>
                                             </LinearGradientBrush>
                                         </Setter.Value>
                                     </Setter>
@@ -220,10 +231,10 @@ xmlns:converters="clr-namespace:Tweaker.Converters">
 
                                 <!-- Hover Effect -->
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="#00D9FF"/>
+                                    <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                                     <Setter TargetName="SwitchTrack" Property="Effect">
                                         <Setter.Value>
-                                            <DropShadowEffect Color="#00D9FF" 
+                                            <DropShadowEffect Color="{DynamicResource AccentColor}" 
                                                             BlurRadius="10" 
                                                             ShadowDepth="0" 
                                                             Opacity="0.6"/>

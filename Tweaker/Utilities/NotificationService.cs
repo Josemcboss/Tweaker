@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -221,7 +221,7 @@ namespace Tweaker.Utilities
 
         private void AnimateNotificationOut(bool instant = false)
         {
-            if (_notificationContainer.Children.Count == 0)
+            if (_notificationContainer == null || _notificationContainer.Children.Count == 0)
                 return;
 
             var notification = _notificationContainer.Children[0] as Border;
@@ -261,7 +261,7 @@ namespace Tweaker.Utilities
 
         private void AutoHideTimer_Tick(object sender, EventArgs e)
         {
-            _autoHideTimer.Stop();
+            _autoHideTimer?.Stop();
             AnimateNotificationOut();
         }
     }

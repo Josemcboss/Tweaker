@@ -811,12 +811,101 @@ namespace Tweaker.Data
                 Recommended = false,
                 Risk = RiskLevel.Moderate,
                 FpsGain = 10
+            },
+            ["do_solo_mode"] = new TweakInfo
+            {
+                Id = "do_solo_mode",
+                Title = "DO Solo Mode",
+                Category = "Advanced",
+                Description = "Configura Delivery Optimization para descargar actualizaciones solo desde la LAN local (Solo Mode), deshabilitando la compartición con internet.",
+                Benefits = "• Evita uso de ancho de banda de subida\n• Reduce pings altos y lag intermitente\n• Conexión más limpia y estable",
+                Warnings = "• Las descargas de updates se limitan a la LAN o servidores oficiales directamente.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["raw_aim_curve"] = new TweakInfo
+            {
+                Id = "raw_aim_curve",
+                Title = "Raw Aim Curve",
+                Category = "Input & Visuals",
+                Description = "Aplica una optimización de curva de puntería a nivel de registro que desactiva por completo la aceleración del mouse a nivel de kernel.",
+                Benefits = "• Movimiento de mouse perfecto 1:1\n• Sin interpolación del sistema operativo\n• Ideal para shooters de precisión (Valorant, CS2)",
+                Warnings = "• Requiere reiniciar el sistema para surtir efecto.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["trim_force_on"] = new TweakInfo
+            {
+                Id = "trim_force_on",
+                Title = "TRIM Force-On",
+                Category = "Almacenamiento",
+                Description = "Fuerza la activación de la función TRIM en el sistema de archivos de Windows para mantener los SSD limpios y funcionando a la máxima velocidad de lectura/escritura.",
+                Benefits = "• Previene la degradación del rendimiento del SSD\n• Mantiene tiempos de carga ultra-rápidos\n• Ejecución automática en background",
+                Warnings = "• Solo compatible con discos SSD. Sin efecto en HDD.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["win32_priority"] = new TweakInfo
+            {
+                Id = "win32_priority",
+                Title = "Win32 Priority Optimization",
+                Category = "Competitive",
+                Description = "Ajusta la prioridad del planificador Win32 para favorecer de forma óptima a las aplicaciones en primer plano (juegos) sobre procesos en segundo plano.",
+                Benefits = "• Menos micro-stutters\n• Mayor suavidad en FPS competitivos\n• Prioridad de CPU enfocada en el juego",
+                Warnings = "• Puede ralentizar levemente tareas de fondo exigentes.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["core_power_plan"] = new TweakInfo
+            {
+                Id = "core_power_plan",
+                Title = "Core Power Plan (Ultimate)",
+                Category = "Laptop & Power",
+                Description = "Fuerza el uso de la directiva de energía de máximo rendimiento (Ultimate Performance), deshabilitando los estados de reposo profundo del CPU.",
+                Benefits = "• Núcleos de CPU siempre activos y listos\n• Cero delay al demandar potencia de procesamiento\n• Frame pacing perfecto",
+                Warnings = "• Incrementa el consumo eléctrico y la temperatura del CPU.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["usb_power_guard"] = new TweakInfo
+            {
+                Id = "usb_power_guard",
+                Title = "USB Power Guard",
+                Category = "Laptop & Power",
+                Description = "Deshabilita la suspensión selectiva de los puertos USB para asegurar que los periféricos gaming de alto rendimiento no se apaguen.",
+                Benefits = "• Estabilidad de polling rate en ratones/teclados\n• Sin micro-desconexiones durante el juego\n• Máxima respuesta de dispositivos USB",
+                Warnings = "• Aumento mínimo en el consumo de energía.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["stickykeys_guard"] = new TweakInfo
+            {
+                Id = "stickykeys_guard",
+                Title = "StickyKeys Guard",
+                Category = "Input & Visuals",
+                Description = "Fuerza la desactivación persistente del atajo de accesibilidad Sticky Keys para evitar popups accidentales.",
+                Benefits = "• Sin interrupciones en partidas competitivas\n• Desactivación limpia a nivel de registro",
+                Warnings = "• Desactiva la función Sticky Keys.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["hibernation_wipe"] = new TweakInfo
+            {
+                Id = "hibernation_wipe",
+                Title = "Hibernation Wipe",
+                Category = "Advanced",
+                Description = "Deshabilita la hibernación y libera el espacio ocupado por hiberfil.sys en el almacenamiento principal.",
+                Benefits = "• Libera varios gigabytes de espacio en disco\n• Elimina lecturas/escrituras de hibernación innecesarias",
+                Warnings = "• El modo de suspensión de hibernación dejará de estar disponible.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
             }
         };
 
         public static TweakInfo GetTweakInfo(string tweakId)
         {
-            return _tweaks.TryGetValue(tweakId, out TweakInfo info) ? info : CreateDefaultTweakInfo(tweakId);
+            if (string.IsNullOrEmpty(tweakId)) return CreateDefaultTweakInfo(tweakId);
+            return _tweaks.TryGetValue(tweakId.ToLowerInvariant(), out TweakInfo info) ? info : CreateDefaultTweakInfo(tweakId);
         }
 
         private static TweakInfo CreateDefaultTweakInfo(string tweakId)

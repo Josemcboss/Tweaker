@@ -607,6 +607,183 @@ namespace Tweaker.Optimizations
         }
 
         // ────────────────────────────────────────────?
+        // CONNECTED STANDBY & WATCHDOG CANDIDATES
+        // ────────────────────────────────────────────?
+
+        /// <summary>
+        /// Connected Standby (Modern Standby) Optimization
+        /// </summary>
+        public static bool DisableConnectedStandby()
+        {
+            try
+            {
+                string powerPath = @"SYSTEM\CurrentControlSet\Control\Power";
+                using (var key = Registry.LocalMachine.CreateSubKey(powerPath, true))
+                {
+                    if (key != null)
+                    {
+                        key.SetValue("PlatformAoAcOverride", 0, RegistryValueKind.DWord);
+                        key.SetValue("CsEnabled", 0, RegistryValueKind.DWord);
+                        Debug.WriteLine("✅ Connected Standby (CsEnabled & PlatformAoAcOverride) Disabled");
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error disabling Connected Standby: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool RestoreConnectedStandby()
+        {
+            try
+            {
+                string powerPath = @"SYSTEM\CurrentControlSet\Control\Power";
+                using (var key = Registry.LocalMachine.OpenSubKey(powerPath, true))
+                {
+                    if (key != null)
+                    {
+                        key.DeleteValue("PlatformAoAcOverride", false);
+                        key.DeleteValue("CsEnabled", false);
+                        Debug.WriteLine("✅ Connected Standby Restored");
+                        return true;
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error restoring Connected Standby: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool IsConnectedStandbyDisabled()
+        {
+            try
+            {
+                string powerPath = @"SYSTEM\CurrentControlSet\Control\Power";
+                using (var key = Registry.LocalMachine.OpenSubKey(powerPath, false))
+                {
+                    if (key != null)
+                    {
+                        var overrideVal = key.GetValue("PlatformAoAcOverride");
+                        return overrideVal != null && Convert.ToInt32(overrideVal) == 0;
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Disable Watchdog sensor and timers to prevent micro-stutters during DPC routines
+        /// </summary>
+        public static bool DisableWatchdog()
+        {
+            try
+            {
+                // Registry path 1
+                string watchdogPath = @"SYSTEM\CurrentControlSet\Control\Watchdog";
+                using (var key = Registry.LocalMachine.CreateSubKey(watchdogPath, true))
+                {
+                    key?.SetValue("DisableWatchdog", 1, RegistryValueKind.DWord);
+                }
+                
+                // Registry path 2
+                string watchdogDisplayPath = @"SYSTEM\CurrentControlSet\Control\Watchdog\Display";
+                using (var key = Registry.LocalMachine.CreateSubKey(watchdogDisplayPath, true))
+                {
+                    key?.SetValue("DisableWatchdog", 1, RegistryValueKind.DWord);
+                }
+                
+                // Disable service wdtval
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\wdtval", true))
+                {
+                    key?.SetValue("Start", 4, RegistryValueKind.DWord);
+                }
+
+                // Disable watchdog service
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\watchdog", true))
+                {
+                    key?.SetValue("Start", 4, RegistryValueKind.DWord);
+                }
+
+                Debug.WriteLine("✅ Watchdog disabled successfully.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error disabling Watchdog: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool RestoreWatchdog()
+        {
+            try
+            {
+                string watchdogPath = @"SYSTEM\CurrentControlSet\Control\Watchdog";
+                using (var key = Registry.LocalMachine.OpenSubKey(watchdogPath, true))
+                {
+                    key?.DeleteValue("DisableWatchdog", false);
+                }
+                
+                string watchdogDisplayPath = @"SYSTEM\CurrentControlSet\Control\Watchdog\Display";
+                using (var key = Registry.LocalMachine.OpenSubKey(watchdogDisplayPath, true))
+                {
+                    key?.DeleteValue("DisableWatchdog", false);
+                }
+                
+                // Re-enable service wdtval (manual)
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\wdtval", true))
+                {
+                    key?.SetValue("Start", 3, RegistryValueKind.DWord);
+                }
+
+                // Re-enable watchdog service (manual)
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Services\watchdog", true))
+                {
+                    key?.SetValue("Start", 3, RegistryValueKind.DWord);
+                }
+
+                Debug.WriteLine("✅ Watchdog restored successfully.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"❌ Error restoring Watchdog: {ex.Message}");
+                return false;
+            }
+        }
+
+        public static bool IsWatchdogDisabled()
+        {
+            try
+            {
+                using (var key = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Watchdog", false))
+                {
+                    if (key != null)
+                    {
+                        var val = key.GetValue("DisableWatchdog");
+                        return val != null && Convert.ToInt32(val) == 1;
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // ────────────────────────────────────────────?
         // APPLY ALL SYSTEM TWEAKS
         // ────────────────────────────────────────────?
 
@@ -625,6 +802,8 @@ namespace Tweaker.Optimizations
 
                 success &= DisableFSOAndGameDVR();
                 success &= AddTakeOwnershipContext();
+                success &= DisableConnectedStandby();
+                success &= DisableWatchdog();
 
                 // UAC es opcional (requiere confirmación del usuario)
                 // success &= DisableUAC();
@@ -663,6 +842,8 @@ namespace Tweaker.Optimizations
                 RestoreFSOAndGameDVR();
                 RemoveTakeOwnershipContext();
                 RestoreUAC();
+                RestoreConnectedStandby();
+                RestoreWatchdog();
 
                 Debug.WriteLine("? TWEAKS REVERTIDOS");
                 return true;

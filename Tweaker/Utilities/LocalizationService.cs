@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
+using System.Collections.Generic;
 
 using Microsoft.Win32;
 
@@ -26,6 +27,9 @@ public static class LocalizationService
 
     public static AppLanguage CurrentLanguage { get; private set; } = AppLanguage.Spanish;
     public static bool IsEnglish => CurrentLanguage == AppLanguage.English;
+
+    private static Dictionary<string, string>? _englishToSpanishExact;
+    private static Dictionary<string, string>? _englishToSpanishPartial;
 
     public static bool HasSavedPreference()
     {
@@ -61,7 +65,7 @@ public static class LocalizationService
 
     public static void ApplyToWindow(Window window)
     {
-        if (window == null || !IsEnglish)
+        if (window == null)
         {
             return;
         }
@@ -70,25 +74,76 @@ public static class LocalizationService
         TranslateElement(window);
     }
 
+    public static void ApplyToElement(DependencyObject element)
+    {
+        if (element == null)
+        {
+            return;
+        }
+        TranslateElement(element);
+    }
+
     public static string Translate(string input)
     {
-        if (string.IsNullOrWhiteSpace(input) || !IsEnglish)
+        if (string.IsNullOrWhiteSpace(input))
         {
             return input;
         }
 
-        if (LocalizationCatalog.SpanishToEnglishExact.TryGetValue(input, out string? exact))
+        if (IsEnglish)
         {
-            return exact;
-        }
+            if (LocalizationCatalog.SpanishToEnglishExact.TryGetValue(input, out string? exact))
+            {
+                return exact;
+            }
 
-        string translated = input;
-        foreach (var replacement in LocalizationCatalog.SpanishToEnglishPartial.OrderByDescending(p => p.Key.Length))
+            string translated = input;
+            foreach (var replacement in LocalizationCatalog.SpanishToEnglishPartial.OrderByDescending(p => p.Key.Length))
+            {
+                translated = translated.Replace(replacement.Key, replacement.Value, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return translated;
+        }
+        else
         {
-            translated = translated.Replace(replacement.Key, replacement.Value, StringComparison.OrdinalIgnoreCase);
-        }
+            // Build inverse dictionaries if null
+            if (_englishToSpanishExact == null)
+            {
+                _englishToSpanishExact = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in LocalizationCatalog.SpanishToEnglishExact)
+                {
+                    if (!_englishToSpanishExact.ContainsKey(kvp.Value))
+                    {
+                        _englishToSpanishExact.Add(kvp.Value, kvp.Key);
+                    }
+                }
+            }
+            if (_englishToSpanishPartial == null)
+            {
+                _englishToSpanishPartial = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var kvp in LocalizationCatalog.SpanishToEnglishPartial)
+                {
+                    if (!_englishToSpanishPartial.ContainsKey(kvp.Value))
+                    {
+                        _englishToSpanishPartial.Add(kvp.Value, kvp.Key);
+                    }
+                }
+            }
 
-        return translated;
+            if (_englishToSpanishExact.TryGetValue(input, out string? exact))
+            {
+                return exact;
+            }
+
+            string translated = input;
+            foreach (var replacement in _englishToSpanishPartial.OrderByDescending(p => p.Key.Length))
+            {
+                translated = translated.Replace(replacement.Key, replacement.Value, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return translated;
+        }
     }
 
     private static AppLanguage LoadLanguage()
@@ -135,10 +190,22 @@ public static class LocalizationService
     {
         if (parent is TextBlock textBlock)
         {
-            textBlock.Text = Translate(textBlock.Text);
-            foreach (Inline inline in textBlock.Inlines)
+            if (textBlock.Inlines.Count == 0)
             {
-                if (inline is Run run)
+                textBlock.Text = Translate(textBlock.Text);
+            }
+            else
+            {
+                // Copiar a lista temporal para evitar InvalidOperationException
+                var runs = new System.Collections.Generic.List<Run>();
+                foreach (Inline inline in textBlock.Inlines)
+                {
+                    if (inline is Run run)
+                    {
+                        runs.Add(run);
+                    }
+                }
+                foreach (var run in runs)
                 {
                     run.Text = Translate(run.Text);
                 }
@@ -203,6 +270,3 @@ public static class LocalizationService
         }
     }
 }
-
-
-

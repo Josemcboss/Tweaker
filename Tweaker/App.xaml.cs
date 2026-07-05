@@ -17,7 +17,7 @@ namespace Tweaker
     {
         public static IServiceProvider ServiceProvider { get; private set; } = null!;
 
-        protected override void OnStartup(StartupEventArgs e)
+        protected override async void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
@@ -25,9 +25,9 @@ namespace Tweaker
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
 
-            // Mantener la aplicación en español por ahora
+            // Inicializar idioma y tema
             LocalizationService.Initialize();
-            LocalizationService.SetLanguage(AppLanguage.Spanish);
+            ThemeManager.ApplyTheme(ThemeManager.LoadThemePreference());
 
             _ = Task.Run(() => HardwareDetector.Detect());
 
@@ -61,6 +61,15 @@ namespace Tweaker
             Debug.WriteLine("🏠 Mostrando ventana principal...");
             try
             {
+                // P1: Wire dispatcher → TweakStateManager so TotalTweaksCount is live
+                var dispatcher = ServiceProvider.GetRequiredService<ITweakDispatcher>();
+                TweakStateManager.Instance.InjectDispatcher(dispatcher);
+
+                // P2: Sync real system state → correct any JSON ↔ reality discrepancies
+                Debug.WriteLine("🔍 Sincronizando estado real del sistema...");
+                await StartupStateVerifier.SyncRealStateAsync(dispatcher, TweakStateManager.Instance);
+                Debug.WriteLine("✅ State sync completo.");
+
                 MainWindow mainWin = new MainWindow();
                 mainWin.Show();
 

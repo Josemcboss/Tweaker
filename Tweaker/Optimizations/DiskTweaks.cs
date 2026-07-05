@@ -1226,6 +1226,58 @@ namespace Tweaker.Optimizations
             }
         }
 
+        /// <summary>
+        /// Habilita TRIM a nivel del sistema (TRIM Force-On)
+        /// </summary>
+        public static bool EnableTrim()
+        {
+            return ExecuteFsutilCommand("behavior set disabledeletenotify 0", "Enabling TRIM");
+        }
+
+        /// <summary>
+        /// Deshabilita TRIM (restaura o apaga)
+        /// </summary>
+        public static bool DisableTrim()
+        {
+            return ExecuteFsutilCommand("behavior set disabledeletenotify 1", "Disabling TRIM");
+        }
+
+        /// <summary>
+        /// Verifica si TRIM está habilitado (disabledeletenotify == 0)
+        /// </summary>
+        public static bool IsTrimEnabled()
+        {
+            try
+            {
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = "fsutil",
+                    Arguments = "behavior query disabledeletenotify",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                using (var process = Process.Start(startInfo))
+                {
+                    if (process == null) return false;
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
+                    {
+                        string output = process.StandardOutput.ReadToEnd();
+                        // Si contiene "= 0", TRIM está habilitado
+                        return output.Contains("= 0");
+                    }
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private static void RunPowercfgDisk(string args, string description)
         {
             try

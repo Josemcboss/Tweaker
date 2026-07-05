@@ -7,7 +7,7 @@ namespace Tweaker.License
     /// Bóveda segura para claves criptográficas
     /// Implementa seguridad por oscuridad para dificultar ingeniería inversa
     /// </summary>
-    internal class KeyVault : IKeyVault
+    public class KeyVault : IKeyVault
     {
         // Fragmentos ofuscados en Base64
         private static readonly string[] _fragments = new[]

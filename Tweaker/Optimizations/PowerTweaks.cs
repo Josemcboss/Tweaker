@@ -466,5 +466,21 @@ namespace Tweaker.Optimizations
                 return "Error";
             }
         }
+
+        /// <summary>
+        /// Verifica si el plan Ultimate Performance está activo
+        /// </summary>
+        public static bool IsUltimatePerformanceActive()
+        {
+            try
+            {
+                string activePlan = GetActivePowerPlan();
+                return activePlan.Contains("Ultimate Performance", StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
