@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ghost Optimizer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#c3f5ff",
+                        "tertiary-fixed-dim": "#f3bf26",
+                        "surface-container-highest": "#353438",
+                        "background": "#131316",
+                        "inverse-surface": "#e4e1e5",
+                        "on-background": "#e4e1e5",
+                        "on-tertiary-container": "#6f5500",
+                        "on-secondary-fixed-variant": "#582a9f",
+                        "on-secondary-fixed": "#260058",
+                        "surface-dim": "#131316",
+                        "inverse-on-surface": "#303033",
+                        "on-primary-fixed": "#001f24",
+                        "surface-container-low": "#1b1b1e",
+                        "primary-fixed-dim": "#00daf3",
+                        "surface-container-high": "#2a2a2d",
+                        "on-tertiary-fixed": "#251a00",
+                        "surface": "#131316",
+                        "inverse-primary": "#006875",
+                        "on-tertiary-fixed-variant": "#594400",
+                        "primary-container": "#00e5ff",
+                        "tertiary": "#ffeac0",
+                        "primary-fixed": "#9cf0ff",
+                        "on-primary-container": "#00626e",
+                        "secondary-container": "#582a9f",
+                        "on-primary": "#00363d",
+                        "on-primary-fixed-variant": "#004f58",
+                        "surface-bright": "#39393c",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#3e2e00",
+                        "on-error": "#690005",
+                        "tertiary-fixed": "#ffdf96",
+                        "secondary": "#d4bbff",
+                        "secondary-fixed": "#ebdcff",
+                        "on-secondary-container": "#c6a5ff",
+                        "on-secondary": "#400688",
+                        "outline-variant": "#3b494c",
+                        "surface-container-lowest": "#0e0e11",
+                        "on-surface-variant": "#bac9cc",
+                        "secondary-fixed-dim": "#d4bbff",
+                        "outline": "#849396",
+                        "tertiary-container": "#fec931",
+                        "surface-tint": "#00daf3",
+                        "on-error-container": "#ffdad6",
+                        "surface-variant": "#353438",
+                        "surface-container": "#1f1f22",
+                        "on-surface": "#e4e1e5",
+                        "error": "#ffb4ab"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "40px",
+                        "xs": "8px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "container-max": "1280px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "xl": "64px"
+                    },
+                    "fontFamily": {
+                        "headline-xl": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-md": ["JetBrains Mono"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["JetBrains Mono"]
+                    },
+                    "fontSize": {
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.08em", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(19, 19, 22, 0.4);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glow-active {
+            box-shadow: 0 0 20px rgba(0, 218, 243, 0.2);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-sm relative overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="bg-background/80 backdrop-blur-xl border-b border-white/10 shadow-[0_0_20px_rgba(0,218,243,0.1)] flex justify-between items-center px-sm py-base w-full z-50 fixed top-0 w-full h-[60px]">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-xl active:scale-95 transition-transform">terminal</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile tracking-tighter text-primary">GHOST OPTIMIZER</span>
+</div>
+<button class="active:scale-95 transition-transform focus:outline-none" id="menu-toggle">
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary-container transition-colors text-2xl">menu</span>
+</button>
+</header>
+<!-- NavigationDrawer (Hidden by default) -->
+<div class="fixed inset-y-0 left-0 z-[60] flex flex-col bg-surface-container-lowest/95 backdrop-blur-2xl rounded-r-xl h-full w-64 border-r border-primary/20 shadow-[10px_0_30px_rgba(0,0,0,0.5)] transform -translate-x-full transition-all duration-300 ease-in-out" id="nav-drawer">
+<div class="p-md flex justify-between items-center border-b border-white/5">
+<h2 class="font-headline-lg text-headline-lg text-primary">OPTIMIZER CORE</h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors focus:outline-none" id="close-menu">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<nav class="flex flex-col gap-xs p-sm mt-4">
+<a class="bg-primary/10 text-primary border-l-2 border-primary px-sm py-xs flex items-center gap-sm rounded-r hover:bg-white/5 transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">memory</span> System
+            </a>
+<a class="text-on-surface-variant px-sm py-xs flex items-center gap-sm hover:bg-white/5 transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">speed</span> Network
+            </a>
+<a class="text-on-surface-variant px-sm py-xs flex items-center gap-sm hover:bg-white/5 transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">sports_esports</span> Gaming
+            </a>
+<a class="text-on-surface-variant px-sm py-xs flex items-center gap-sm hover:bg-white/5 transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a>
+</nav>
+</div>
+<!-- Drawer Overlay -->
+<div class="fixed inset-0 bg-black/50 z-50 hidden backdrop-blur-sm transition-opacity opacity-0" id="drawer-overlay"></div>
+<main class="flex-grow pt-[80px] px-sm pb-xl max-w-container-max mx-auto w-full flex flex-col gap-lg">
+<!-- Hero Section -->
+<section class="flex flex-col gap-md text-center py-lg mt-md">
+<div class="inline-flex items-center gap-2 mx-auto bg-surface-container/50 border border-primary/20 rounded-full px-4 py-1 text-primary font-label-sm text-label-sm uppercase tracking-widest shadow-[0_0_10px_rgba(0,218,243,0.1)]">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                v2.0 Beta Release
+            </div>
+<h1 class="font-headline-xl text-headline-xl text-primary drop-shadow-[0_0_15px_rgba(195,245,255,0.3)]">
+                Optimiza tu PC para gaming competitivo
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto">
+                Advanced Gaming Performance Tweaker. Reduce input lag, maximiza los FPS y optimiza la red con un solo clic. Entorno seguro, cambios reversibles.
+            </p>
+<div class="flex flex-col gap-sm mt-4 w-full px-sm">
+<button class="bg-primary-container text-on-primary-container font-label-md text-label-md px-lg py-3 rounded hover:bg-primary-fixed transition-colors active:scale-95 flex items-center justify-center gap-2 glow-active w-full">
+<span class="material-symbols-outlined text-lg">download</span>
+                    Descargar Ahora
+                </button>
+<button class="border border-secondary text-secondary font-label-md text-label-md px-lg py-3 rounded hover:bg-secondary/10 transition-colors active:scale-95 flex items-center justify-center gap-2 w-full">
+<span class="material-symbols-outlined text-lg">science</span>
+                    Probar Simulador
+                </button>
+</div>
+</section>
+<!-- Stats Section (Mobile Vertical List) -->
+<section class="flex flex-col gap-sm">
+<div class="glass-panel p-md rounded-xl flex items-center justify-between border-l-2 border-primary">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">FPS Boost</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-primary">+120 FPS</span>
+</div>
+<span class="material-symbols-outlined text-primary/50 text-4xl">trending_up</span>
+</div>
+<div class="glass-panel p-md rounded-xl flex items-center justify-between border-l-2 border-secondary">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Latency</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-secondary">-150ms Ping</span>
+</div>
+<span class="material-symbols-outlined text-secondary/50 text-4xl">network_ping</span>
+</div>
+<div class="glass-panel p-md rounded-xl flex items-center justify-between border-l-2 border-tertiary-container">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">RAM Freed</span>
+<span class="font-headline-lg-mobile text-headline-lg-mobile text-tertiary-container">11.5 GB</span>
+</div>
+<span class="material-symbols-outlined text-tertiary-container/50 text-4xl">memory</span>
+</div>
+</section>
+<!-- Dashboard Preview -->
+<section class="w-full rounded-xl overflow-hidden border border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+<img class="w-full h-auto object-cover opacity-90 hover:opacity-100 transition-opacity" data-alt="A highly detailed, tech-minimalist UI dashboard mockup for a cyberpunk performance tuning software. It features a dark grey background (#131316) with floating glassmorphic panels, neon electric cyan (#c3f5ff) circular gauges, intricate data graphs with thin sharp lines, and crisp JetBrains Mono typography. The interface displays CPU and RAM metrics glowing softly in a high-tech void." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWolMKiiJQPbpDxUX1FJ6xlPijmdX9TVxPoyWU7usJeQF3ls2vwv45yog5CnAjLzuxQxvyWBWkFLU1UIMCG_DnvqAoAsLL1i0EjIfLfgpiI7plcfGUVkLSIi5YASbPZLTlq7aUgYgC3ZxJshhtU6ROgxrfNBjSKUsQH2NM4B11h3clyUH2hXCp2tPcjjW_fAKUNNmMJ1H3pCBNNj75zz41rfXDCBf60EwYAENinNMlK2vz-klqSOnGQ-55ZK41eP-EYk3XFpgbOpY"/>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-background flex flex-col md:flex-row justify-between items-center px-md py-lg gap-sm border-t border-white/5 w-full mt-auto">
+<div class="font-headline-lg text-headline-lg text-primary tracking-tighter">GHOST OPTIMIZER</div>
+<div class="flex gap-md">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-all opacity-80 hover:opacity-100" href="#">GITHUB</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-all opacity-80 hover:opacity-100" href="#">DOCS</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-all opacity-80 hover:opacity-100" href="#">DISCORD</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary-container transition-all opacity-80 hover:opacity-100" href="#">X</a>
+</div>
+<div class="font-label-sm text-label-sm text-secondary opacity-60 mt-4 md:mt-0">MIT LICENSE © 2024 GHOST OPTIMIZER</div>
+</footer>
+<script>
+        // Simple drawer toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const closeMenu = document.getElementById('close-menu');
+        const navDrawer = document.getElementById('nav-drawer');
+        const overlay = document.getElementById('drawer-overlay');
+
+        function toggleMenu() {
+            const isClosed = navDrawer.classList.contains('-translate-x-full');
+            if (isClosed) {
+                navDrawer.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+                // Small delay to allow display:block to apply before animating opacity
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                navDrawer.classList.add('-translate-x-full');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+    </script>
+</body></html>

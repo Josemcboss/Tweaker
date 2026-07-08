@@ -1,0 +1,34 @@
+{
+  "projectId": "7102131526126020227",
+  "title": "Tweaker Design System",
+  "screens": [
+    {
+      "screenId": "10894815858373287632",
+      "title": "Tweaker Design System MD",
+      "deviceType": "DESKTOP"
+    }
+  ],
+  "designSystem": {
+    "assetId": "8582ce23234c42228e2fd1e487733473",
+    "primaryColor": "#00d9ff",
+    "secondaryColor": "#a970ff",
+    "backgroundColor": "#0a0a0c",
+    "fontFamily": "INTER"
+  },
+  "migrationProject": {
+    "projectId": "8962994956224023862",
+    "title": "My App Migration",
+    "screens": [
+      {
+        "screenId": "17148572881584117583",
+        "title": "Ghost Optimizer Frontend Inline",
+        "deviceType": "DESKTOP"
+      },
+      {
+        "screenId": "902985185bf449b6b629f8708f67b6f0",
+        "title": "Ghost Optimizer Mobile Viewport",
+        "deviceType": "MOBILE"
+      }
+    ]
+  }
+}

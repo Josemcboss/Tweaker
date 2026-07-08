@@ -1,0 +1,2443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Optimizer v2.0 | Advanced Gaming Performance Tweaker</title>
+    <meta name="description" content="Optimiza tu PC con 58 tweaks profesionales. Consigue hasta +120 FPS, reduce la latencia de red y elimina el input lag en Windows para gaming competitivo.">
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Link styles -->
+    <style>
+/* ==========================================================================
+   GHOST OPTIMIZER v2.0 - CSS DESIGN SYSTEM
+   ========================================================================== */
+
+/* Typography & Variables */
+:root {
+    --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    
+    /* Core Color Tokens */
+    --bg-primary: #0a0a0c;
+    --bg-secondary: #0f0f13;
+    --bg-sidebar: #131418;
+    --bg-card: #181920;
+    
+    --accent-cyan: #00d9ff;
+    --accent-cyan-rgb: 0, 217, 255;
+    --accent-purple: #a970ff;
+    --accent-purple-rgb: 169, 112, 255;
+    --accent-blue: #5865f2;
+    --accent-blue-rgb: 88, 101, 242;
+    
+    --text-primary: #ffffff;
+    --text-secondary: #e2e8f0;
+    --text-muted: #94a3b8;
+    
+    /* System Tweak State Colors */
+    --btn-on: #0e7a0d;
+    --btn-on-hover: #11910f;
+    --btn-on-border: #107c10;
+    
+    --btn-off: #a80000;
+    --btn-off-hover: #c50500;
+    --btn-off-border: #c50500;
+    
+    --risk-safe: #10b981;
+    --risk-moderate: #f59e0b;
+    --risk-danger: #ef4444;
+    
+    --transition-speed: 0.3s;
+    --ease-elastic: cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+/* Reset */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+/* Grid & Glow Effects Background */
+.bg-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: center top;
+    z-index: -2;
+    pointer-events: none;
+}
+
+.bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.25;
+}
+
+.bg-glow-1 {
+    top: -200px;
+    right: -100px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(var(--accent-cyan-rgb), 0.6) 0%, transparent 70%);
+}
+
+.bg-glow-2 {
+    bottom: -200px;
+    left: -100px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(var(--accent-purple-rgb), 0.6) 0%, transparent 70%);
+}
+
+/* Glassmorphism Cards Base */
+.glass-card {
+    background: radial-gradient(circle at center, rgba(30, 30, 32, 0.7) 0%, rgba(21, 21, 24, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform var(--transition-speed), border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+/* Navigation Bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 12, 0.7);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    z-index: 100;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: 0.5px;
+}
+
+.logo-icon {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 5px rgba(var(--accent-cyan-rgb), 0.5));
+}
+
+.accent-text {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 10px rgba(var(--accent-cyan-rgb), 0.3);
+}
+
+.badge {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    color: #000;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: color var(--transition-speed);
+}
+
+.nav-links a:hover {
+    color: var(--accent-cyan);
+}
+
+/* Hero Section */
+.hero-section {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    padding: 80px 8%;
+    align-items: center;
+    min-height: calc(85vh - 75px);
+}
+
+.hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.hero-badge {
+    background: rgba(var(--accent-purple-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-purple-rgb), 0.3);
+    color: var(--accent-purple);
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    text-shadow: 0 0 8px rgba(var(--accent-purple-rgb), 0.2);
+}
+
+.hero-content h1 {
+    font-family: var(--font-heading);
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 20px;
+}
+
+.gradient-text {
+    background: linear-gradient(90deg, var(--accent-cyan) 0%, var(--accent-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 35px;
+    max-width: 600px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 50px;
+}
+
+/* Button UI */
+.btn {
+    display: inline-block;
+    padding: 14px 28px;
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.btn-primary {
+    background: var(--accent-cyan);
+    color: #050508;
+    box-shadow: 0 4px 15px rgba(var(--accent-cyan-rgb), 0.3);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(var(--accent-cyan-rgb), 0.5);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Hero Stats */
+.hero-stats {
+    display: flex;
+    gap: 30px;
+}
+
+.stat-pill {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-val {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.stat-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Mockup Presentation */
+.hero-preview {
+    display: flex;
+    justify-content: center;
+}
+
+.mockup-container {
+    width: 100%;
+    max-width: 500px;
+    overflow: hidden;
+    transform: perspective(1000px) rotateY(-8deg) rotateX(4deg);
+    box-shadow: -20px 20px 50px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.1);
+    border-color: rgba(var(--accent-cyan-rgb), 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) translateY(0); }
+    50% { transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) translateY(-10px); }
+}
+
+.mockup-container:hover {
+    border-color: rgba(var(--accent-cyan-rgb), 0.5);
+    box-shadow: -20px 20px 60px rgba(var(--accent-cyan-rgb), 0.15);
+}
+
+.mockup-header {
+    background: var(--bg-sidebar);
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mockup-dots {
+    display: flex;
+    gap: 6px;
+    margin-right: 20px;
+}
+
+.mockup-dots span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #444;
+}
+
+.mockup-dots span:nth-child(1) { background: #ff5f56; }
+.mockup-dots span:nth-child(2) { background: #ffbd2e; }
+.mockup-dots span:nth-child(3) { background: #27c93f; }
+
+.mockup-title {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+}
+
+.mockup-img-wrapper {
+    background: #000;
+    position: relative;
+    padding-top: 60%;
+    overflow: hidden;
+}
+
+.mockup-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Sections Header Default */
+.section-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 50px auto;
+    padding: 0 20px;
+}
+
+.section-pre {
+    color: var(--accent-cyan);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.section-header h2 {
+    font-family: var(--font-heading);
+    font-size: 2.3rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.section-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+/* Dashboard Simulator Section */
+.dashboard-simulator {
+    padding: 80px 8%;
+    background: rgba(15, 15, 19, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.simulator-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 520px;
+    overflow: hidden;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.sim-sidebar {
+    background: var(--bg-sidebar);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sim-sidebar-title {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    padding: 0 20px 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 15px;
+}
+
+.sim-nav-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    border-left: 3px solid transparent;
+    padding: 12px 20px;
+    text-align: left;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.sim-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.02);
+    color: #fff;
+}
+
+.sim-nav-btn.active {
+    background: rgba(88, 101, 242, 0.15);
+    color: #fff;
+    border-left-color: var(--accent-blue);
+}
+
+.sim-content {
+    background: var(--bg-secondary);
+    padding: 30px;
+}
+
+.sim-panel {
+    display: none;
+}
+
+.sim-panel.active {
+    display: block;
+}
+
+.dashboard-header-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.gauge-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+}
+
+.gauge-wrapper {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin-bottom: 15px;
+}
+
+.gauge-svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.04);
+    stroke-width: 8px;
+}
+
+.gauge-fill {
+    fill: none;
+    stroke: var(--accent-cyan);
+    stroke-width: 8px;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gauge-fill.fill-secondary {
+    stroke: var(--accent-purple);
+}
+
+.gauge-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gauge-val {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.gauge-lbl {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.gauge-title {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Profile Selection Controls */
+.profile-card {
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.profile-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    margin-bottom: 8px;
+}
+
+.profile-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.profile-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.btn-profile {
+    background: rgba(45, 43, 85, 0.4);
+    border: 1px solid rgba(83, 74, 183, 0.4);
+    border-radius: 8px;
+    padding: 12px;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all var(--transition-speed);
+    text-align: center;
+}
+
+.btn-profile:hover {
+    background: rgba(83, 74, 183, 0.6);
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.btn-profile.active {
+    background: #5865f2;
+    border-color: #7289da;
+    box-shadow: 0 0 15px rgba(88, 101, 242, 0.4);
+}
+
+.profile-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.profile-tweaks {
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.btn-profile.active .profile-tweaks {
+    color: #fff;
+}
+
+.profile-spec {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+}
+
+.btn-profile.active .profile-spec {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.scheduling-profiles {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.sched-lbl {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sched-badges {
+    display: flex;
+    gap: 10px;
+}
+
+.sched-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.sched-badge.active {
+    background: rgba(var(--accent-cyan-rgb), 0.15);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+/* Dynamic Live Metrics grid */
+.live-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.metric-box {
+    padding: 15px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.metric-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+}
+
+.metric-value {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent-cyan);
+}
+
+/* Tweaks List Simulator inside Dashboard */
+.panel-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.panel-header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+}
+
+.panel-category-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.tweaks-list-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+/* Web Scrollbar */
+.tweaks-list-wrapper::-webkit-scrollbar,
+.catalog-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tweaks-list-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tweaks-list-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.tweak-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.tweak-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(var(--accent-cyan-rgb), 0.1);
+}
+
+.tweak-item-info {
+    max-width: 70%;
+}
+
+.tweak-item-title {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.tweak-item-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.tweak-toggle-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-toggle {
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.btn-toggle-on {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-toggle-on.active {
+    background: var(--btn-on);
+    color: #fff;
+    border-color: var(--btn-on-border);
+    box-shadow: 0 0 10px rgba(14, 122, 13, 0.4);
+}
+
+.btn-toggle-off {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.btn-toggle-off.active {
+    background: var(--btn-off);
+    color: #fff;
+    border-color: var(--btn-off-border);
+    box-shadow: 0 0 10px rgba(168, 0, 0, 0.4);
+}
+
+/* Catalog Explorer Section */
+.catalog-explorer {
+    padding: 80px 8%;
+    background-color: var(--bg-primary);
+}
+
+.catalog-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.search-box {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+}
+
+.search-box input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 14px 20px 14px 45px;
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.search-box input:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 15px rgba(var(--accent-cyan-rgb), 0.2);
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+}
+
+.filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-tab {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all var(--transition-speed);
+}
+
+.filter-tab:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+}
+
+.filter-tab.active {
+    background: rgba(0, 217, 255, 0.1);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+}
+
+/* Catalog Cards grid */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.catalog-card {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.catalog-card:hover {
+    border-color: rgba(var(--accent-cyan-rgb), 0.2);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.card-category-badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.card-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    flex-grow: 1;
+}
+
+.card-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 15px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+.card-bullets span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+.card-risk {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.risk-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.risk-safe { color: var(--risk-safe); }
+.risk-safe .risk-dot { background-color: var(--risk-safe); }
+.risk-moderate { color: var(--risk-moderate); }
+.risk-moderate .risk-dot { background-color: var(--risk-moderate); }
+.risk-danger { color: var(--risk-danger); }
+.risk-danger .risk-dot { background-color: var(--risk-danger); }
+
+.card-restart-badge {
+    font-size: 0.65rem;
+    background: rgba(239, 68, 68, 0.1);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* Security Layer Section */
+.security-layer {
+    padding: 80px 8%;
+    background: rgba(10, 10, 12, 0.8);
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.security-container {
+    display: grid;
+    grid-template-columns: 1fr 1.1fr;
+    gap: 50px;
+    align-items: center;
+}
+
+.security-info h2 {
+    font-family: var(--font-heading);
+    font-size: 2.3rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+}
+
+.security-info p {
+    color: var(--text-muted);
+    margin-bottom: 30px;
+}
+
+.security-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.security-list li {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.security-list li strong {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    color: #fff;
+}
+
+.security-list li span {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Security Terminal Code Mockup */
+.security-terminal {
+    width: 100%;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    border-color: rgba(255,255,255,0.06);
+}
+
+.terminal-header {
+    background: #18191f;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.term-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #444;
+    margin-right: 6px;
+}
+
+.term-dot:nth-child(1) { background: #ff5f56; }
+.term-dot:nth-child(2) { background: #ffbd2e; }
+.term-dot:nth-child(3) { background: #27c93f; }
+
+.term-title {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-left: 15px;
+    font-family: monospace;
+}
+
+.terminal-body {
+    background: #0c0d12;
+    padding: 20px;
+    font-family: Consolas, Monaco, monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #c5c6c9;
+    min-height: 220px;
+}
+
+.terminal-line {
+    margin-bottom: 4px;
+}
+
+.terminal-line.cmd {
+    color: #fff;
+}
+
+.terminal-line.success {
+    color: #4ade80;
+}
+
+.prompt {
+    color: var(--accent-cyan);
+}
+
+.blink {
+    animation: blinker 1s step-start infinite;
+    color: var(--accent-cyan);
+}
+
+@keyframes blinker {
+    50% { opacity: 0; }
+}
+
+.terminal-footer {
+    padding: 10px 20px;
+    background: #101116;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.btn-copy-code {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 0.7rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: var(--font-heading);
+    font-weight: 600;
+    transition: all var(--transition-speed);
+}
+
+.btn-copy-code:hover {
+    background: var(--accent-cyan);
+    color: #000;
+    border-color: var(--accent-cyan);
+}
+
+/* Safety Warnings Section */
+.safety-warnings {
+    padding: 0 8% 60px 8%;
+}
+
+.warning-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.warning-box {
+    padding: 25px;
+}
+
+.warning-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.warning-icon {
+    font-size: 1.3rem;
+}
+
+.warning-header h4 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.warning-box p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.border-warning {
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.border-danger {
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.border-warning:hover {
+    border-color: var(--risk-moderate);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.08);
+}
+
+.border-danger:hover {
+    border-color: var(--risk-danger);
+    box-shadow: 0 8px 25px rgba(239, 68, 68, 0.08);
+}
+
+/* Downloads Section */
+.downloads-section {
+    padding: 80px 8%;
+    background: rgba(15, 15, 19, 0.5);
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.download-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.download-specs {
+    padding: 30px;
+}
+
+.download-specs h3 {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+}
+
+.specs-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.specs-table tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.specs-table tr:last-child {
+    border-bottom: none;
+}
+
+.specs-table th, .specs-table td {
+    padding: 12px 0;
+    text-align: left;
+    font-size: 0.85rem;
+}
+
+.specs-table th {
+    color: var(--text-muted);
+    font-weight: 500;
+    width: 35%;
+}
+
+.specs-table td {
+    color: #fff;
+    font-weight: 600;
+}
+
+.checksum {
+    font-family: monospace;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+}
+
+.download-card {
+    padding: 40px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-color: rgba(var(--accent-cyan-rgb), 0.15);
+}
+
+.dl-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(var(--accent-cyan-rgb), 0.15);
+    border: 1px solid rgba(var(--accent-cyan-rgb), 0.3);
+    color: var(--accent-cyan);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+.dl-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    filter: drop-shadow(0 0 10px rgba(var(--accent-cyan-rgb), 0.4));
+}
+
+.download-card h3 {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.dl-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    max-width: 320px;
+    margin-bottom: 30px;
+}
+
+.btn-dl-main {
+    width: 100%;
+    max-width: 280px;
+    padding: 16px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.dl-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Footer Section */
+.footer {
+    padding: 40px 8%;
+    background: #060608;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-brand {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.footer-copyright {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 968px) {
+    .hero-section {
+        grid-template-columns: 1fr;
+        padding-top: 40px;
+        text-align: center;
+    }
+
+    .hero-content {
+        align-items: center;
+    }
+
+    .hero-actions, .hero-stats {
+        justify-content: center;
+    }
+
+    .mockup-container {
+        transform: none;
+        animation: none;
+    }
+
+    .simulator-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .sim-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .sim-sidebar-title {
+        display: none;
+    }
+
+    .sim-nav-btn {
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+    }
+
+    .sim-nav-btn.active {
+        border-bottom-color: var(--accent-blue);
+    }
+
+    .security-container {
+        grid-template-columns: 1fr;
+    }
+
+    .warning-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .download-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+
+    .hero-content h1 {
+        font-size: 2.3rem;
+    }
+
+    .hero-stats {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .profile-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .live-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+</style>
+</head>
+<body>
+    <!-- Background grid & glow effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <header class="navbar">
+        <div class="logo">
+            <span class="logo-icon">👾</span>
+            <span class="logo-text">GHOST <span class="accent-text">OPTIMIZER</span></span>
+            <span class="badge">v2.0.0</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#dashboard-section">Simulador</a>
+            <a href="#catalog-section">Catálogo de Tweaks</a>
+            <a href="#security-section">Seguridad</a>
+            <a href="#downloads-section">Descargar</a>
+        </nav>
+    </header>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">.NET 10.0 READY TO RUN</div>
+            <h1>Optimiza tu PC para <span class="gradient-text">gaming competitivo</span></h1>
+            <p class="hero-subtitle">Advanced Gaming Performance Tweaker. Reduce latencia, elimina micro-stutters y exprime hasta la última gota de rendimiento de tu CPU, GPU y red con 58 tweaks de nivel profesional.</p>
+            <div class="hero-actions">
+                <a href="#downloads-section" class="btn btn-primary" id="download-btn-hero">Descargar Ahora</a>
+                <a href="#dashboard-section" class="btn btn-secondary" id="simulate-btn-hero">Probar Simulador</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-pill">
+                    <span class="stat-val">+120 FPS</span>
+                    <span class="stat-lbl">Ganancia Estimada</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-val">-150ms</span>
+                    <span class="stat-lbl">Ping Reducido</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-val">11.5 GB</span>
+                    <span class="stat-lbl">RAM Liberada</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-preview">
+            <div class="mockup-container glass-card">
+                <div class="mockup-header">
+                    <div class="mockup-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <div class="mockup-title">Ghost Optimizer v2.0 - Dashboard</div>
+                </div>
+                <div class="mockup-img-wrapper">
+                    <!-- Showing the actual mockup image of the software UI -->
+                    <img src="img/mockup.png" alt="Ghost Optimizer UI Screenshot Mockup" class="mockup-img">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Interactive Dashboard Simulator -->
+    <section id="dashboard-section" class="dashboard-simulator">
+        <div class="section-header">
+            <span class="section-pre">INTERACTIVE PREVIEW</span>
+            <h2>Simulador del Dashboard en Tiempo Real</h2>
+            <p>Selecciona un perfil de optimización o activa los tweaks manualmente para ver cómo se actualizan los indicadores de rendimiento de la aplicación.</p>
+        </div>
+
+        <div class="simulator-layout glass-card">
+            <!-- Sidebar Navigation Simulator -->
+            <div class="sim-sidebar">
+                <div class="sim-sidebar-title">GHOST OPTIMIZER</div>
+                <button class="sim-nav-btn active" data-category="dashboard" id="sim-btn-db">👾 Dashboard</button>
+                <button class="sim-nav-btn" data-category="input" id="sim-btn-input">⌨️ Input & Visuals</button>
+                <button class="sim-nav-btn" data-category="network" id="sim-btn-net">🌐 Red & Ping</button>
+                <button class="sim-nav-btn" data-category="system" id="sim-btn-sys">⚙️ Sistema & GPU</button>
+                <button class="sim-nav-btn" data-category="clean" id="sim-btn-clean">🧹 Limpieza</button>
+                <button class="sim-nav-btn" data-category="ghost" id="sim-btn-ghost">🔥 GHOST Pack</button>
+                <button class="sim-nav-btn" data-category="advanced" id="sim-btn-adv">🚀 Advanced</button>
+            </div>
+
+            <!-- Content Area Simulator -->
+            <div class="sim-content">
+                <!-- Page 1: Dashboard Panel -->
+                <div class="sim-panel active" id="panel-dashboard">
+                    <div class="dashboard-header-stats">
+                        <div class="gauge-card glass-card">
+                            <div class="gauge-wrapper">
+                                <svg class="gauge-svg" viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="gauge-fill" id="gauge-opt" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="gauge-text">
+                                    <span class="gauge-val" id="text-opt-pct">0%</span>
+                                    <span class="gauge-lbl">Optimizado</span>
+                                </div>
+                            </div>
+                            <div class="gauge-title">Optimización del Sistema</div>
+                        </div>
+
+                        <div class="gauge-card glass-card">
+                            <div class="gauge-wrapper">
+                                <svg class="gauge-svg" viewBox="0 0 100 100">
+                                    <circle class="gauge-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="gauge-fill fill-secondary" id="gauge-tweaks" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle>
+                                </svg>
+                                <div class="gauge-text">
+                                    <span class="gauge-val" id="text-tweaks-count">0/58</span>
+                                    <span class="gauge-lbl">Tweaks Activos</span>
+                                </div>
+                            </div>
+                            <div class="gauge-title">Contador de Tweaks</div>
+                        </div>
+                    </div>
+
+                    <!-- Profiles Selection Card -->
+                    <div class="profile-card glass-card">
+                        <h3>Perfiles de CPU & Optimización</h3>
+                        <p class="profile-desc">Selecciona un perfil optimizado preestablecido para configurar automáticamente tu PC:</p>
+                        <div class="profile-buttons">
+                            <button class="btn-profile" data-profile="casual" id="profile-btn-casual">
+                                <span class="profile-name">Perfil Casual</span>
+                                <span class="profile-tweaks">20 Tweaks</span>
+                                <span class="profile-spec">+30 FPS | -40ms | +8.5GB</span>
+                            </button>
+                            <button class="btn-profile" data-profile="competitive" id="profile-btn-comp">
+                                <span class="profile-name">Perfil Competitivo</span>
+                                <span class="profile-tweaks">40 Tweaks</span>
+                                <span class="profile-spec">+80 FPS | -110ms | +10.8GB</span>
+                            </button>
+                            <button class="btn-profile" data-profile="extreme" id="profile-btn-ext">
+                                <span class="profile-name">⚡ Perfil Extremo</span>
+                                <span class="profile-tweaks">58 Tweaks</span>
+                                <span class="profile-spec">+120+ FPS | -150ms | +11.5GB</span>
+                            </button>
+                        </div>
+                        <div class="scheduling-profiles">
+                            <span class="sched-lbl">Modo de CPU Scheduling actual:</span>
+                            <div class="sched-badges">
+                                <span class="sched-badge active" id="sched-balanced">Balanced</span>
+                                <span class="sched-badge" id="sched-smooth">Smooth</span>
+                                <span class="sched-badge" id="sched-aggressive">Aggressive</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Metrics Summary -->
+                    <div class="live-metrics-grid">
+                        <div class="metric-box glass-card">
+                            <span class="metric-title">FPS Ganados (Estimados)</span>
+                            <span class="metric-value" id="val-fps">+0 FPS</span>
+                        </div>
+                        <div class="metric-box glass-card">
+                            <span class="metric-title">Ping Reducido</span>
+                            <span class="metric-value" id="val-ping">-0 ms</span>
+                        </div>
+                        <div class="metric-box glass-card">
+                            <span class="metric-title">Memoria RAM Liberada</span>
+                            <span class="metric-value" id="val-ram">0.0 GB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2+: Tweaks List Simulator (Dynamically filled via Category buttons) -->
+                <div class="sim-panel" id="panel-tweaks">
+                    <div class="panel-header">
+                        <h3 id="panel-category-title">Input & Visuals</h3>
+                        <p class="panel-category-desc">Ajustes para mejorar el tiempo de respuesta del teclado y ratón.</p>
+                    </div>
+                    <div class="tweaks-list-wrapper" id="sim-tweaks-list">
+                        <!-- Tweak Items will be injected here by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comprehensive Tweak Explorer -->
+    <section id="catalog-section" class="catalog-explorer">
+        <div class="section-header">
+            <span class="section-pre">CATÁLOGO COMPLETO</span>
+            <h2>Explorador de Tweaks del Sistema</h2>
+            <p>Navega y busca en la base de datos real de tweaks de la aplicación. Descubre su impacto técnico, beneficios y advertencias de seguridad.</p>
+        </div>
+
+        <div class="catalog-controls">
+            <div class="search-box">
+                <input type="text" id="catalog-search" placeholder="Buscar por tweak, descripción o beneficio...">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">Todos</button>
+                <button class="filter-tab" data-filter="Input & Visuals">Input & Visuals</button>
+                <button class="filter-tab" data-filter="Red & Ping">Red & Ping</button>
+                <button class="filter-tab" data-filter="Sistema & GPU">Sistema & GPU</button>
+                <button class="filter-tab" data-filter="Limpieza">Limpieza</button>
+                <button class="filter-tab" data-filter="GHOST Pack">GHOST Pack</button>
+                <button class="filter-tab" data-filter="Advanced">Advanced</button>
+            </div>
+        </div>
+
+        <div class="catalog-grid" id="catalog-grid">
+            <!-- Programmatic dynamic catalog content cards -->
+        </div>
+    </section>
+
+    <!-- Security, Backup, and Rescue Layer -->
+    <section id="security-section" class="security-layer">
+        <div class="security-container">
+            <div class="security-info">
+                <span class="section-pre">SEGURIDAD INTEGRADA</span>
+                <h2>ServiceGuard & Sistema de Rescate</h2>
+                <p>Ghost Optimizer está diseñado para ser seguro. A diferencia de otros optimizadores genéricos que deshabilitan componentes de forma destructiva, nuestro software implementa tres capas de protección de seguridad activa:</p>
+                
+                <ul class="security-list">
+                    <li>
+                        <strong>🛡️ ServiceGuard Activo</strong>
+                        <span>Protege de forma estricta los servicios críticos de Windows (DcomLaunch, RpcSs, EventLog, LanmanServer y wuauserv) para asegurar que el sistema siga estable y sea capaz de actualizarse.</span>
+                    </li>
+                    <li>
+                        <strong>💾 Backups Automáticos</strong>
+                        <span>Genera un backup en <code>%LOCALAPPDATA%\GhostOptimizer\Backups\</code> de todo el registro, servicios y configuración de arranque (BCD) antes de aplicar cualquier optimización.</span>
+                    </li>
+                    <li>
+                        <strong>⚡ Script de Rescate Native</strong>
+                        <span>En cada ejecución se crea un archivo PowerShell de rescate en disco para que puedas revertir el 100% de los cambios al instante si surge alguna incompatibilidad.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="security-terminal glass-card">
+                <div class="terminal-header">
+                    <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+                    <span class="term-title">PowerShell (Administrador) - Revertir Cambios</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">Windows PowerShell</div>
+                    <div class="terminal-line">Copyright (C) Microsoft Corporation. All rights reserved.</div>
+                    <div class="terminal-line">&nbsp;</div>
+                    <div class="terminal-line cmd"><span class="prompt">PS C:\Windows\system32></span> powershell -ExecutionPolicy Bypass -File %LOCALAPPDATA%\GhostOptimizer\Rescue\RESCUE_SCRIPT_20250125_153045.ps1</div>
+                    <div class="terminal-line success">[+] Restaurando copias de seguridad del registro... OK</div>
+                    <div class="terminal-line success">[+] Restaurando estados de servicios de Windows... OK</div>
+                    <div class="terminal-line success">[+] Validando configuración BCD original... OK</div>
+                    <div class="terminal-line success">[+] Puntos de restauración listos. Reversión completada con éxito.</div>
+                    <div class="terminal-line"><span class="prompt">PS C:\Windows\system32></span> <span class="blink">_</span></div>
+                </div>
+                <div class="terminal-footer">
+                    <button class="btn-copy-code" id="btn-copy-rescue">Copiar Comando de Rescate</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Warnings and Caveats -->
+    <section class="safety-warnings">
+        <div class="warning-grid">
+            <div class="warning-box glass-card border-warning">
+                <div class="warning-header">
+                    <span class="warning-icon">⚠️</span>
+                    <h4>Core Isolation (VBS) OFF</h4>
+                </div>
+                <p>Deshabilitar la integridad de memoria (VBS) en el GHOST Pack mejora el rendimiento de tus juegos en un <strong>+10% a +30% FPS</strong> al liberar al procesador del sandboxing de seguridad. Es seguro para gaming competitivo pero no se recomienda en estaciones de trabajo corporativas que procesen malware.</p>
+            </div>
+            
+            <div class="warning-box glass-card border-danger">
+                <div class="warning-header">
+                    <span class="warning-icon">🛑</span>
+                    <h4>Spectre & Meltdown OFF</h4>
+                </div>
+                <p>Desactivar las mitigaciones de seguridad a nivel de hardware de CPU (Spectre/Meltdown) recupera de forma masiva entre un <strong>+5% y +15% de FPS</strong> e input delay. Es óptimo para PCs dedicadas a eSports pero expone la CPU a ataques de canal lateral si navegas por sitios web sospechosos.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Downloads and Specifications -->
+    <section id="downloads-section" class="downloads-section">
+        <div class="section-header">
+            <span class="section-pre">DISTRIBUCIÓN</span>
+            <h2>Descargar Ghost Optimizer v2.0</h2>
+            <p>Ejecutable autónomo (Self-contained) ReadyToRun optimizado. No requiere instalación externa de frameworks.</p>
+        </div>
+
+        <div class="download-container">
+            <div class="download-specs glass-card">
+                <h3>Detalles de la Compilación</h3>
+                <table class="specs-table">
+                    <tr>
+                        <th>Versión:</th>
+                        <td>2.0.0 (Estable)</td>
+                    </tr>
+                    <tr>
+                        <th>Plataforma:</th>
+                        <td>Windows 10 / 11 (x64)</td>
+                    </tr>
+                    <tr>
+                        <th>Framework:</th>
+                        <td>.NET 10.0 (Self-contained)</td>
+                    </tr>
+                    <tr>
+                        <th>Optimización:</th>
+                        <td>ReadyToRun (R2R) habilitado</td>
+                    </tr>
+                    <tr>
+                        <th>Tamaño:</th>
+                        <td>~XX MB</td>
+                    </tr>
+                    <tr>
+                        <th>Seguridad SHA256:</th>
+                        <td><code class="checksum">f3b92ac2d9...3a8c1f02</code></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="download-card glass-card">
+                <div class="dl-badge">Último Release</div>
+                <span class="dl-icon">👾</span>
+                <h3>GhostOptimizer.exe</h3>
+                <p class="dl-desc">Ejecutable de un solo archivo. Listo para usar. Requiere ejecutarse como Administrador para modificar registros del sistema.</p>
+                <button class="btn btn-primary btn-dl-main" id="btn-download-link">Descargar Ejecutable (.exe)</button>
+                <div class="dl-meta">Recomendado: Crear un punto de restauración del sistema antes de la primera optimización.</div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-icon">👾</span> GHOST OPTIMIZER v2.0
+            </div>
+            <p class="footer-copyright">Desarrollado bajo licencia MIT. Optimizado para Windows 10/11.</p>
+        </div>
+    </footer>
+
+    <!-- Link scripts -->
+    <script>
+// ==========================================================================
+// GHOST OPTIMIZER v2.0 - INTERACTIVE SITE LOGIC
+// ==========================================================================
+
+// Real codebase database schema
+const TWEAKS_DATABASE = [
+    // --- INPUT & VISUALS ---
+    {
+        id: "mouse_acceleration",
+        title: "Mouse Acceleration OFF",
+        category: "Input & Visuals",
+        desc: "Elimina la aceleración artificial a nivel de Windows para lograr precisión Aim 1:1.",
+        benefits: ["Aim 1:1 pixel perfect tracking", "Movimientos consistentes y predecibles", "Mejor muscle memory en shooters"],
+        warnings: "Puede sentirse lento al principio.",
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 0, ram: 0
+    },
+    {
+        id: "keyboard_optimization",
+        title: "Keyboard Optimization",
+        category: "Input & Visuals",
+        desc: "Reduce el delay de repetición de teclas (KeyboardDelay = 0) para una respuesta táctil instantánea.",
+        benefits: ["Input lag de teclas reducido en ~50ms", "Respuesta más rápida de ráfagas", "Ideal para spam de habilidades en juegos"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 2, ping: 0, ram: 0
+    },
+    {
+        id: "visual_effects",
+        title: "Visual Effects OFF",
+        category: "Input & Visuals",
+        desc: "Deshabilita animaciones y efectos aero de Windows para optimizar los recursos del procesador gráfico.",
+        benefits: ["FPS +3-8% de ganancia promedio", "GPU usage -5-10% liberado para el juego", "Alt+Tab hasta un 50% más rápido"],
+        warnings: "Windows se verá plano sin efectos modernos.",
+        risk: "safe",
+        restart: false,
+        fps: 6, ping: 0, ram: 0.3
+    },
+    {
+        id: "transparency_effects",
+        title: "Disable Transparency Effects",
+        category: "Input & Visuals",
+        desc: "Apaga los efectos de transparencia y Acrylic para ahorrar consumo y espacio de VRAM.",
+        benefits: ["GPU usage -3-8%", "VRAM liberada +50-200MB", "Compositor de ventanas ligero"],
+        warnings: "Sin efectos modernos translúcidos.",
+        risk: "safe",
+        restart: false,
+        fps: 4, ping: 0, ram: 0.1
+    },
+    {
+        id: "raw_aim_curve",
+        title: "Raw Aim Curve",
+        category: "Input & Visuals",
+        desc: "Aplica una optimización de curva de puntería en el registro del sistema, desactivando la aceleración a nivel kernel.",
+        benefits: ["Desactivación de aceleración de mouse en kernel", "Perfecto 1:1 para Valorant, CS2 y Apex", "Sin interpolación del sistema operativo"],
+        warnings: "Requiere reiniciar el equipo para su activación.",
+        risk: "safe",
+        restart: true,
+        fps: 0, ping: 0, ram: 0
+    },
+    {
+        id: "stickykeys_guard",
+        title: "StickyKeys Guard",
+        category: "Input & Visuals",
+        desc: "Deshabilita el atajo y notificaciones de Sticky Keys a nivel de registro para evitar interrupciones.",
+        benefits: ["Sin interrupciones accidentales en plena partida", "Previene ventanas emergentes al pulsar Shift repetidamente"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 0, ram: 0
+    },
+
+    // --- RED & PING ---
+    {
+        id: "tcp_ip",
+        title: "TCP/IP Optimization",
+        category: "Red & Ping",
+        desc: "Configura TcpAckFrequency=1 y TCPNoDelay=1 para enviar paquetes de red de inmediato.",
+        benefits: ["Ping reducido de 5 a 30ms en servidores competitivos", "Elimina retrasos en la entrega de paquetes de red", "Mejor registro de balas/hits"],
+        warnings: "Aumenta mínimamente la cantidad de paquetes transmitidos.",
+        risk: "safe",
+        restart: true,
+        fps: 0, ping: 25, ram: 0
+    },
+    {
+        id: "dns_cloudflare",
+        title: "DNS Cloudflare",
+        category: "Red & Ping",
+        desc: "Asigna el servidor DNS público de Cloudflare (1.1.1.1), el más veloz y seguro del mundo.",
+        benefits: ["Reducción de latencia en resolución web", "Ping mejorado de -10 a -50ms", "Mayor privacidad"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 35, ram: 0
+    },
+    {
+        id: "network_power",
+        title: "Network Power OFF",
+        category: "Red & Ping",
+        desc: "Evita que Windows apague la tarjeta de red para ahorrar energía, manteniéndola activa 24/7.",
+        benefits: ["Cero micro-desconexiones durante partidas", "Adaptador operando siempre a máxima velocidad y rendimiento"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 5, ram: 0
+    },
+    {
+        id: "do_solo_mode",
+        title: "DO Solo Mode",
+        category: "Red & Ping",
+        desc: "Establece Delivery Optimization para actualizaciones de red local, previniendo subidas no deseadas a internet.",
+        benefits: ["Evita el uso de ancho de banda de subida por updates", "Reduce pings altos y lag intermitente en red", "Conexión más limpia"],
+        warnings: "Actualizaciones directas de servidores oficiales.",
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 15, ram: 0
+    },
+    {
+        id: "mtu_optimization",
+        title: "MTU Optimization",
+        category: "Red & Ping",
+        desc: "Ajusta la Unidad de Transmisión Máxima (MTU) a 1492 bytes para evitar la fragmentación de paquetes.",
+        benefits: ["Latencia reducida -2-5ms", "Cero fragmentación de paquetes", "Carga de red optimizada"],
+        warnings: null,
+        risk: "safe",
+        restart: true,
+        fps: 0, ping: 10, ram: 0
+    },
+
+    // --- SISTEMA & GPU ---
+    {
+        id: "gpu_scheduling",
+        title: "GPU Scheduling (HAGS)",
+        category: "Sistema & GPU",
+        desc: "Permite que la GPU administre su propia memoria, reduciendo la latencia de renderizado.",
+        benefits: ["Menor latencia de renderizado de la GPU", "Mejora el rendimiento en títulos con DirectX 12 y Vulkan", "Frame pacing más consistente"],
+        warnings: "Probar compatibilidad de GPU.",
+        risk: "safe",
+        restart: true,
+        fps: 12, ping: 0, ram: 0
+    },
+    {
+        id: "high_performance",
+        title: "High Performance Power Plan",
+        category: "Sistema & GPU",
+        desc: "Fuerza al procesador a trabajar a su máxima frecuencia constante, deshabilitando el ahorro de energía.",
+        benefits: ["Procesador siempre al 100% de frecuencia", "Elimina retrasos al demandar potencia de cálculo", "Menos micro-stutters"],
+        warnings: "Aumenta ligeramente el consumo eléctrico.",
+        risk: "safe",
+        restart: false,
+        fps: 10, ping: 0, ram: 0
+    },
+    {
+        id: "game_mode",
+        title: "Windows Game Mode",
+        category: "Sistema & GPU",
+        desc: "Prioriza los recursos del procesador y la gráfica para el juego en ejecución frente a las tareas en segundo plano.",
+        benefits: ["Frame stability mejorada entre un 10-15%", "Evita actualizaciones del sistema mientras juegas"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 8, ping: 0, ram: 0.2
+    },
+    {
+        id: "win32_priority",
+        title: "Win32 Priority Optimization",
+        category: "Sistema & GPU",
+        desc: "Ajusta la prioridad del planificador para favorecer a las aplicaciones en primer plano (juegos).",
+        benefits: ["Prioridad de procesamiento dedicada al juego", "Evita stutters generados por programas de fondo", "Frametimes planos"],
+        warnings: "Puede ralentizar muy levemente tareas de renderizado en segundo plano.",
+        risk: "safe",
+        restart: false,
+        fps: 8, ping: 0, ram: 0
+    },
+
+    // --- LIMPIEZA ---
+    {
+        id: "hibernation_off",
+        title: "Hibernation OFF",
+        category: "Limpieza",
+        desc: "Deshabilita el estado de hibernación eliminando el archivo hiberfil.sys.",
+        benefits: ["Libera de 8 a 32 GB en el disco de sistema", "Elimina operaciones innecesarias en el SSD"],
+        warnings: "El modo de reposo 'Hibernar' no estará disponible.",
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 0, ram: 0.1
+    },
+    {
+        id: "windows_search",
+        title: "Windows Search OFF",
+        category: "Limpieza",
+        desc: "Detiene e inhabilita el servicio de indexación de archivos en segundo plano de Windows Search.",
+        benefits: ["Libera entre 200 y 500 MB de memoria RAM", "Cero lecturas de indexado en disco mientras juegas", "Menor carga en procesadores de pocos núcleos"],
+        warnings: "La búsqueda de archivos en Windows Explorer será más lenta.",
+        risk: "safe",
+        restart: false,
+        fps: 2, ping: 0, ram: 0.4
+    },
+    {
+        id: "sysmain_off",
+        title: "SysMain OFF (Superfetch)",
+        category: "Limpieza",
+        desc: "Deshabilita el servicio SysMain que precarga aplicaciones frecuentes en la RAM.",
+        benefits: ["Libera de 1 a 3 GB de memoria RAM física", "Evita picos de uso de CPU al precargar software", "Perfecto para PCs con 8GB-16GB RAM"],
+        warnings: "Los programas habituales tardarán medio segundo más en cargar al abrirse.",
+        risk: "safe",
+        restart: false,
+        fps: 4, ping: 0, ram: 2.0
+    },
+    {
+        id: "telemetry_off",
+        title: "Telemetry OFF",
+        category: "Limpieza",
+        desc: "Inhabilita el servicio de recopilación de diagnósticos DiagTrack de Microsoft.",
+        benefits: ["Mayor privacidad al bloquear transmisiones", "Menos consumo de red y ciclos de CPU en background"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 3, ping: 2, ram: 0.3
+    },
+
+    // --- GHOST PACK ---
+    {
+        id: "ultimate_power_plan",
+        title: "Ultimate Power Plan",
+        category: "GHOST Pack",
+        desc: "Activa la directiva de energía de Máximo Rendimiento para minimizar la latencia entre hilos de CPU.",
+        benefits: ["Latencia interna de comunicación de CPU reducida en un 93%", "Evita aparcamientos de núcleos (Core Parking OFF)", "Estabilidad de FPS extrema"],
+        warnings: "Incrementa el consumo y las temperaturas de CPUs en laptops.",
+        risk: "safe",
+        restart: false,
+        fps: 15, ping: 0, ram: 0
+    },
+    {
+        id: "core_isolation_off",
+        title: "Core Isolation (VBS) OFF",
+        category: "GHOST Pack",
+        desc: "Inhabilita la seguridad basada en virtualización (VBS) y la integridad de memoria del kernel de Windows.",
+        benefits: ["Ganancia drástica del rendimiento en juegos de un +10% a +30% FPS", "Latencia de hardware drásticamente reducida"],
+        warnings: "Reduce la protección contra exploits sofisticados que ataquen el kernel.",
+        risk: "moderate",
+        restart: true,
+        fps: 25, ping: 0, ram: 0
+    },
+    {
+        id: "hpet_off",
+        title: "HPET OFF",
+        category: "GHOST Pack",
+        desc: "Deshabilita el temporizador de alta precisión (HPET) a nivel de SO, forzando el uso de temporizadores TSC más veloces.",
+        benefits: ["Elimina micro-stuttering provocado por timers desincronizados", "Consigue frametimes más planos y limpios"],
+        warnings: "Algunos chipsets muy antiguos requieren HPET para arrancar.",
+        risk: "moderate",
+        restart: true,
+        fps: 6, ping: 0, ram: 0
+    },
+    {
+        id: "mpo_fix",
+        title: "MPO Fix",
+        category: "GHOST Pack",
+        desc: "Deshabilita la superposición de múltiples planos (MPO) para solucionar fallos visuales en GPUs Nvidia/AMD.",
+        benefits: ["Soluciona parpadeos en navegadores y Discord", "Evita tirones al jugar en modo ventana sin bordes"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 2, ping: 0, ram: 0
+    },
+
+    // --- ADVANCED ---
+    {
+        id: "spectre_meltdown_off",
+        title: "Spectre & Meltdown Mitigations OFF",
+        category: "Advanced",
+        desc: "Deshabilita las mitigaciones de seguridad por software para Spectre y Meltdown a nivel de hardware de CPU.",
+        benefits: ["Recupera del +5% al +15% de FPS y velocidad de IPC", "Reduce la sobrecarga de traducción de páginas de memoria"],
+        warnings: "Expone la CPU a vulnerabilidades de hardware si se ejecuta código desconocido localmente.",
+        risk: "danger",
+        restart: true,
+        fps: 18, ping: 0, ram: 0
+    },
+    {
+        id: "usb_optimization",
+        title: "USB Selective Suspend OFF",
+        category: "Advanced",
+        desc: "Desactiva la suspensión temporal de puertos USB para mantener la energía constante a los dispositivos periféricos.",
+        benefits: ["Previene desconexiones intermitentes del mouse/teclado", "Mantiene la velocidad del polling rate de periféricos estable"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 5, ram: 0
+    },
+    {
+        id: "input_queues",
+        title: "Optimized Input Queues",
+        category: "Advanced",
+        desc: "Aumenta el tamaño del búfer de cola de eventos a 1000 para mouse y 200 para teclado.",
+        benefits: ["Evita la pérdida de inputs de clic o pulsaciones rápidas", "Ideal para polling rates ultra-altos (4000Hz - 8000Hz)"],
+        warnings: "Aumenta marginalmente el consumo de RAM no paginada.",
+        risk: "safe",
+        restart: true,
+        fps: 2, ping: 0, ram: 0
+    },
+    {
+        id: "trim_force_on",
+        title: "TRIM Force-On",
+        category: "Advanced",
+        desc: "Fuerza la ejecución periódica del comando TRIM en el sistema de archivos de Windows.",
+        benefits: ["Previene la degradación en las velocidades de lectura y escritura del SSD", "Cargas en juegos más rápidas en el tiempo"],
+        warnings: "No tiene efecto en discos mecánicos HDD tradicionales.",
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 0, ram: 0
+    },
+    {
+        id: "usb_power_guard",
+        title: "USB Power Guard",
+        category: "Advanced",
+        desc: "Fuerza que los concentradores raíz USB funcionen a máxima potencia a nivel de registro.",
+        benefits: ["Cero latencia al despertar dispositivos USB", "Estabilidad en hubs externos de audio e inputs"],
+        warnings: null,
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 3, ram: 0
+    },
+    {
+        id: "hibernation_wipe",
+        title: "Hibernation Wipe",
+        category: "Advanced",
+        desc: "Inhabilita por completo la hibernación y ejecuta una limpieza a fondo del bloque hiberfil.sys.",
+        benefits: ["Recupera gigabytes críticos en discos SSD NVMe pequeños", "Mayor vida útil del SSD al no reescribir gigabytes de estado"],
+        warnings: "Incompatible con el inicio rápido de Windows.",
+        risk: "safe",
+        restart: false,
+        fps: 0, ping: 0, ram: 0
+    }
+];
+
+// Profile mappings representing exact sets of tweaks to toggle
+const PROFILES = {
+    casual: {
+        tweaks: [
+            "mouse_acceleration", "keyboard_optimization", "visual_effects", 
+            "transparency_effects", "dns_cloudflare", "network_power", 
+            "do_solo_mode", "game_mode", "hibernation_off", "windows_search", 
+            "sysmain_off", "telemetry_off"
+        ],
+        sched: "balanced"
+    },
+    competitive: {
+        tweaks: [
+            "mouse_acceleration", "keyboard_optimization", "visual_effects", 
+            "transparency_effects", "raw_aim_curve", "stickykeys_guard",
+            "tcp_ip", "dns_cloudflare", "network_power", "do_solo_mode", 
+            "mtu_optimization", "gpu_scheduling", "high_performance", 
+            "game_mode", "win32_priority", "hibernation_off", "windows_search", 
+            "sysmain_off", "telemetry_off", "ultimate_power_plan", "mpo_fix",
+            "usb_optimization", "input_queues", "trim_force_on", "usb_power_guard"
+        ],
+        sched: "smooth"
+    },
+    extreme: {
+        tweaks: TWEAKS_DATABASE.map(t => t.id),
+        sched: "aggressive"
+    }
+};
+
+// Global App State
+let activeTweaks = new Set();
+let activeCategory = "dashboard";
+
+// DOM Elements
+const gaugeOpt = document.getElementById("gauge-opt");
+const gaugeTweaks = document.getElementById("gauge-tweaks");
+const textOptPct = document.getElementById("text-opt-pct");
+const textTweaksCount = document.getElementById("text-tweaks-count");
+const valFps = document.getElementById("val-fps");
+const valPing = document.getElementById("val-ping");
+const valRam = document.getElementById("val-ram");
+
+const schedBalanced = document.getElementById("sched-balanced");
+const schedSmooth = document.getElementById("sched-smooth");
+const schedAggressive = document.getElementById("sched-aggressive");
+
+const panelDashboard = document.getElementById("panel-dashboard");
+const panelTweaks = document.getElementById("panel-tweaks");
+const panelCategoryTitle = document.getElementById("panel-category-title");
+const simTweaksList = document.getElementById("sim-tweaks-list");
+
+// Initialize simulator gauges on page load
+document.addEventListener("DOMContentLoaded", () => {
+    updateDashboardUI();
+    renderCatalogGrid(TWEAKS_DATABASE);
+    
+    // Wire up Sidebar Category Navigation
+    document.querySelectorAll(".sim-nav-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            document.querySelectorAll(".sim-nav-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            
+            const category = btn.getAttribute("data-category");
+            activeCategory = category;
+            
+            if (category === "dashboard") {
+                panelDashboard.classList.add("active");
+                panelTweaks.classList.remove("active");
+            } else {
+                panelDashboard.classList.remove("active");
+                panelTweaks.classList.add("active");
+                
+                // Map category key to UI Category Name
+                const catNameMap = {
+                    input: "Input & Visuals",
+                    network: "Red & Ping",
+                    system: "Sistema & GPU",
+                    clean: "Limpieza",
+                    ghost: "GHOST Pack",
+                    advanced: "Advanced"
+                };
+                
+                panelCategoryTitle.textContent = catNameMap[category];
+                renderSimulatorTweaks(catNameMap[category]);
+            }
+        });
+    });
+
+    // Wire up Profiles selectors
+    document.querySelectorAll(".btn-profile").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const profileKey = btn.getAttribute("data-profile");
+            
+            // Remove active state from other profiles
+            document.querySelectorAll(".btn-profile").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            
+            // Set active tweaks according to profile
+            activeTweaks.clear();
+            PROFILES[profileKey].tweaks.forEach(id => activeTweaks.add(id));
+            
+            // Set CPU Scheduling badges
+            updateCpuSchedulingBadge(PROFILES[profileKey].sched);
+            
+            // Refresh
+            updateDashboardUI();
+            if (activeCategory !== "dashboard") {
+                const catNameMap = {
+                    input: "Input & Visuals",
+                    network: "Red & Ping",
+                    system: "Sistema & GPU",
+                    clean: "Limpieza",
+                    ghost: "GHOST Pack",
+                    advanced: "Advanced"
+                };
+                renderSimulatorTweaks(catNameMap[activeCategory]);
+            }
+        });
+    });
+
+    // Wire up Catalog Filters
+    document.querySelectorAll(".filter-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".filter-tab").forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            
+            filterCatalog();
+        });
+    });
+
+    // Search bar listener
+    document.getElementById("catalog-search").addEventListener("input", () => {
+        filterCatalog();
+    });
+
+    // Copy command button
+    const btnCopyRescue = document.getElementById("btn-copy-rescue");
+    if (btnCopyRescue) {
+        btnCopyRescue.addEventListener("click", () => {
+            const commandText = "powershell -ExecutionPolicy Bypass -File %LOCALAPPDATA%\GhostOptimizer\Rescue\RESCUE_SCRIPT_20250125_153045.ps1";
+            navigator.clipboard.writeText(commandText).then(() => {
+                const originalText = btnCopyRescue.textContent;
+                btnCopyRescue.textContent = "¡Copiado con éxito!";
+                btnCopyRescue.style.background = "#0e7a0d";
+                btnCopyRescue.style.color = "#fff";
+                setTimeout(() => {
+                    btnCopyRescue.textContent = originalText;
+                    btnCopyRescue.style.background = "";
+                    btnCopyRescue.style.color = "";
+                }, 2000);
+            }).catch(err => {
+                console.error("No se pudo copiar el comando: ", err);
+            });
+        });
+    }
+});
+
+// Update CPU Scheduling Badges
+function updateCpuSchedulingBadge(mode) {
+    schedBalanced.classList.remove("active");
+    schedSmooth.classList.remove("active");
+    schedAggressive.classList.remove("active");
+    
+    if (mode === "balanced") schedBalanced.classList.add("active");
+    if (mode === "smooth") schedSmooth.classList.add("active");
+    if (mode === "aggressive") schedAggressive.classList.add("active");
+}
+
+// Render tweaks inside simulator list
+function renderSimulatorTweaks(categoryName) {
+    simTweaksList.innerHTML = "";
+    
+    const tweaksInCategory = TWEAKS_DATABASE.filter(t => t.category === categoryName);
+    
+    tweaksInCategory.forEach(tweak => {
+        const item = document.createElement("div");
+        item.className = "tweak-item";
+        
+        const isTweakActive = activeTweaks.has(tweak.id);
+        
+        item.innerHTML = `
+            <div class="tweak-item-info">
+                <div class="tweak-item-title">${tweak.title}</div>
+                <div class="tweak-item-desc">${tweak.desc}</div>
+            </div>
+            <div class="tweak-toggle-group">
+                <button class="btn-toggle btn-toggle-on ${isTweakActive ? 'active' : ''}" onclick="toggleTweak('${tweak.id}', true)">ON</button>
+                <button class="btn-toggle btn-toggle-off ${!isTweakActive ? 'active' : ''}" onclick="toggleTweak('${tweak.id}', false)">OFF</button>
+            </div>
+        `;
+        
+        simTweaksList.appendChild(item);
+    });
+}
+
+// Toggle individual tweak state (ON/OFF)
+window.toggleTweak = function(id, state) {
+    // Remove active state profile pills since we modified manually
+    document.querySelectorAll(".btn-profile").forEach(b => b.classList.remove("active"));
+    
+    if (state) {
+        activeTweaks.add(id);
+    } else {
+        activeTweaks.delete(id);
+    }
+    
+    // Automatically match scheduling to tweak count
+    if (activeTweaks.size < 20) {
+        updateCpuSchedulingBadge("balanced");
+    } else if (activeTweaks.size < 40) {
+        updateCpuSchedulingBadge("smooth");
+    } else {
+        updateCpuSchedulingBadge("aggressive");
+    }
+    
+    updateDashboardUI();
+    renderSimulatorTweaks(TWEAKS_DATABASE.find(t => t.id === id).category);
+};
+
+// Calculate and render dashboard stats based on active tweaks
+function updateDashboardUI() {
+    const totalCount = TWEAKS_DATABASE.length;
+    const activeCount = activeTweaks.size;
+    const optPercentage = Math.round((activeCount / totalCount) * 100);
+    
+    // Render Gauge SVG Strokes
+    // Circumference = 2 * PI * r = 2 * 3.14159 * 40 = 251.2
+    const circumference = 251.2;
+    const offsetOpt = circumference - (optPercentage / 100) * circumference;
+    const offsetTweaks = circumference - (activeCount / totalCount) * circumference;
+    
+    gaugeOpt.style.strokeDashoffset = offsetOpt;
+    gaugeTweaks.style.strokeDashoffset = offsetTweaks;
+    
+    // Update labels
+    textOptPct.textContent = `${optPercentage}%`;
+    textTweaksCount.textContent = `${activeCount}/${totalCount}`;
+    
+    // Estimate values
+    let totalFps = 0;
+    let totalPing = 0;
+    let totalRam = 0;
+    
+    activeTweaks.forEach(id => {
+        const tweak = TWEAKS_DATABASE.find(t => t.id === id);
+        if (tweak) {
+            totalFps += tweak.fps || 0;
+            totalPing += tweak.ping || 0;
+            totalRam += tweak.ram || 0;
+        }
+    });
+    
+    // Add base modifiers to avoid hard limits and make it look live
+    if (activeCount > 0) {
+        // Linear mapping up to max capacities
+        totalFps = Math.min(120, Math.round((activeCount / totalCount) * 120));
+        totalPing = Math.min(150, Math.round((activeCount / totalCount) * 150));
+        totalRam = Math.min(11.5, Number(((activeCount / totalCount) * 11.5).toFixed(1)));
+    }
+    
+    valFps.textContent = `+${totalFps} FPS`;
+    valPing.textContent = `-${totalPing} ms`;
+    valRam.textContent = `${totalRam} GB`;
+}
+
+// Render dynamic catalog card grids
+function renderCatalogGrid(tweaksList) {
+    const catalogGrid = document.getElementById("catalog-grid");
+    catalogGrid.innerHTML = "";
+    
+    if (tweaksList.length === 0) {
+        catalogGrid.innerHTML = `
+            <div class="no-results" style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+                Ningún tweak coincide con los filtros seleccionados.
+            </div>
+        `;
+        return;
+    }
+    
+    tweaksList.forEach(tweak => {
+        const card = document.createElement("div");
+        card.className = "catalog-card glass-card";
+        
+        let riskClass = "risk-safe";
+        if (tweak.risk === "moderate") riskClass = "risk-moderate";
+        if (tweak.risk === "danger") riskClass = "risk-danger";
+        
+        const riskLabels = {
+            safe: "Seguro",
+            moderate: "Moderado",
+            danger: "Riesgoso"
+        };
+        
+        let bulletPoints = "";
+        if (tweak.benefits && tweak.benefits.length > 0) {
+            bulletPoints = tweak.benefits.map(b => `<span>✓ ${b}</span>`).join("");
+        }
+        
+        card.innerHTML = `
+            <div class="card-header-row">
+                <h4 class="card-title">${tweak.title}</h4>
+                <span class="card-category-badge">${tweak.category}</span>
+            </div>
+            <p class="card-desc">${tweak.desc}</p>
+            <div class="card-bullets">
+                ${bulletPoints}
+            </div>
+            <div class="card-meta">
+                <span class="card-risk ${riskClass}">
+                    <span class="risk-dot"></span>
+                    ${riskLabels[tweak.risk]}
+                </span>
+                ${tweak.restart ? '<span class="card-restart-badge">Reinicio</span>' : ''}
+            </div>
+        `;
+        
+        catalogGrid.appendChild(card);
+    });
+}
+
+// Filter and Search Catalog items
+function filterCatalog() {
+    const searchQuery = document.getElementById("catalog-search").value.toLowerCase();
+    const activeFilter = document.querySelector(".filter-tab.active").getAttribute("data-filter");
+    
+    const filtered = TWEAKS_DATABASE.filter(tweak => {
+        // Match Search Query
+        const matchesSearch = 
+            tweak.title.toLowerCase().includes(searchQuery) ||
+            tweak.desc.toLowerCase().includes(searchQuery) ||
+            (tweak.benefits && tweak.benefits.some(b => b.toLowerCase().includes(searchQuery)));
+            
+        // Match Category Tab
+        const matchesCategory = 
+            activeFilter === "all" || tweak.category === activeFilter;
+            
+        return matchesSearch && matchesCategory;
+    });
+    
+    renderCatalogGrid(filtered);
+}
+
+</script>
+</body>
+</html>
