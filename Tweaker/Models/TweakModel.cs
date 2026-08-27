@@ -15,19 +15,24 @@ namespace Tweaker.Models
         Safe = 0,
 
         /// <summary>
-        /// Moderado - Puede afectar algunas funcionalidades no cr�ticas
+        /// Moderado - Puede afectar algunas funcionalidades no crticas
         /// </summary>
         Moderate = 1,
 
         /// <summary>
-        /// Avanzado - Puede afectar funcionalidad cr�tica, solo para usuarios experimentados
+        /// Avanzado - Puede afectar funcionalidad crtica, solo para usuarios experimentados
         /// </summary>
-        Advanced = 2
+        Advanced = 2,
+
+        /// <summary>
+        /// Peligroso - Cambios de alto impacto en seguridad o estabilidad del sistema
+        /// </summary>
+        Dangerous = 3
     }
 
     /// <summary>
     /// Modelo de datos para representar un Tweak individual
-    /// Elimina hardcoding de informaci�n en XAML
+    /// Elimina hardcoding de informacin en XAML
     /// </summary>
     public class TweakModel : INotifyPropertyChanged
     {

@@ -316,13 +316,157 @@ namespace Tweaker.Data
                 Id = "mpo_fix",
                 Title = "MPO Fix (Anti-Flicker)",
                 Category = "GHOST Pack",
-                Description = "Deshabilita Multiplane Overlay para eliminar stuttering y pantallazos negros. Fuerza modo legacy ms estable en composición de ventanas.",
-                Benefits = " Elimina stuttering por MPO\n Sin pantallazos negros\n Frame pacing ms consistente\n Overlays funcionan sin problemas\n Mejor compatibilidad G-Sync/FreeSync",
-                Warnings = " REQUIERE REINICIO\n Posible ligero aumento uso GPU\n Algunos sistemas pueden no necesitarlo",
+                Description = "Deshabilita Multiplane Overlay para eliminar stuttering y pantallazos negros. Fuerza modo legacy más estable en composición de ventanas.",
+                Benefits = "• Elimina stuttering por MPO\n• Sin pantallazos negros al Alt+Tab\n• Frame pacing más consistente\n• Overlays funcionan sin problemas\n• Mejor compatibilidad G-Sync/FreeSync",
+                Warnings = "• REQUIERE REINICIO\n• Posible ligero aumento uso GPU\n• Algunos sistemas pueden no necesitarlo",
                 Recommended = false,
                 Risk = RiskLevel.Moderate,
                 RequiresRestart = true,
                 FpsGain = 2,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["hyperv_disable"] = new TweakInfo
+            {
+                Id = "hyperv_disable",
+                Title = "Deshabilitar Hyper-V",
+                Category = "GHOST Pack",
+                Description = "Deshabilita el hipervisor de Windows para eliminar capas de abstracción y reducir latencia en GPU y renderizado.",
+                Benefits = "• Latencia GPU -2-5ms\n• Compatibilidad anti-cheat (Vanguard/EAC/BattlEye)\n• 0.1% low FPS mejorados",
+                Warnings = "• REQUIERE REINICIO\n• Inhabilita Docker Desktop, WSL2 y Windows Sandbox",
+                Recommended = false,
+                Risk = RiskLevel.Advanced,
+                RequiresRestart = true,
+                FpsGain = 5,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["apex_gaming_power_plan"] = new TweakInfo
+            {
+                Id = "apex_gaming_power_plan",
+                Title = "Plan: Apex Ultra Gaming",
+                Category = "GHOST Pack",
+                Description = "Activa el esquema de energía dedicado Ultra Gaming con Core Parking al 0% (100% de núcleos activos), Power Throttling global desactivado y PCIe ASPM Link State Power Management apagado.",
+                Benefits = "• 100% núcleos CPU activos todo el tiempo\n• Frecuencia de CPU al máximo sin fluctuaciones\n• Cero latencia por transiciones de energía\n• Latencia DPC ultra-baja",
+                Warnings = "• Mayor consumo energético en laptops\n• Temperaturas ligeramente más altas en reposo",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = false,
+                FpsGain = 12,
+                PingReduction = 5,
+                RamFreedGB = 0
+            },
+
+            ["gpu_driver_telemetry_clean"] = new TweakInfo
+            {
+                Id = "gpu_driver_telemetry_clean",
+                Title = "Drivers GPU - Sin Telemetría",
+                Category = "GHOST Pack",
+                Description = "Deshabilita tareas programadas de telemetría y recolección de crash reporters de NVIDIA y AMD al estilo NVCleanStall.",
+                Benefits = "• Menos procesos en segundo plano de GPU\n• DPC latency reducida\n• Cero llamadas de telemetría a servidores de NVIDIA/AMD",
+                Warnings = "• Desactiva el reporte automático de errores de GPU",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = false,
+                FpsGain = 3,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["safe_mode_ddu_prep"] = new TweakInfo
+            {
+                Id = "safe_mode_ddu_prep",
+                Title = "Preparar Modo Seguro (DDU Helper)",
+                Category = "GHOST Pack",
+                Description = "Configura el arranque de Windows para iniciar en Modo Seguro Mínimo, facilitando una limpieza 100% libre de residuos con Display Driver Uninstaller.",
+                Benefits = "• Arranque directo en Safe Mode sin pulsar F8 o Shift\n• Permite desinstalación limpia sin drivers bloqueados en memoria\n• Previene corrupción de drivers al actualizar GPU",
+                Warnings = "• El próximo reinicio entrará en Modo Seguro (desactivar switch para volver al modo normal)",
+                Recommended = false,
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                FpsGain = 0,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["text_input_host_disable"] = new TweakInfo
+            {
+                Id = "text_input_host_disable",
+                Title = "Desactivar TextInputHost.exe",
+                Category = "GHOST Pack",
+                Description = "Mitiga y suprime la ejecución en segundo plano de TextInputHost.exe (teclado táctil/panel de emojis de Windows) usando IFEO.",
+                Benefits = "• Elimina micro-congelamientos y picos de latencia en juegos competitivos\n• Menos hilos de sistema compitiendo por ciclos de CPU",
+                Warnings = "• Puede afectar el teclado táctil en pantallas touch",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = false,
+                FpsGain = 4,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["hvci_disable"] = new TweakInfo
+            {
+                Id = "hvci_disable",
+                Title = "Desactivar HVCI (Memory Integrity)",
+                Category = "GHOST Pack",
+                Description = "Deshabilita Hypervisor-Protected Code Integrity de Windows Defender para maximizar el throughput de memoria y CPU.",
+                Benefits = "• FPS +10-25% en procesadores Ryzen e Intel\n• Latencia de memoria drásticamente menor\n• Elimina sobrecarga del hipervisor de seguridad",
+                Warnings = "• REQUIERE REINICIO\n• Reduce aislamiento de seguridad del kernel contra drivers no firmados",
+                Recommended = false,
+                Risk = RiskLevel.Advanced,
+                RequiresRestart = true,
+                FpsGain = 15,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["interrupt_steering"] = new TweakInfo
+            {
+                Id = "interrupt_steering",
+                Title = "Interrupt Steering (Distribución IRQ)",
+                Category = "GHOST Pack",
+                Description = "Configura el kernel de Windows para distribuir timers e interrupciones de hardware entre varios núcleos en lugar de saturar el Core 0.",
+                Benefits = "• Libera el Core 0 para el hilo principal del juego\n• Frame times mucho más estables\n• Reduce saturación por interrupciones de red y periféricos USB",
+                Warnings = "• REQUIERE REINICIO\n• En algunos CPUs muy antiguos puede no generar diferencia medible",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = true,
+                FpsGain = 6,
+                PingReduction = 3,
+                RamFreedGB = 0
+            },
+
+            ["gpu_irq_affinity"] = new TweakInfo
+            {
+                Id = "gpu_irq_affinity",
+                Title = "GPU IRQ Affinity (Último Core)",
+                Category = "GHOST Pack",
+                Description = "Asigna la interrupción y procesamiento de driver de la GPU dedicada al último núcleo del procesador.",
+                Benefits = "• DPC Latency minimizada\n• El hilo de renderizado no compite con el hilo principal del juego\n• 0.1% low FPS más altos y estables",
+                Warnings = "• REQUIERE REINICIO OBLIGATORIO\n• Requiere al menos 4 núcleos en el procesador",
+                Recommended = true,
+                Risk = RiskLevel.Moderate,
+                RequiresRestart = true,
+                FpsGain = 8,
+                PingReduction = 0,
+                RamFreedGB = 0
+            },
+
+            ["spectre_meltdown_disable"] = new TweakInfo
+            {
+                Id = "spectre_meltdown_disable",
+                Title = "Desactivar Mitigaciones Spectre/Meltdown",
+                Category = "GHOST Pack",
+                Description = "Deshabilita las mitigaciones por software de Spectre v2 y Meltdown para recuperar el rendimiento nativo del procesador.",
+                Benefits = "• Ganancia de +5-15% IPC y FPS en CPUs Intel y AMD\n• Llamadas al sistema y context switching ultrarrápidos\n• Menor overhead en DirectX 11/12",
+                Warnings = "• REQUIERE REINICIO\n• Expone el procesador a vulnerabilidades de ejecución especulativa (solo para gaming)",
+                Recommended = false,
+                Risk = RiskLevel.Advanced,
+                RequiresRestart = true,
+                FpsGain = 10,
                 PingReduction = 0,
                 RamFreedGB = 0
             },
@@ -897,6 +1041,290 @@ namespace Tweaker.Data
                 Description = "Deshabilita la hibernación y libera el espacio ocupado por hiberfil.sys en el almacenamiento principal.",
                 Benefits = "• Libera varios gigabytes de espacio en disco\n• Elimina lecturas/escrituras de hibernación innecesarias",
                 Warnings = "• El modo de suspensión de hibernación dejará de estar disponible.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["text_input_host_disable"] = new TweakInfo
+            {
+                Id = "text_input_host_disable",
+                Title = "Desactivar TextInputHost (KernelOS)",
+                Category = "Advanced",
+                Description = "Deshabilita la ejecución en segundo plano del proceso TextInputHost.exe para reducir latencia e interrupciones de CPU.",
+                Benefits = "• Menos procesos consumiendo ciclo de CPU\n• Reducción de latencia en juegos competitivos",
+                Warnings = "• Puede afectar el teclado en pantalla táctil de Windows.",
+                Recommended = true,
+                Risk = RiskLevel.Moderate
+            },
+            ["hop_limit_opt"] = new TweakInfo
+            {
+                Id = "hop_limit_opt",
+                Title = "Optimizar Hop Limit TCP/IP (KernelOS)",
+                Category = "Red & Ping",
+                Description = "Ajusta el TTL (DefaultTTL = 64) en la pila TCP/IP para optimizar el enrutamiento de paquetes.",
+                Benefits = "• Mejor consistencia en ruteo de red\n• Reducción potencial de saltos innecesarios",
+                Warnings = "• Ninguno en conexiones estándar de internet.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                PingReduction = 2
+            },
+            ["hvci_disable"] = new TweakInfo
+            {
+                Id = "hvci_disable",
+                Title = "Desactivar HVCI / Memory Integrity (KernelOS)",
+                Category = "Advanced",
+                Description = "Desactiva Hypervisor-Protected Code Integrity (HVCI) para recuperar rendimiento de CPU y eliminar micro-stuttering por virtualización.",
+                Benefits = "• Incremento de 5-15% en rendimiento de CPU\n• Disminución drástica de micro-stutters",
+                Warnings = "• Disminuye el aislamiento de seguridad por hipervisor.",
+                Recommended = true,
+                Risk = RiskLevel.Advanced,
+                FpsGain = 10
+            },
+
+            // ────────────────────────────────────────────
+            // WINUTIL INTEGRATED TWEAKS (ChrisTitusTech)
+            // ────────────────────────────────────────────
+
+            ["winutil_activity_feed"] = new TweakInfo
+            {
+                Id = "winutil_activity_feed",
+                Title = "Desactivar Historial de Actividad (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Elimina la recolección y sincronización en la nube del historial de actividades, documentos recientes y portapapeles de Windows.",
+                Benefits = "• Elimina la telemetría de uso del usuario\n• Libera recursos del sistema y disco\n• Mayor privacidad",
+                Warnings = "• Desactiva la sincronización del historial entre dispositivos",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_hibernation"] = new TweakInfo
+            {
+                Id = "winutil_hibernation",
+                Title = "Desactivar Hibernación (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Desactiva la hibernación de Windows y elimina el archivo hiberfil.sys liberando varios Gigabytes en el disco principal.",
+                Benefits = "• Libera de 4GB a 32GB de espacio en disco SSD/NVMe\n• Elimina el desgaste innecesario en SSD",
+                Warnings = "• La función de inicio rápido/hibernar no estará disponible (ideal para PCs de escritorio)",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RamFreedGB = 8.0
+            },
+
+            ["winutil_end_task"] = new TweakInfo
+            {
+                Id = "winutil_end_task",
+                Title = "Habilitar 'Finalizar Tarea' en Barra de Tareas (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Agrega la opción nativa al menú contextual al hacer clic derecho en una aplicación de la barra de tareas para cerrarla inmediatamente sin abrir el Administrador de Tareas.",
+                Benefits = "• Permite forzar el cierre instantáneo de juegos o apps congeladas",
+                Warnings = "• Cierre forzado de la aplicación sin guardar cambios no guardados",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_wpbt"] = new TweakInfo
+            {
+                Id = "winutil_wpbt",
+                Title = "Desactivar Inyección OEM WPBT (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Desactiva el ejecutable Windows Platform Binary Table (WPBT) en BIOS/UEFI que instala software de fabricante en segundo plano sin permiso.",
+                Benefits = "• Evita la inyección de bloatware OEM de fábrica en Windows",
+                Warnings = "• Ninguno en sistemas personalizados o de escritorio",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_location"] = new TweakInfo
+            {
+                Id = "winutil_location",
+                Title = "Desactivar Rastreo de Ubicación (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Desactiva el servicio de geolocalización `lfsvc` y bloquea el acceso de aplicaciones a la ubicación del dispositivo.",
+                Benefits = "• Detiene servicios en segundo plano consumiendo red y CPU",
+                Warnings = "• Apps como Mapas o Clima no detectarán tu ubicación automática",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_rdp_warnings"] = new TweakInfo
+            {
+                Id = "winutil_rdp_warnings",
+                Title = "Desactivar Advertencias de RDP no firmados (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Elimina los molestos diálogos de confirmación al abrir archivos de conexión a Escritorio Remoto (.rdp).",
+                Benefits = "• Acceso directo y más rápido a conexiones RDP",
+                Warnings = "• No te advertirá al conectar a servidores sin certificado verificado",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_svchost_split"] = new TweakInfo
+            {
+                Id = "winutil_svchost_split",
+                Title = "Ajustar SvcHost Split Threshold por RAM (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Configura SvcHostSplitThresholdInKB en el Registro según la memoria RAM física instalada, reduciendo la cantidad excesiva de procesos svchost.exe.",
+                Benefits = "• Reduce drásticamente la sobrecarga de procesos svchost en segundo plano\n• Menor consumo de memoria RAM y CPU",
+                Warnings = "• Ninguno, adaptado automáticamente a la RAM de tu PC",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_brave_debloat"] = new TweakInfo
+            {
+                Id = "winutil_brave_debloat",
+                Title = "Brave Browser - Debloat Completo (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Desactiva Brave Rewards, Crypto Wallet, VPN integradas, Leo AI Chat, Brave News y telemetría mediante directivas de grupo.",
+                Benefits = "• Navegador Brave ultra limpio y ligero\n• Menos consumo de memoria RAM y procesos secundarios en background",
+                Warnings = "• Desactiva funciones Web3/Cripto/VPN nativas del navegador Brave",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_edge_debloat"] = new TweakInfo
+            {
+                Id = "winutil_edge_debloat",
+                Title = "Microsoft Edge - Debloat Completo (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Desactiva compras de Edge, botón de Copilot/Bing, barra lateral Hubs, colecciones y envío de telemetría de navegación.",
+                Benefits = "• Microsoft Edge significativamente más rápido y sin elementos molestos",
+                Warnings = "• Oculta el asistente Copilot y la barra lateral de Edge",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["winutil_remove_widgets"] = new TweakInfo
+            {
+                Id = "winutil_remove_widgets",
+                Title = "Eliminar Widgets de Windows 11 (WinUtil)",
+                Category = "WinUtil & Debloat",
+                Description = "Elimina los paquetes AppX de Widgets y WebExperience de la barra de tareas de Windows 11.",
+                Benefits = "• Libera CPU y RAM consumida por el feed de noticias/widgets\n• Elimina el icono innecesario de la barra de tareas",
+                Warnings = "• Los widgets no estarán disponibles en la barra de tareas",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            // ────────────────────────────────────────────
+            // PARAGON TWEAKING UTILITY (PTU) TWEAKS
+            // ────────────────────────────────────────────
+
+            ["game_shader_cache_clean"] = new TweakInfo
+            {
+                Id = "game_shader_cache_clean",
+                Title = "Limpieza de Shader Cache (DirectX, NVIDIA, AMD)",
+                Category = "PTU Gaming Suite",
+                Description = "Limpia y purga las carpetas de caché de sombreadores (DXCache, GLCache, ComputeCache, D3DSCache) y cachés temporales de Unreal Engine / Fortnite / Valorant / Apex.",
+                Benefits = "• Elimina micro-stuttering y caídas súbitas de FPS por shaders corruptos\n• Libera cientos de MB o GB en disco\n• Fuerza compilación limpia y fluida",
+                Warnings = "• Los primeros minutos de juego tras la limpieza pueden tardar unos segundos en recompilar shaders",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["game_profiles_latency"] = new TweakInfo
+            {
+                Id = "game_profiles_latency",
+                Title = "Optimización de Perfiles de Juegos y Latencia DWM",
+                Category = "PTU Gaming Suite",
+                Description = "Desactiva GameDVR, optimizaciones de pantalla completa problemáticas y fuerza el perfil de GPU DirectX en modo Alto Rendimiento para todos los juegos.",
+                Benefits = "• Reduce input lag en 5-15ms en modo pantalla completa\n• Elimina latencia y stuttering del compositor DWM\n• Prioridad de GPU máxima en procesos de juego",
+                Warnings = "• Desactiva la barra de juegos de Xbox (Game Bar)",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["discord_gamer_optimization"] = new TweakInfo
+            {
+                Id = "discord_gamer_optimization",
+                Title = "Discord - Optimización Gamer (Sin Lag)",
+                Category = "PTU Gaming Suite",
+                Description = "Desactiva la aceleración por hardware en Discord y el overlay dentro de los juegos, evitando que Discord robe recursos del codificador y memoria de video.",
+                Benefits = "• Previene caídas de FPS mientras hablas en llamadas de Discord\n• Elimina congelamientos y micro-cortes por overlay\n• Libera VRAM de tu GPU",
+                Warnings = "• La interfaz de Discord usará renderizado por software (CPU)",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["spotify_gamer_optimization"] = new TweakInfo
+            {
+                Id = "spotify_gamer_optimization",
+                Title = "Spotify - Optimización de Rendimiento",
+                Category = "PTU Gaming Suite",
+                Description = "Desactiva la aceleración por GPU del cliente web de Spotify para no interferir con los FPS del juego.",
+                Benefits = "• Cero interferencia de GPU mientras escuchas música jugando\n• Mayor estabilidad de frame times",
+                Warnings = "• Ninguno perceptible en el uso diario",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["browser_gamer_background"] = new TweakInfo
+            {
+                Id = "browser_gamer_background",
+                Title = "Navegadores - Suspender Procesos en Fondo",
+                Category = "PTU Gaming Suite",
+                Description = "Configura directivas para Chrome, Edge y Brave para evitar que mantengan procesos y extensiones activos en segundo plano tras cerrarse.",
+                Benefits = "• Libera 500MB - 2GB de RAM al cerrar el navegador\n• Cero uso de CPU residual durante tus partidas",
+                Warnings = "• Las aplicaciones web no enviarán notificaciones con el navegador cerrado",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["apex_gaming_power_plan"] = new TweakInfo
+            {
+                Id = "apex_gaming_power_plan",
+                Title = "Plan de Energía Apex / Ultra Gaming",
+                Category = "PTU Gaming Suite",
+                Description = "Activa un plan de energía ultra afinado con Core Parking al 0% (100% de núcleos listos), Power Throttling desactivado y latencia de transición C-State instantánea.",
+                Benefits = "• Frecuencias de CPU fijas y estables sin caídas térmicas ni de ahorro\n• Tiempos de frame consistentes (1% y 0.1% lows más altos)\n• Respuesta de periféricos instantánea",
+                Warnings = "• Mayor consumo eléctrico en portátiles (usar conectado a corriente)",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["gpu_driver_telemetry_clean"] = new TweakInfo
+            {
+                Id = "gpu_driver_telemetry_clean",
+                Title = "Drivers GPU - Eliminar Telemetría (NVIDIA / AMD)",
+                Category = "PTU Gaming Suite",
+                Description = "Desactiva las tareas programadas de telemetría y crash reporters en segundo plano instalados por los controladores de GPU (estilo NVCleanStall).",
+                Benefits = "• Menos procesos en segundo plano ejecutándose\n• Mayor privacidad y estabilidad de DPC latency",
+                Warnings = "• No afecta el panel de control de NVIDIA ni el software Adrenalin",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["safe_mode_ddu_prep"] = new TweakInfo
+            {
+                Id = "safe_mode_ddu_prep",
+                Title = "Preparar Reinicio en Modo Seguro (DDU Helper)",
+                Category = "PTU Gaming Suite",
+                Description = "Configura el arranque de Windows en Modo Seguro mínimo para poder ejecutar Display Driver Uninstaller (DDU) y limpiar drivers corruptos.",
+                Benefits = "• Limpieza de drivers 100% libre de archivos bloqueados\n• Solución definitiva para crashes y BSODs por drivers de video",
+                Warnings = "• El sistema iniciará en Modo Seguro en el próximo reinicio (puedes restaurar con el switch)",
+                Recommended = false,
+                Risk = RiskLevel.Moderate
+            },
+
+            ["system_file_checker"] = new TweakInfo
+            {
+                Id = "system_file_checker",
+                Title = "Reparar Archivos Corruptos de Windows (SFC /scannow)",
+                Category = "PTU Gaming Suite",
+                Description = "Ejecuta el Comprobador de Archivos de Sistema (SFC) para reparar archivos dañados o modificados que puedan causar errores o inestabilidad.",
+                Benefits = "• Repara DLLs y archivos críticos dañados de Windows\n• Mejora la estabilidad general del sistema",
+                Warnings = "• Puede tardar entre 2 y 5 minutos en completar el escaneo",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["dism_restore_health"] = new TweakInfo
+            {
+                Id = "dism_restore_health",
+                Title = "Reparar Imagen del Sistema (DISM RestoreHealth)",
+                Category = "PTU Gaming Suite",
+                Description = "Repara la imagen de componentes de Windows mediante el almacén de componentes en línea (DISM /Cleanup-Image /RestoreHealth).",
+                Benefits = "• Corrige corrupciones profundas de la imagen de Windows\n• Requisito ideal antes o después de aplicar optimizaciones mayores",
+                Warnings = "• Requiere conexión a internet activa y puede tardar varios minutos",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             }

@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch: # Allows manual trigger
 
 jobs:
@@ -14,10 +17,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Setup .NET 8.0 SDK
+    - name: Setup .NET 10.0 SDK
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: '10.0.x'
 
     # Phase 2: Build and Test
     - name: Restore dependencies

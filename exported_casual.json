@@ -1,0 +1,20 @@
+{
+  "Name": "Casual",
+  "Created": "2026-04-25T22:43:49.7327183Z",
+  "Tweaks": [
+    "mouse_acceleration",
+    "keyboard_optimization",
+    "visual_effects",
+    "network_balanced",
+    "gamedvr_disable"
+  ],
+  "Description": "Perfil equilibrado para uso diario.",
+  "TweakCount": 5,
+  "TweakIds": [
+    "mouse_acceleration",
+    "keyboard_optimization",
+    "visual_effects",
+    "network_balanced",
+    "gamedvr_disable"
+  ]
+}

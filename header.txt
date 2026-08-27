@@ -1,0 +1,169 @@
+#pragma warning disable CS8600, CS8601, CS8602, CS8603, CS8604, CS8618, CS8619, CS8620, CS8621, CS8622, CS8625, CS0168
+
+using System.Diagnostics;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+
+using Microsoft.Win32;
+
+using Tweaker.Controls;
+using Tweaker.Data;
+using Tweaker.Models;
+using Tweaker.Optimizations;
+using Tweaker.Presets;
+using Tweaker.Services;
+using Tweaker.Utilities;
+
+namespace Tweaker
+{
+    /// <summary>
+    /// Interaction logic for MainWindow.xaml
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        private readonly TweakStateManager _stateManager;
+        private readonly TelemetryService _telemetry;
+        private readonly NotificationService _notifications;
+        private readonly TweakHelper _tweakHelper;
+        private readonly SmartScanService _smartScanService;
+        private readonly StartupManagerService _startupManagerService;
+        private List<ScanResult> _lastScanResults;
+        private bool _isInitializingTweakStates = false;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            // Inicializar ViewModel (Cerebro real de la operación)
+            var viewModel = new ViewModels.MainWindowViewModel();
+            DataContext = viewModel;
+
+            // Inicializar servicios legacy (para compatibilidad temporal)
+            _stateManager = TweakStateManager.Instance;
+            _telemetry = TelemetryService.Instance;
+            _notifications = NotificationService.Instance;
+            _tweakHelper = new TweakHelper(_stateManager, _telemetry, _notifications);
+            _smartScanService = new SmartScanService();
+            _startupManagerService = new StartupManagerService();
+
+            // Inicializar notificaciones
+            var rootGrid = (Grid)this.Content;
+            _notifications.Initialize(rootGrid);
+
+            // Suscribirse a cambios de estado (UI Sync)
+            _stateManager.PropertyChanged += (s, e) =>
+            {
+                if (_isInitializingTweakStates) return;
+                Dispatcher.InvokeAsync(() =>
+                {
+                    UpdateDashboard();
+                    UpdateTweakIndicators();
+                });
+            };
+
+            // Monitoreo en tiempo real para gráficas
+            _stateManager.HardwareMonitor.PropertyChanged += (s, e) =>
+            {
+                try
+                {
+                    var monitor = _stateManager.HardwareMonitor;
+                    if (e.PropertyName == nameof(monitor.CpuLoadPercent))
+                    {
+                        GraphCpu.AddValue(monitor.CpuLoadPercent);
+                        TxtCpuLoad.Text = $"{monitor.CpuLoadPercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.GpuLoadPercent))
+                    {
+                        GraphGpu.AddValue(monitor.GpuLoadPercent);
+                        TxtGpuLoad.Text = $"{monitor.GpuLoadPercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.RamUsagePercent))
+                    {
+                        GraphRam.AddValue(monitor.RamUsagePercent);
+                        TxtRamLoad.Text = $"{monitor.RamUsagePercent:F0}%";
+                    }
+                    else if (e.PropertyName == nameof(monitor.CpuTemperature))
+                    {
+                        TxtCpuTemp.Text = $"{monitor.CpuTemperature:F0}°C";
+                    }
+                    else if (e.PropertyName == nameof(monitor.GpuTemperature))
+                    {
+                        TxtGpuTemp.Text = $"{monitor.GpuTemperature:F0}°C";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"⚠️ Error en HardwareMonitor handler: {ex.Message}");
+                }
+            };
+
+            // Secuencia de inicialización segura
+            this.Loaded += async (s, e) =>
+            {
+                await InitializeAppSafeAsync();
+            };
+        }
+
+        private async Task InitializeAppSafeAsync()
+        {
+            // 1. Dejar que la ventana se renderice completamente
+            await Task.Delay(300);
+
+            // 2. Registrar inicio y actualizar dashboard inicial
+            _telemetry.TrackAppLaunch();
+            UpdateDashboard();
+
+            // 3. Verificar privilegios de administrador (No bloqueante al renderizado)
+            if (!IsRunAsAdministrator())
+            {
+                MessageBox.Show(
+                    "⚠️ ADVERTENCIA: Esta aplicación requiere permisos de Administrador para aplicar la mayoría de los tweaks.\n\n" +
+                    "Por favor, reinicia como Administrador.",
+                    "Permisos Requeridos",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            else
+            {
+                // Solo preguntar por punto de restauración si es admin
+                SystemRestore.PromptCreateRestorePoint();
+            }
+
+            // 4. Sincronizar UI con el estado actual del sistema
+            await Dispatcher.InvokeAsync(() =>
+            {
+                UpdateTweakIndicators();
+                UpdateCurrentPriorityProfile();
+                Debug.WriteLine("✅ UI sincronizada");
+            });
+
+            // 5. Verificaciones adicionales con delay
+            await Task.Delay(1000);
+            await CheckBrowserSpeedIssues();
+
+            Debug.WriteLine("🚀 Inicio completado");
+        }
+
+        /// <summary>
+        /// Verifica si la aplicación se está ejecutando con permisos de administrador
+        /// </summary>
+        private bool IsRunAsAdministrator()
+        {
+            var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CUSTOM TITLE BAR - WINDOW CONTROLS
+        // ═══════════════════════════════════════════════════════════════════

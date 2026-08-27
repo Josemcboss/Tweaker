@@ -284,6 +284,31 @@ namespace Tweaker.Services
                 Revert = () => AdvancedTweaks.EnableSpectreMeltdown()
             }, "SpectreMeltdown");
 
+            Register("text_input_host_disable", new TweakActions
+            {
+                Apply = () => KernelOSToolboxTweaks.DisableTextInputHost(),
+                Revert = () => KernelOSToolboxTweaks.EnableTextInputHost()
+            }, "TextInputHostDisable", "text_input_host");
+
+            Register("hvci_disable", new TweakActions
+            {
+                Apply = () => KernelOSToolboxTweaks.DisableHVCI(),
+                Revert = () => KernelOSToolboxTweaks.EnableHVCI()
+            }, "HvciDisable", "hvci");
+
+            Register("interrupt_steering", new TweakActions
+            {
+                Apply = () => InterruptSteeringTweaks.EnableInterruptSteering(),
+                Revert = () => InterruptSteeringTweaks.RestoreInterruptSteering(),
+                GetState = () => InterruptSteeringTweaks.IsInterruptSteeringEnabled()
+            }, "InterruptSteering", "interrupt_steering_enable");
+
+            Register("gpu_irq_affinity", new TweakActions
+            {
+                Apply = () => GpuIRQOptimization.EnableGpuIRQOptimization(),
+                Revert = () => GpuIRQOptimization.DisableGpuIRQOptimization()
+            }, "GpuIRQAffinity", "gpu_irq");
+
             Register("hibernation_disable", new TweakActions
             {
                 Apply = () => WindowsOptimization.DisableHibernation(),
@@ -459,6 +484,153 @@ namespace Tweaker.Services
                 Revert = () => GpuIRQOptimization.DisableGpuIRQOptimization(),
                 GetState = () => GpuIRQOptimization.GetGpuIRQStatus().isOptimized
             }, "GpuIrqAffinity");
+
+            // KERNELOS TOOLBOX INTEGRATION
+            Register("text_input_host_disable", new TweakActions
+            {
+                Apply = () => KernelOSToolboxTweaks.DisableTextInputHost(),
+                Revert = () => KernelOSToolboxTweaks.EnableTextInputHost()
+            }, "TextInputHostDisable");
+
+            Register("hop_limit_opt", new TweakActions
+            {
+                Apply = () => KernelOSToolboxTweaks.SetHopLimit(64),
+                Revert = () => KernelOSToolboxTweaks.ResetHopLimit()
+            }, "HopLimitOpt");
+
+            Register("hvci_disable", new TweakActions
+            {
+                Apply = () => KernelOSToolboxTweaks.DisableHVCI(),
+                Revert = () => KernelOSToolboxTweaks.EnableHVCI()
+            }, "HvciDisable");
+
+            // WINUTIL INTEGRATED TWEAKS (ChrisTitusTech)
+            Register("winutil_activity_feed", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DisableActivityFeed(),
+                Revert = () => WinUtilTweaks.RestoreActivityFeed(),
+                GetState = () => WinUtilTweaks.IsActivityFeedDisabled()
+            }, "WinUtilActivityFeed");
+
+            Register("winutil_hibernation", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DisableHibernation(),
+                Revert = () => WinUtilTweaks.RestoreHibernation(),
+                GetState = () => WinUtilTweaks.IsHibernationDisabled()
+            }, "WinUtilHibernation");
+
+            Register("winutil_end_task", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.EnableEndTaskOnTaskbar(),
+                Revert = () => WinUtilTweaks.DisableEndTaskOnTaskbar(),
+                GetState = () => WinUtilTweaks.IsEndTaskOnTaskbarEnabled()
+            }, "WinUtilEndTask");
+
+            Register("winutil_wpbt", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DisableWpbt(),
+                Revert = () => WinUtilTweaks.RestoreWpbt(),
+                GetState = () => WinUtilTweaks.IsWpbtDisabled()
+            }, "WinUtilWpbt");
+
+            Register("winutil_location", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DisableLocationTracking(),
+                Revert = () => WinUtilTweaks.RestoreLocationTracking(),
+                GetState = () => WinUtilTweaks.IsLocationTrackingDisabled()
+            }, "WinUtilLocation");
+
+            Register("winutil_rdp_warnings", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DisableRdpUnsignedWarnings(),
+                Revert = () => WinUtilTweaks.RestoreRdpUnsignedWarnings()
+            }, "WinUtilRdpWarnings");
+
+            Register("winutil_svchost_split", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.OptimizeSvcHostSplitThreshold(),
+                Revert = () => WinUtilTweaks.RestoreSvcHostSplitThreshold(),
+                GetState = () => WinUtilTweaks.IsSvcHostSplitThresholdOptimized()
+            }, "WinUtilSvcHostSplit");
+
+            Register("winutil_brave_debloat", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DebloatBraveBrowser(),
+                Revert = () => WinUtilTweaks.RestoreBraveBrowser()
+            }, "WinUtilBraveDebloat");
+
+            Register("winutil_edge_debloat", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.DebloatEdgeBrowser(),
+                Revert = () => WinUtilTweaks.RestoreEdgeBrowser()
+            }, "WinUtilEdgeDebloat");
+
+            Register("winutil_remove_widgets", new TweakActions
+            {
+                Apply = () => WinUtilTweaks.RemoveWindowsWidgets(),
+                Revert = () => false
+            }, "WinUtilRemoveWidgets");
+
+            // 14. PARAGON TWEAKING UTILITY (PTU) SUITE
+            Register("game_shader_cache_clean", new TweakActions
+            {
+                Apply = () => GameCacheOptimizer.CleanAllShaderCaches().success,
+                Revert = () => false
+            }, "GameShaderCacheClean", "ptu_shader_clean");
+
+            Register("game_profiles_latency", new TweakActions
+            {
+                Apply = () => GameCacheOptimizer.OptimizeGameProfiles(),
+                Revert = () => GameCacheOptimizer.RestoreGameProfiles()
+            }, "GameProfilesLatency", "ptu_game_profiles");
+
+            Register("discord_gamer_optimization", new TweakActions
+            {
+                Apply = () => AppOptimizationTweaks.OptimizeDiscord(),
+                Revert = () => AppOptimizationTweaks.RestoreDiscord()
+            }, "DiscordGamerOptimization", "ptu_discord");
+
+            Register("spotify_gamer_optimization", new TweakActions
+            {
+                Apply = () => AppOptimizationTweaks.OptimizeSpotify(),
+                Revert = () => AppOptimizationTweaks.RestoreSpotify()
+            }, "SpotifyGamerOptimization", "ptu_spotify");
+
+            Register("browser_gamer_background", new TweakActions
+            {
+                Apply = () => AppOptimizationTweaks.OptimizeBrowsersGamingMode(),
+                Revert = () => AppOptimizationTweaks.RestoreBrowsersGamingMode()
+            }, "BrowserGamerBackground", "ptu_browser_background");
+
+            Register("apex_gaming_power_plan", new TweakActions
+            {
+                Apply = () => ApexPowerPlanOptimization.ApplyApexPowerPlan(),
+                Revert = () => ApexPowerPlanOptimization.RestoreDefaultPowerPlan()
+            }, "ApexGamingPowerPlan", "ptu_apex_power");
+
+            Register("gpu_driver_telemetry_clean", new TweakActions
+            {
+                Apply = () => DriverMaintenanceTools.DisableGpuDriverTelemetry(),
+                Revert = () => DriverMaintenanceTools.RestoreGpuDriverTelemetry()
+            }, "GpuDriverTelemetryClean", "ptu_gpu_telemetry");
+
+            Register("safe_mode_ddu_prep", new TweakActions
+            {
+                Apply = () => DriverMaintenanceTools.ConfigureSafeModeBoot(),
+                Revert = () => DriverMaintenanceTools.RemoveSafeModeBoot()
+            }, "SafeModeDduPrep", "ptu_safe_mode");
+
+            Register("system_file_checker", new TweakActions
+            {
+                Apply = () => SystemRepairTools.RunSFCScanAsync().GetAwaiter().GetResult(),
+                Revert = () => false
+            }, "SystemFileChecker", "ptu_sfc_scan");
+
+            Register("dism_restore_health", new TweakActions
+            {
+                Apply = () => SystemRepairTools.RunDISMRestoreHealthAsync().GetAwaiter().GetResult(),
+                Revert = () => false
+            }, "DismRestoreHealth", "ptu_dism_restore");
         }
 
         public bool ApplyTweak(string tweakId)

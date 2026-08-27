@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 using Tweaker.Data;
 using Tweaker.Models;
@@ -355,27 +355,59 @@ namespace Tweaker.Factories
                 "Elimina stuttering y pantallazos negros en navegadores/juegos\nFuerza modo legacy estable en composición de ventanas"
             ));
 
-/* PLANES FUTUROS:
             section.Tweaks.Add(CreateTweakModel(
-                "system_driver_priority",
-                "Prioridad de Controlador del Sistema",
-                "Ajusta la prioridad del controlador del sistema para mejorar el rendimiento en juegos."
+                "hyperv_disable",
+                "Deshabilitar Hyper-V",
+                "Latencia GPU -2-5ms, mejora compatibilidad anti-cheat\nDesactiva capa de hipervisor (Requiere reinicio)"
             ));
+
             section.Tweaks.Add(CreateTweakModel(
-                "interrupt_priority_levels",
-                "Niveles de Prioridad de Interrupción",
-                "Optimiza los niveles de prioridad de interrupción para dispositivos críticos."
+                "apex_gaming_power_plan",
+                "Plan: Apex Ultra Gaming",
+                "Core Parking 0% (100% cores activos), Power Throttling OFF\nFrecuencia de CPU y latencia de hardware optimizadas"
             ));
+
             section.Tweaks.Add(CreateTweakModel(
-                "pci_express_aspm",
-                "PCI Express ASPM",
-                "Ajusta la configuración de ASPM de PCI Express para un menor consumo de energía."
+                "gpu_driver_telemetry_clean",
+                "Drivers GPU - Sin Telemetría",
+                "Desactiva telemetría de drivers NVIDIA y AMD\nEstilo NVCleanStall, reduce DPC latency"
             ));
+
             section.Tweaks.Add(CreateTweakModel(
-                "gpu_power_management",
-                "Gestión de Energía de GPU",
-                "Ajusta la gestión de energía de la GPU para un mejor rendimiento en juegos."
-            ));*/
+                "safe_mode_ddu_prep",
+                "Preparar Modo Seguro (DDU Helper)",
+                "Configura reinicio directo en Modo Seguro para desinstalar drivers con DDU\n(Desactivar para restaurar modo normal)"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "text_input_host_disable",
+                "Desactivar TextInputHost.exe",
+                "Suprime interrupciones de fondo del teclado táctil\nElimina micro-congelamientos en juegos competitivos"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "hvci_disable",
+                "Desactivar HVCI (Memory Integrity)",
+                "FPS +10-25%, latencia de memoria ultra-baja\nElimina sobrecarga de integridad de código por hipervisor"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "interrupt_steering",
+                "Interrupt Steering (Distribución IRQ)",
+                "Distribuye interrupciones de hardware en múltiples núcleos\nLibera Core 0 y estabiliza frame times"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "gpu_irq_affinity",
+                "GPU IRQ Affinity (Último Core)",
+                "Asigna interrupciones GPU a un core dedicado\nDPC latency reducida, frame times más consistentes\n⚠️ REQUIERE REINICIO OBLIGATORIO"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "spectre_meltdown_disable",
+                "Desactivar Mitigaciones Spectre/Meltdown",
+                "Rendimiento nativo de CPU +5-15% FPS\nElimina overhead de mitigaciones especulativas (Requiere reinicio)"
+            ));
 
             return section;
         }
@@ -490,57 +522,143 @@ namespace Tweaker.Factories
                 "Prioriza el proceso de rendering Win32 del sistema\nMenos micro-stutters en UI durante gaming intensivo"
             ));
 
+            return section;
+        }
+
+        /// <summary>
+        /// Crea la sección de WinUtil & Debloat (ChrisTitusTech)
+        /// </summary>
+        public static TweakSectionModel CreateWinUtilSection()
+        {
+            var section = new TweakSectionModel
+            {
+                Title = "WinUtil & Debloat",
+                Subtitle = "Herramientas y optimizaciones importadas de WinUtil",
+                Icon = "🛠️",
+                Category = "WinUtil",
+                SectionName = "WinUtil & Debloat"
+            };
+
             section.Tweaks.Add(CreateTweakModel(
-                "gpu_irq_affinity",
-                "GPU IRQ Affinity (Último Core)",
-                "Asigna interrupciones GPU a un core dedicado\nDPC latency reducida, frame times más consistentes\n⚠️ REQUIERE REINICIO OBLIGATORIO"
+                "winutil_activity_feed",
+                "Desactivar Historial de Actividad",
+                "Elimina la recolección y sincronización del historial de uso"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_hibernation",
+                "Desactivar Hibernación (WinUtil)",
+                "Desactiva hibernación y elimina hiberfil.sys liberando espacio en disco"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_end_task",
+                "Habilitar Finalizar Tarea en Barra de Tareas",
+                "Permite forzar el cierre de apps congeladas directamente desde la barra de tareas"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_wpbt",
+                "Desactivar Inyección OEM (WPBT)",
+                "Previene la instalación automática de software de fabricante desde la BIOS"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_location",
+                "Desactivar Rastreo de Ubicación",
+                "Desactiva servicio de ubicación lfsvc y acceso de apps a la posición del PC"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_rdp_warnings",
+                "Desactivar Advertencias RDP",
+                "Elimina los diálogos de advertencia al abrir archivos RDP no firmados"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_svchost_split",
+                "Ajustar SvcHost Threshold por RAM",
+                "Ajusta SvcHostSplitThresholdInKB automáticamente a la capacidad de la memoria RAM"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_brave_debloat",
+                "Brave Browser Debloat",
+                "Desactiva Rewards, Wallet, VPN, Leo AI Chat y telemetría P3A"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_edge_debloat",
+                "Microsoft Edge Debloat",
+                "Desactiva Edge Shopping, Sidebar, botón Copilot/Bing y seguimiento"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "winutil_remove_widgets",
+                "Eliminar Widgets de Windows 11",
+                "Remueve la plataforma AppX de Widgets y WebExperience"
             ));
 
             return section;
         }
 
         /// <summary>
-        /// Crea la sección de Advanced Latency Tweaks
+        /// Crea la sección PTU Gaming Suite (Paragon Tweaking Utility Inspired)
         /// </summary>
-        public static TweakSectionModel CreateAdvancedLatencySection()
+        public static TweakSectionModel CreatePTUGamingSection()
         {
             var section = new TweakSectionModel
             {
-                Title = "Advanced Latency",
-                Subtitle = "Tweaks de latencia de bajo nivel del sistema",
-                Icon = "⚡",
-                Category = "AdvancedLatency",
-                SectionName = "Latency Tweaks"
+                Title = "PTU Gaming Suite",
+                Subtitle = "Shaders, Perfiles de Juego, Drivers y Apps de Fondo",
+                Icon = "🚀",
+                Category = "PTUGaming",
+                SectionName = "PTU Gaming Suite"
             };
 
             section.Tweaks.Add(CreateTweakModel(
-                "interrupt_moderation",
-                "Deshabilitar Interrupt Moderation",
-                "Procesamiento inmediato de paquetes de red\nLatencia -2-10ms, jitter reducido"
+                "game_shader_cache_clean",
+                "Limpieza de Shader Cache",
+                "Purga DirectX, NVIDIA, AMD y Unreal Engine caches (Fortnite/Valorant/Apex)\nElimina micro-stuttering por shaders corruptos",
+                useApplyMode: true
             ));
 
             section.Tweaks.Add(CreateTweakModel(
-                "menu_show_delay",
-                "MenuShow Delay 0ms",
-                "Delay de menús de 400ms → 0ms\nUI responde instantáneamente"
+                "game_profiles_latency",
+                "Optimizar Perfiles de Juegos",
+                "FSE Behavior Mode 2, GameDVR OFF y GPU DirectX High Performance\nInput lag -5-15ms en fullscreen"
             ));
 
             section.Tweaks.Add(CreateTweakModel(
-                "data_queue_sizes",
-                "Optimizar Data Queue Sizes",
-                "Mouse: 256 buffers | Teclado: 200 buffers\nCero inputs perdidos con 1000Hz+"
+                "discord_gamer_optimization",
+                "Discord - Modo Gamer",
+                "Desactiva aceleración de hardware y overlay de Discord\nEvita caídas de FPS y cortes de audio en llamadas"
             ));
 
             section.Tweaks.Add(CreateTweakModel(
-                "csrss_priority",
-                "CSRSS High Priority",
-                "Prioriza el proceso de rendering Win32\nMenos micro-stutters en UI durante gaming"
+                "spotify_gamer_optimization",
+                "Spotify - GPU Offload",
+                "Desactiva renderizado por GPU del cliente web de Spotify\nLibera memoria y procesamiento de video"
             ));
 
             section.Tweaks.Add(CreateTweakModel(
-                "gpu_irq_affinity",
-                "GPU IRQ Affinity (Último Core)",
-                "Interrupciones GPU en core dedicado\nDPC latency reducida, frame times consistentes\n⚠️ REQUIERE REINICIO"
+                "browser_gamer_background",
+                "Navegadores en Segundo Plano OFF",
+                "Chrome/Edge/Brave se suspenden totalmente al cerrarse\nLibera 500MB-2GB de RAM al jugar"
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "system_file_checker",
+                "Reparar Archivos de Windows (SFC)",
+                "Escanea y repara archivos corruptos del sistema con SFC /scannow",
+                useApplyMode: true
+            ));
+
+            section.Tweaks.Add(CreateTweakModel(
+                "dism_restore_health",
+                "Reparar Imagen de Windows (DISM)",
+                "Restaura la imagen de componentes con DISM /Online /RestoreHealth",
+                useApplyMode: true
             ));
 
             return section;
@@ -564,7 +682,8 @@ namespace Tweaker.Factories
                 CreateAdvancedSection(),
                 CreateLaptopPowerSection(),
                 CreateCompetitiveSection(),
-                CreateAdvancedLatencySection()
+                CreatePTUGamingSection(),
+                CreateWinUtilSection()
             };
         }
     }

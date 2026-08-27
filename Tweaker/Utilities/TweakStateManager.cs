@@ -312,6 +312,12 @@ namespace Tweaker.Utilities
             if (IsTweakEnabled("CoreIsolation")) fpsGain += 20;
             if (IsTweakEnabled("MPOFix")) fpsGain += 8;
             if (IsTweakEnabled("UltimatePower")) fpsGain += 12;
+            if (IsTweakEnabled("ApexGamingPowerPlan") || IsTweakEnabled("apex_gaming_power_plan")) fpsGain += 12;
+            if (IsTweakEnabled("HvciDisable") || IsTweakEnabled("hvci_disable")) fpsGain += 15;
+            if (IsTweakEnabled("GpuIRQAffinity") || IsTweakEnabled("gpu_irq_affinity")) fpsGain += 8;
+            if (IsTweakEnabled("InterruptSteering") || IsTweakEnabled("interrupt_steering")) fpsGain += 6;
+            if (IsTweakEnabled("TextInputHostDisable") || IsTweakEnabled("text_input_host_disable")) fpsGain += 4;
+            if (IsTweakEnabled("GpuDriverTelemetryClean") || IsTweakEnabled("gpu_driver_telemetry_clean")) fpsGain += 3;
 
             // Advanced
             if (IsTweakEnabled("SpectreMeltdown")) fpsGain += 10;
@@ -337,6 +343,13 @@ namespace Tweaker.Utilities
             if (IsTweakEnabled("MouseAcceleration")) latencyReduction += 10;
             if (IsTweakEnabled("Keyboard")) latencyReduction += 5;
             if (IsTweakEnabled("raw_aim_curve")) latencyReduction += 5;
+
+            // GHOST Pack & Latency
+            if (IsTweakEnabled("HPET")) latencyReduction += 10;
+            if (IsTweakEnabled("HyperV")) latencyReduction += 5;
+            if (IsTweakEnabled("GpuIRQAffinity") || IsTweakEnabled("gpu_irq_affinity")) latencyReduction += 6;
+            if (IsTweakEnabled("InterruptSteering") || IsTweakEnabled("interrupt_steering")) latencyReduction += 4;
+            if (IsTweakEnabled("TextInputHostDisable") || IsTweakEnabled("text_input_host_disable")) latencyReduction += 3;
 
             // Sistema
             if (IsTweakEnabled("CoreParking")) latencyReduction += 8;

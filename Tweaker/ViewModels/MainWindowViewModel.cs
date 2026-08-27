@@ -28,7 +28,6 @@ namespace Tweaker.ViewModels
         private readonly TweakStateManager _stateManager;
         private readonly GameBoosterService _gameBooster;
         private readonly SmartScanService _smartScanService;
-        private readonly StartupManagerService _startupManagerService;
         private readonly IProfileManager _profileManager;
         private bool _isAutoBoosterEnabled = false;
         private string _currentStatus = "Modo: Escritorio";
@@ -306,7 +305,6 @@ namespace Tweaker.ViewModels
             _gameBooster = GameBoosterService.Instance;
             _gameBooster.GameModeChanged += GameBooster_GameModeChanged;
             _smartScanService = new SmartScanService();
-            _startupManagerService = new StartupManagerService();
             _profileManager = App.ServiceProvider.GetRequiredService<IProfileManager>();
 
             // Phase 4: Servicios avanzados
@@ -321,12 +319,9 @@ namespace Tweaker.ViewModels
                 new NavigationItem { Name = "Input & Visuals", Icon = "Mouse", Page = "Input" },
                 new NavigationItem { Name = "Red & Ping", Icon = "Network", Page = "Network" },
                 new NavigationItem { Name = "Sistema & GPU", Icon = "Cpu", Page = "System" },
-                new NavigationItem { Name = "GPU & Display", Icon = "Display", Page = "GPUDisplay" },
-                new NavigationItem { Name = "Almacenamiento", Icon = "Drive", Page = "Storage" },
-                new NavigationItem { Name = "CPU Avanzado", Icon = "Chip", Page = "CPUAdvanced" },
-                new NavigationItem { Name = "Limpieza", Icon = "Trash", Page = "Cleanup" },
                 new NavigationItem { Name = "GHOST Pack", Icon = "Ghost", Page = "Ghost" },
-                new NavigationItem { Name = "Advanced", Icon = "Settings", Page = "Advanced" },
+                new NavigationItem { Name = "Presets Gaming", Icon = "Trophy", Page = "Presets" },
+                new NavigationItem { Name = "Limpieza & Debloat", Icon = "Trash", Page = "Cleanup" },
                 new NavigationItem { Name = "Perfiles", Icon = "Folder", Page = "Profiles" },
                 new NavigationItem { Name = "Historial", Icon = "History", Page = "History" }
             };
@@ -348,8 +343,6 @@ namespace Tweaker.ViewModels
             RevertAllCommand = new RelayCommand(_ => RevertAllInCurrentSection());
             StartScanCommand = new AsyncRelayCommand(StartScanAsync);
             OptimizeNowCommand = new AsyncRelayCommand(OptimizeNowAsync);
-            RefreshStartupCommand = new RelayCommand(_ => RefreshStartupList());
-            DisableStartupCommand = new RelayCommand(p => DisableStartupItem(p as StartupItem));
             SaveProfileCommand = new RelayCommand(_ => SaveCurrentProfile());
             LoadProfileCommand = new RelayCommand(p => LoadProfile(p as TweakerProfile));
             DeleteProfileCommand = new RelayCommand(p => DeleteProfile(p as TweakerProfile));
@@ -367,7 +360,6 @@ namespace Tweaker.ViewModels
             ClearMetricsHistoryCommand = new RelayCommand(_ => _performanceMetrics.ClearHistory());
 
             // Cargar datos iniciales
-            RefreshStartupList();
         }
 
         private void AutoMaintenance_Completed(object? sender, Models.MaintenanceLog log)
@@ -443,30 +435,7 @@ namespace Tweaker.ViewModels
             }
         }
 
-        private void RefreshStartupList()
-        {
-            try
-            {
-                var items = _startupManagerService.GetStartupItems();
-                StartupItems.Clear();
-                foreach (var item in items)
-                {
-                    StartupItems.Add(item);
-                }
-            }
-            catch
-            {
-            }
-        }
 
-        private void DisableStartupItem(StartupItem item)
-        {
-            if (item == null) return;
-            if (_startupManagerService.DisableItem(item))
-            {
-                RefreshStartupList();
-            }
-        }
 
         private void StateManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
@@ -503,17 +472,13 @@ namespace Tweaker.ViewModels
         {
             if (string.IsNullOrEmpty(page)) return;
 
-            if (page is "Dashboard" or "Profiles" or "History" or "Startup")
+            if (page is "Dashboard" or "Profiles" or "History" or "Presets")
             {
                 CurrentSection = null;
                 CurrentPageName = page;
                 if (page == "History")
                 {
                     LoadRecentHistory();
-                }
-                else if (page == "Startup")
-                {
-                    RefreshStartupList();
                 }
                 return;
             }

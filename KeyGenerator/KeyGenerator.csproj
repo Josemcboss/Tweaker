@@ -12,7 +12,7 @@
   <ItemGroup>
     <!-- Referencia al proyecto principal para acceder a las clases de License -->
     <ProjectReference Include="..\Tweaker\Tweaker.csproj" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

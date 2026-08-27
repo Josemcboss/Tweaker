@@ -421,52 +421,22 @@
                 <TextBlock Text="Sistema &amp; GPU" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
-            <Button Name="BtnNavCleanup" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Cleanup" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter=Limpieza}">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🧹" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Limpieza" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-            <Button Name="BtnNavStartup" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Startup" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter=Startup}">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🚀" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Startup Manager" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
             <Button Name="BtnNavGhost" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Ghost" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter='GHOST Pack'}">
               <StackPanel Orientation="Horizontal">
                 <TextBlock Text="👻" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
                 <TextBlock Text="GHOST Pack" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
-            <Button Name="BtnNavAdvanced" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Advanced" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter=Advanced}">
+            <Button Name="BtnNavPresets" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Presets" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter='Presets Gaming'}">
               <StackPanel Orientation="Horizontal">
-                <TextBlock Text="⚠️" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Advanced" VerticalAlignment="Center" />
+                <TextBlock Text="🎯" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
+                <TextBlock Text="Presets Gaming" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
-            <Button Name="BtnNavAdvancedLatency" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Latency" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter='Latency Tweaks'}">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="⚡" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Latency Tweaks" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-            <Button Name="BtnNavLaptop" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Laptop" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter='Preset Laptop'}">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="💻" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Preset Laptop" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-            <Button Name="BtnNavCompetitive" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Competitive" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter='Competitive Gaming'}">
-              <StackPanel Orientation="Horizontal">
-                <TextBlock Text="🏆" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Competitive Gaming" VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-            <Button Name="BtnNavDebloat" Style="{StaticResource SidebarButton}" Click="NavigateToDebloatWizard">
+            <Button Name="BtnNavCleanup" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Cleanup" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter=Limpieza}">
               <StackPanel Orientation="Horizontal">
                 <TextBlock Text="🧹" FontFamily="Segoe UI Emoji" FontSize="16" Margin="0,0,10,0" />
-                <TextBlock Text="Debloat Wizard" VerticalAlignment="Center" />
+                <TextBlock Text="Limpieza &amp; Debloat" VerticalAlignment="Center" />
               </StackPanel>
             </Button>
             <Button Name="BtnNavProfiles" Style="{StaticResource SidebarButton}" Command="{Binding NavigateCommand}" CommandParameter="Profiles" Tag="{Binding CurrentPageName, Converter={StaticResource PageNameToTagConverter}, ConverterParameter=Profiles}">
@@ -1460,6 +1430,26 @@
                 </StackPanel>
               </Grid>
             </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="Optimizar Hop Limit TCP/IP (KernelOS)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Ajusta el DefaultTTL a 64 en la pila de red TCP/IP de Windows." />
+                    <LineBreak />
+                    <Run Text="Optimiza la eficiencia en el ruteo de paquetes y reduce latencia." />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleHopLimit" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnHopLimit_On_Click" Unchecked="BtnHopLimit_Off_Click" />
+                  <TextBlock Name="TxtHopLimitStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
             <TextBlock Text="🛡️ Anti-Bufferbloat" FontFamily="Segoe UI Emoji" FontSize="20" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,40,0,20" />
             <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
               <Grid>
@@ -2014,9 +2004,28 @@
             <TranslateTransform />
           </UIElement.RenderTransform>
           <StackPanel Margin="40">
-            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,30">
-              <Run Text="🧹" /> <Run Text="Limpieza" /></TextBlock>
-            <TextBlock Text="Deshabilitar servicios y bloatware de Windows" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30" />
+            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,10">
+              <Run Text="🧹" /> <Run Text="Limpieza &amp; Debloat" /></TextBlock>
+            <TextBlock Text="Optimización de espacio, archivos temporales, bloatware y servicios del sistema." FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,25" />
+
+            <!-- DEBLOAT WIZARD CARD INTEGRADA -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,20" BorderBrush="#5865F2" BorderThickness="1.5">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🧙‍♂️ Asistente Debloat Wizard Interactivo" Style="{StaticResource SectionTitle}" Foreground="#5865F2" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Asistente paso a paso para desinstalar aplicaciones UWP/AppX preinstaladas," />
+                    <LineBreak />
+                    <Run Text="remover telemetría profunda y limpiar el menú inicio de forma 100% segura." />
+                  </TextBlock>
+                </StackPanel>
+                <Button Grid.Column="1" Content="ABRIR WIZARD" Style="{StaticResource OnButton}" Background="#5865F2" BorderBrush="#4752C4" Padding="20,12" VerticalAlignment="Center" Click="NavigateToDebloatWizard" />
+              </Grid>
+            </Border>
             <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -2308,7 +2317,7 @@
                 </StackPanel>
               </Grid>
             </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25">
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*" />
@@ -2324,893 +2333,241 @@
                 </StackPanel>
               </Grid>
             </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Plan de Energía: Apex Ultra Gaming" Style="{StaticResource SectionTitle}" Foreground="#00D9FF" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Core Parking 0% (100% cores activos), Power Throttling OFF" />
+                    <LineBreak />
+                    <Run Text="PCIe ASPM OFF y clocks de CPU al máximo rendimiento sin latencia" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleApexPower" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnApexPower_On_Click" Unchecked="BtnApexPower_Off_Click" />
+                  <TextBlock Name="TxtApexPowerStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🛡️ Drivers GPU - Sin Telemetría (NVCleanStall)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva tareas programadas de telemetría y crash reporters de NVIDIA/AMD" />
+                    <LineBreak />
+                    <Run Text="Elimina procesos en segundo plano de GPU y reduce DPC Latency" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleGpuTelemetry" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnGpuTelemetry_On_Click" Unchecked="BtnGpuTelemetry_Off_Click" />
+                  <TextBlock Name="TxtGpuTelemetryStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔄 Preparar Modo Seguro (DDU Helper)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Configura arranque directo en Modo Seguro para desinstalar drivers de video" />
+                    <LineBreak />
+                    <Run Text="⚠️ El siguiente reinicio entrará en Modo Seguro (Desactivar switch para modo normal)" FontWeight="SemiBold" Foreground="#FFC107" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleSafeModeDdu" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnSafeModeDdu_On_Click" Unchecked="BtnSafeModeDdu_Off_Click" />
+                  <TextBlock Name="TxtSafeModeDduStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🎯 Desactivar TextInputHost.exe" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Suprime la ejecución en segundo plano del panel táctil y teclado en pantalla" />
+                    <LineBreak />
+                    <Run Text="Elimina interrupciones y micro-congelamientos de CPU en juegos competitivos" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleTextInputHostGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnTextInputHostGhost_On_Click" Unchecked="BtnTextInputHostGhost_Off_Click" />
+                  <TextBlock Name="TxtTextInputHostGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔒 Desactivar HVCI / Memory Integrity" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Elimina la sobrecarga de aislamiento de código de Windows Defender" />
+                    <LineBreak />
+                    <Run Text="FPS +10-25%, latencia de memoria reducida, REQUIERE REINICIO" FontWeight="Bold" Foreground="#E81123" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleHvciGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnHvciGhost_On_Click" Unchecked="BtnHvciGhost_Off_Click" />
+                  <TextBlock Name="TxtHvciGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🌐 Interrupt Steering (Distribución IRQ)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Distribuye interrupciones de hardware y timers entre múltiples núcleos" />
+                    <LineBreak />
+                    <Run Text="Libera el Core 0 para el juego, mejorando consistencia de frame times. REQUIERE REINICIO." FontWeight="SemiBold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleInterruptSteeringGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnInterruptSteeringGhost_On_Click" Unchecked="BtnInterruptSteeringGhost_Off_Click" />
+                  <TextBlock Name="TxtInterruptSteeringGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🎮 GPU IRQ Affinity (Último Core)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Asigna interrupciones de la GPU dedicada al último núcleo del procesador" />
+                    <LineBreak />
+                    <Run Text="DPC Latency ultra-baja, 1% low FPS superiores. REQUIERE REINICIO." FontWeight="Bold" Foreground="#00D9FF" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleGpuIrqGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnGpuIrqGhost_On_Click" Unchecked="BtnGpuIrqGhost_Off_Click" />
+                  <TextBlock Name="TxtGpuIrqGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Desactivar Mitigaciones Spectre/Meltdown" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Deshabilita parches de software para recuperar hasta +15% rendimiento nativo de CPU" />
+                    <LineBreak />
+                    <Run Text="⚠️ Aumenta FPS en CPU bound games. REQUIERE REINICIO." FontWeight="Bold" Foreground="#FFC107" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleSpectreMeltdownGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnSpectreMeltdownGhost_On_Click" Unchecked="BtnSpectreMeltdownGhost_Off_Click" />
+                  <TextBlock Name="TxtSpectreMeltdownGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
           </StackPanel>
         </ScrollViewer>
-        <ScrollViewer Name="AdvancedPage" Visibility="{Binding CurrentPageName, Converter={StaticResource PageNameToVisibilityConverter}, ConverterParameter=Advanced}" VerticalScrollBarVisibility="Auto">
+        <!-- PRESETS GAMING PAGE (UNIFIED COMPETITIVE & LAPTOP) -->
+        <ScrollViewer Name="PresetsPage" Visibility="{Binding CurrentPageName, Converter={StaticResource PageNameToVisibilityConverter}, ConverterParameter=Presets}" VerticalScrollBarVisibility="Auto">
           <UIElement.RenderTransform>
             <TranslateTransform />
           </UIElement.RenderTransform>
           <StackPanel Margin="40">
-            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,10">
-              <Run Text="⚠️" /> <Run Text="Advanced Tweaks" /></TextBlock>
-            <TextBlock Text="Optimizaciones peligrosas. Úsalas bajo tu propio riesgo." FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Deshabilitar Mitigaciones Spectre &amp; Meltdown" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Gana +5-15% FPS a cambio de seguridad." FontWeight="Bold" Foreground="#FFC107" />
-                    <LineBreak />
-                    <Run Text="EXPONE tu sistema a vulnerabilidades. REQUIERE REINICIO." />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleSpectreMeltdown" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnSpectreMeltdown_On_Click" Unchecked="BtnSpectreMeltdown_Off_Click" />
-                  <TextBlock Name="TxtSpectreMeltdownStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Desactivar Connected Standby" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Evita estados de suspensión de bajo consumo en segundo plano." />
-                    <LineBreak />
-                    <Run Text="Mantiene el procesador activo para evitar retrasos y micro-stutters. REQUIERE REINICIO." />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleConnectedStandby" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnConnectedStandby_On_Click" Unchecked="BtnConnectedStandby_Off_Click" />
-                  <TextBlock Name="TxtConnectedStandbyStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Desactivar Sensor Watchdog" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Deshabilita temporizador watchdog y controladores de sensor asociados." />
-                    <LineBreak />
-                    <Run Text="Elimina interrupciones periódicas del kernel para reducir micro-stutters. REQUIERE REINICIO." />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleWatchdog" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnWatchdog_On_Click" Unchecked="BtnWatchdog_Off_Click" />
-                  <TextBlock Name="TxtWatchdogStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Optimizar IRQ de GPU (Avanzado)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Asigna la interrupción de la GPU a un core específico." />
-                    <LineBreak />
-                    <Run Text="Reduce DPC latency y mejora la consistencia de frame times." />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleGpuIRQ" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnGpuIRQ_On_Click" Unchecked="BtnGpuIRQ_Off_Click" />
-                  <TextBlock Name="TxtGpuIRQStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <TextBlock Text="🎮 INPUT &amp; USB OPTIMIZATIONS" FontSize="20" FontWeight="Bold" Foreground="#00D9FF" Margin="0,40,0,20" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Optimizar USB para Gaming Competitivo" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Deshabilita suspensión selectiva USB" />
-                    <LineBreak />
-                    <Run Text="Elimina micro-interrupciones en devices de 1000Hz+" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ Ligero aumento en consumo energético USB" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleOptimizeUSB" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnOptimizeUSB_On_Click" Unchecked="BtnOptimizeUSB_Off_Click" />
-                  <TextBlock Name="TxtOptimizeUSBStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Optimizar Input Queues (Mouse/Teclado)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Aumenta buffers para polling rates altos" />
-                    <LineBreak />
-                    <Run Text="Mouse: 1000 buffers | Teclado: 200 buffers" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="Elimina pérdida de inputs con 1000Hz+" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ REQUIERE REINICIO" FontWeight="SemiBold" Foreground="#FFC107" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleInputQueues" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnOptimizeInputQueues_On_Click" Unchecked="BtnOptimizeInputQueues_Off_Click" />
-                  <TextBlock Name="TxtInputQueuesStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="Deshabilitar Fault Tolerant Heap (FTH)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Evita que Windows intercepte memoria de juegos" />
-                    <LineBreak />
-                    <Run Text="Memory allocation más directa y rápida" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ Menos protección automática contra crashes" FontWeight="Bold" Foreground="#FFC107" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleDisableFTH" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnDisableFTH_On_Click" Unchecked="BtnDisableFTH_Off_Click" />
-                  <TextBlock Name="TxtDisableFTHStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,10">
+              <Run Text="🎯" /> <Run Text="Presets Gaming &amp; Modos" />
+            </TextBlock>
+            <TextBlock Text="Configuraciones optimizadas en 1-Click según tu tipo de equipo y estilo de juego." FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,25" />
+
+            <!-- PRESET 1: COMPETITIVE GAMING EXTREME -->
+            <Border Background="#2A0000" CornerRadius="8" Padding="25" Margin="0,0,0,20" BorderBrush="#E81123" BorderThickness="2">
               <StackPanel>
-                <TextBlock Text="🎯 CPU Scheduling Mode (Win32 Priority Separation)" Style="{StaticResource SectionTitle}" />
-                <TextBlock Style="{StaticResource Description}" Margin="0,0,0,15">
-                  <Run Text="Elige cómo el CPU prioriza foreground apps (juegos) vs background" />
-                  <LineBreak />
-                  <Run Text="⚠️ CRÍTICO: Cambia scheduling de TODO el sistema" FontWeight="Bold" Foreground="#E81123" />
-                </TextBlock>
-                <TextBlock Text="Selecciona tu perfil de gaming:" FontSize="12" Foreground="#7F8084" Margin="0,0,0,10" />
-                <Grid>
+                <Grid Margin="0,0,0,15">
                   <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <Border Name="ProfileBalanced" Grid.Column="0" Background="#2A2D31" CornerRadius="6" Padding="15,10" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="ProfileBalanced_Click">
-                    <StackPanel HorizontalAlignment="Center">
-                      <TextBlock Text="⚖️" FontFamily="Segoe UI Emoji" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5" />
-                      <TextBlock Text="BALANCED" FontSize="11" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Margin="0,0,0,3" />
-                      <TextBlock Text="(38 - Recomendado)" FontSize="9" Foreground="#7F8084" HorizontalAlignment="Center" />
-                    </StackPanel>
-                  </Border>
-                  <Border Name="ProfileSmooth" Grid.Column="1" Background="#2A2D31" CornerRadius="6" Padding="15,10" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="ProfileSmooth_Click">
-                    <StackPanel HorizontalAlignment="Center">
-                      <TextBlock Text="🌊" FontFamily="Segoe UI Emoji" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5" />
-                      <TextBlock Text="SMOOTH" FontSize="11" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Margin="0,0,0,3" />
-                      <TextBlock Text="(40 - Frame Times)" FontSize="9" Foreground="#7F8084" HorizontalAlignment="Center" />
-                    </StackPanel>
-                  </Border>
-                  <Border Name="ProfileAggressive" Grid.Column="2" Background="#2A2D31" CornerRadius="6" Padding="15,10" Margin="0,0,8,0" Cursor="Hand" MouseLeftButtonDown="ProfileAggressive_Click">
-                    <StackPanel HorizontalAlignment="Center">
-                      <TextBlock Text="⚡" FontFamily="Segoe UI Emoji" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,5" />
-                      <TextBlock Text="AGGRESSIVE" FontSize="11" FontWeight="Bold" Foreground="#FFFFFFFF" HorizontalAlignment="Center" Margin="0,0,0,3" />
-                      <TextBlock Text="(22 - Competitivo)" FontSize="9" Foreground="#7F8084" HorizontalAlignment="Center" />
-                    </StackPanel>
-                  </Border>
-                  <Button Grid.Column="3" Content="RESET" Style="{StaticResource OffButton}" Width="70" Height="65" FontSize="10" ToolTip="Restaurar a valor por defecto de Windows (2)" Click="BtnWin32PriorityReset_Click" />
-                </Grid>
-                <Border Background="#1A1A1A" CornerRadius="4" Padding="12" Margin="0,15,0,0">
-                  <StackPanel>
-                    <TextBlock Text="📋 Características de los perfiles:" FontSize="11" FontWeight="SemiBold" Foreground="#00D9FF" Margin="0,0,0,8" />
+                  <StackPanel Grid.Column="0">
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                      <TextBlock Text="⚖️ BALANCED:" FontFamily="Segoe UI Emoji" FontSize="10" FontWeight="Bold" Foreground="#0E7A0D" Width="90" />
-                      <TextBlock Text="Gaming + streaming. Background apps funcionan bien." FontSize="10" Foreground="#B9BBBE" TextWrapping="Wrap" />
+                      <TextBlock Text="🏆" FontFamily="Segoe UI Emoji" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0" />
+                      <TextBlock Text="MODO COMPETITIVO EXTREMO" FontSize="18" FontWeight="Bold" Foreground="#E81123" VerticalAlignment="Center" />
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                      <TextBlock Text="🌊 SMOOTH:" FontFamily="Segoe UI Emoji" FontSize="10" FontWeight="Bold" Foreground="#5865F2" Width="90" />
-                      <TextBlock Text="Frame times ultra-consistentes. Single-player exigentes." FontSize="10" Foreground="#B9BBBE" TextWrapping="Wrap" />
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal">
-                      <TextBlock Text="⚡ AGGRESSIVE:" FontFamily="Segoe UI Emoji" FontSize="10" FontWeight="Bold" Foreground="#E81123" Width="90" />
-                      <TextBlock Text="Respuesta instantánea. FPS competitivos (CS2, Valorant)." FontSize="10" Foreground="#B9BBBE" TextWrapping="Wrap" />
-                    </StackPanel>
+                    <TextBlock FontSize="12" Foreground="#FFB3B3" TextWrapping="Wrap">
+                      <Run Text="Prioridad máxima a latencia de input, 0.1% low FPS, timers TSC y ping ultra-bajo para CS2, Valorant, Apex." />
+                      <LineBreak />
+                      <Run Text="Aplica: Input Extremo, Red Ultra, CPU/GPU Máximo y Priorización de Procesos." FontWeight="SemiBold" Foreground="#0E7A0D" />
+                    </TextBlock>
                   </StackPanel>
-                </Border>
-                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" VerticalAlignment="Center">
-                  <TextBlock Text="🎯 Perfil actual: " FontSize="11" Foreground="#7F8084" VerticalAlignment="Center" />
-                  <TextBlock Name="TxtCurrentPriorityProfile" Text="Desconocido" FontSize="11" FontWeight="Bold" Foreground="#00D9FF" VerticalAlignment="Center" />
-                  <Button Content="⚙️ Ajustes Avanzados" Style="{StaticResource PresetButton}" Padding="12,5" Margin="20,0,0,0" FontSize="10" Click="BtnOpenWin32PriorityWindow_Click" VerticalAlignment="Center" />
-                </StackPanel>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="APLICAR EXTREMO" Style="{StaticResource OnButton}" Background="#E81123" BorderBrush="#FF0000" Width="150" Margin="0,0,8,0" Click="BtnCompetitivePreset_Apply_Click" />
+                    <Button Content="REVERTIR" Style="{StaticResource OffButton}" Width="90" Click="BtnCompetitivePreset_Revert_Click" />
+                  </StackPanel>
+                </Grid>
+
+                <WrapPanel Margin="0,10,0,0">
+                  <Button Content="🔍 Diagnóstico Competitivo" Style="{StaticResource OnButton}" Background="#5865F2" BorderBrush="#4752C4" Padding="15,8" Margin="0,0,10,10" Click="BtnCompetitiveDiagnose_Click" />
+                  <Button Content="🌐 DNS Cloudflare Ultra" Style="{StaticResource OnButton}" Background="#FF6600" BorderBrush="#FF8800" Padding="15,8" Margin="0,0,10,10" Click="BtnCompetitiveDNS_Click" />
+                  <Button Content="🔄 Tweaks + Reinicio" Style="{StaticResource OnButton}" Background="#FF4500" BorderBrush="#FF6600" Padding="15,8" Margin="0,0,10,10" Click="BtnCompetitiveRestart_Click" />
+                </WrapPanel>
               </StackPanel>
             </Border>
-            <TextBlock Text="⚡ Latency &amp; Pro Tweaks" FontSize="20" FontWeight="Bold" Foreground="#FFD700" Margin="0,30,0,15" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+
+            <!-- PRESET 2: LAPTOP GAMING BALANCED -->
+            <Border Background="#0F2027" CornerRadius="8" Padding="25" Margin="0,0,0,20" BorderBrush="#00D9FF" BorderThickness="2">
               <StackPanel>
-                <TextBlock Text="⚡ Latency Optimization Bundle" Style="{StaticResource SectionTitle}" Foreground="#FFD700" />
-                <TextBlock Style="{StaticResource Description}">
-                  <Run Text="CPU Scheduling + USB Power Saving + UI Delays" />
-                  <LineBreak />
-                  <Run Text="✅ Input lag reducido | UI más responsive" Foreground="#0E7A0D" FontWeight="Bold" />
-                </TextBlock>
-                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                  <Button Content="OPTIMIZAR" Style="{StaticResource OnButton}" Width="120" Margin="0,0,10,0" Click="BtnLatency_On_Click" />
-                  <Button Content="RESTAURAR" Style="{StaticResource OffButton}" Width="120" Click="BtnLatency_Off_Click" />
-                </StackPanel>
-              </StackPanel>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <StackPanel>
-                <TextBlock Text="🔥 Pro Tweaks Bundle" Style="{StaticResource SectionTitle}" Foreground="#FF4500" />
-                <TextBlock Style="{StaticResource Description}">
-                  <Run Text="Timer Resolution 0.5ms + Network Power OFF + Sticky Keys OFF" />
-                  <LineBreak />
-                  <Run Text="✅ Frame times consistentes | Ping estable" Foreground="#0E7A0D" FontWeight="Bold" />
-                  <LineBreak />
-                  <Run Text="⚠️ CPU usage +1-2%" Foreground="#FFA500" />
-                </TextBlock>
-                <StackPanel Orientation="Horizontal" Margin="0,15,0,0">
-                  <Button Content="APLICAR" Style="{StaticResource OnButton}" Width="120" Margin="0,0,10,0" Click="BtnPro_On_Click" />
-                  <Button Content="REVERTIR" Style="{StaticResource OffButton}" Width="120" Click="BtnPro_Off_Click" />
-                </StackPanel>
-              </StackPanel>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <StackPanel>
-                <TextBlock Text="🎯 System Pro Optimizations" Style="{StaticResource SectionTitle}" Foreground="#00D9FF" />
-                <TextBlock Style="{StaticResource Description}" Margin="0,0,0,20">
-                  <Run Text="Advanced system-level optimizations for maximum performance" />
-                  <LineBreak />
-                  <Run Text="⚠️ Requiere reinicio para aplicar completamente" Foreground="#FFA500" />
-                </TextBlock>
-                <Grid>
+                <Grid Margin="0,0,0,15">
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="🎧 Audio Latency" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="Reduce audio latency -5-20ms" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnAudioLatency_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnAudioLatency_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="⚡ Fast Boot" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="Optimiza arranque de Windows" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnBootOpt_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnBootOpt_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="💻 Processor Boost" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="Optimiza scheduling y core parking" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnProcessorOpt_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnProcessorOpt_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
+                  <StackPanel Grid.Column="0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                      <TextBlock Text="💻" FontFamily="Segoe UI Emoji" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0" />
+                      <TextBlock Text="PRESET LAPTOP GAMING (BALANCEADO)" FontSize="18" FontWeight="Bold" Foreground="#00D9FF" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap">
+                      <Run Text="Optimiza Input Lag, Red y Gráficos preservando la gestión térmica, batería y conectividad WiFi/Bluetooth." />
+                      <LineBreak />
+                      <Run Text="Incluye: Mouse/Teclado reactivo, efectos visuales reducidos, TCP/IP optimizado y limpieza segura." FontWeight="SemiBold" Foreground="#00D9FF" />
+                    </TextBlock>
                   </StackPanel>
-                  <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="🔴 AMD Radeon Tweaks" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="Optimizaciones específicas AMD GPU" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnRadeonOpt_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnRadeonOpt_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="🟢 NVIDIA GeForce Tweaks" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="P-States, PowerMizer, RMA OFF" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnNvidiaOpt_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnNvidiaOpt_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="🎯 Interrupt Steering" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="Optimiza distribución de IRQs" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <StackPanel Orientation="Horizontal">
-                          <Button Content="ON" Style="{StaticResource OnButton}" Width="60" Margin="0,0,5,0" Click="BtnInterruptOpt_On_Click" />
-                          <Button Content="OFF" Style="{StaticResource OffButton}" Width="60" Click="BtnInterruptOpt_Off_Click" />
-                        </StackPanel>
-                      </StackPanel>
-                    </Border>
-                    <Border Background="#2A2D31" CornerRadius="8" Padding="15" Margin="0,0,0,10">
-                      <StackPanel>
-                        <TextBlock Text="🛠️ System Repair" FontWeight="Bold" Foreground="#FFFFFFFF" Margin="0,0,0,5" />
-                        <TextBlock Text="SFC + DISM + Health Check" FontSize="10" Foreground="#7F8084" Margin="0,0,0,10" />
-                        <Button Content="RUN REPAIR" Style="{StaticResource OnButton}" Width="120" Click="BtnSystemRepair_Click" />
-                      </StackPanel>
-                    </Border>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="APLICAR PRESET" Style="{StaticResource OnButton}" Width="140" Margin="0,0,8,0" Click="BtnLaptopPreset_Apply_Click" />
+                    <Button Content="REVERTIR" Style="{StaticResource OffButton}" Width="90" Click="BtnLaptopPreset_Revert_Click" />
                   </StackPanel>
                 </Grid>
+
+                <WrapPanel Margin="0,10,0,0">
+                  <Button Content="🔍 Diagnóstico Laptop" Style="{StaticResource OnButton}" Background="#5865F2" BorderBrush="#4752C4" Padding="15,8" Margin="0,0,10,10" Click="BtnLaptopDiagnose_Click" />
+                </WrapPanel>
               </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-        <ScrollViewer Name="LaptopPage" Visibility="{Binding CurrentPageName, Converter={StaticResource PageNameToVisibilityConverter}, ConverterParameter='Preset Laptop'}" VerticalScrollBarVisibility="Auto">
-          <UIElement.RenderTransform>
-            <TranslateTransform />
-          </UIElement.RenderTransform>
-          <StackPanel Margin="40">
-            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,10">
-              <Run Text="💻" /> <Run Text="PRESET LAPTOP" /></TextBlock>
-            <TextBlock Text="Optimización específica para gaming portátil - Balance perfecto" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30" />
-            <Border Background="#1A1D21" CornerRadius="8" Padding="25" Margin="0,0,0,20" BorderBrush="#00D9FF" BorderThickness="2">
-              <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                  <TextBlock Text="💻" FontFamily="Segoe UI Emoji" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0" />
-                  <TextBlock Text="¿Por qué un preset específico para laptops?" FontSize="16" FontWeight="Bold" Foreground="#00D9FF" VerticalAlignment="Center" />
-                </StackPanel>
-                <TextBlock FontSize="13" Foreground="#B9BBBE" TextWrapping="Wrap" LineHeight="20">
-                  <Run Text="Las laptops tienen características únicas que requieren optimizaciones balanceadas:" />
-                  <LineBreak />
-                  <LineBreak />
-                  <Run Text="🔋 BATERÍA:" FontWeight="Bold" Foreground="#FFC107" /> <Run Text=" Necesitan conservar energía para portabilidad" /><LineBreak /><Run Text="🌡️ TÉRMICA:" FontWeight="Bold" Foreground="#FF6B6B" /> <Run Text=" Gestión de calor crítica en espacios reducidos" /><LineBreak /><Run Text="⚡ RENDIMIENTO:" FontWeight="Bold" Foreground="#4ECDC4" /> <Run Text=" Optimización gaming sin comprometer estabilidad" /><LineBreak /><Run Text="🔗 CONECTIVIDAD:" FontWeight="Bold" Foreground="#45B7D1" /> <Run Text=" WiFi/Bluetooth esenciales, no deben romperse" /></TextBlock>
-              </StackPanel>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🚀 Aplicar Preset Completo para Laptop" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Aplica optimizaciones balanceadas específicas para gaming portátil" />
-                    <LineBreak />
-                    <Run Text="Incluye: Input, Visual, Red, Gaming, Limpieza, Privacidad (método seguro)" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ NO incluye: Power throttling OFF, Ultimate Performance, Core parking OFF" FontWeight="Bold" Foreground="#FFC107" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="APLICAR PRESET" Style="{StaticResource OnButton}" Width="140" Margin="0,0,8,0" Click="BtnLaptopPreset_Apply_Click" />
-                  <Button Content="REVERTIR" Style="{StaticResource OffButton}" Width="90" Click="BtnLaptopPreset_Revert_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🔍 Diagnóstico Específico para Laptop" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Analiza el estado actual de optimizaciones de laptop" />
-                    <LineBreak />
-                    <Run Text="Verifica gestión de energía, térmica, gaming y conectividad" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="DIAGNÓSTICO" Style="{StaticResource OnButton}" Background="#5865F2" Width="110" Click="BtnLaptopDiagnose_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <TextBlock Text="✅ Optimizaciones INCLUIDAS en el preset:" FontSize="18" FontWeight="Bold" Foreground="#0E7A0D" Margin="0,30,0,15" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="20" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                  <TextBlock Text="⌨️ INPUT OPTIMIZATIONS:" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• Mouse acceleration OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Keyboard optimization" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🎨 VISUAL OPTIMIZATIONS:" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• Visual effects OFF (ahorro batería)" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Transparency effects OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🌐 NETWORK OPTIMIZATIONS:" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• TCP/IP balanced mode" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• DNS cache optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="🎮 GAMING OPTIMIZATIONS:" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• Xbox Game Bar OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Windows Game Mode ON" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• GPU scheduling optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🧹 SYSTEM CLEANUP:" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• Windows Search OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Sticky Keys OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🔒 PRIVACY (Safe):" FontSize="14" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,8" />
-                  <TextBlock Text="• Telemetry OFF (método seguro)" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• No toca servicios de Bluetooth" FontSize="12" Foreground="#0E7A0D" Margin="0,0,0,3" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <TextBlock Text="❌ Optimizaciones NO INCLUIDAS (Por seguridad laptop):" FontSize="18" FontWeight="Bold" Foreground="#E81123" Margin="0,30,0,15" />
-            <Border Background="#2A0000" CornerRadius="8" Padding="20" Margin="0,0,0,15" BorderBrush="#E81123" BorderThickness="1">
-              <StackPanel>
-                <TextBlock Text="🔋 GESTIÓN DE ENERGÍA (PRESERVADA):" FontSize="14" FontWeight="Bold" Foreground="#FFC107" Margin="0,0,0,8" />
-                <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" Margin="0,0,0,10">
-                  <Run Text="• Hibernación: MANTENIDA (ahorro de batería)" />
-                  <LineBreak />
-                  <Run Text="• Power Throttling: MANTENIDO (control térmico)" />
-                  <LineBreak />
-                  <Run Text="• Core Parking: MANTENIDO (ahorro de batería)" />
-                </TextBlock>
-                <TextBlock Text="⚡ PERFORMANCE EXTREMO (NO APLICADO):" FontSize="14" FontWeight="Bold" Foreground="#FFC107" Margin="0,0,0,8" />
-                <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" Margin="0,0,0,10">
-                  <Run Text="• Ultimate Performance: NO (consumo excesivo)" />
-                  <LineBreak />
-                  <Run Text="• Spectre/Meltdown tweaks: NO (térmica + seguridad)" />
-                  <LineBreak />
-                  <Run Text="• Extreme network tweaks: NO (compatibilidad)" />
-                </TextBlock>
-                <TextBlock Text="🛠️ SERVICIOS CRÍTICOS (PROTEGIDOS):" FontSize="14" FontWeight="Bold" Foreground="#FFC107" Margin="0,0,0,8" />
-                <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap">
-                  <Run Text="• Servicios de energía: MANTENIDOS" />
-                  <LineBreak />
-                  <Run Text="• Servicios térmicos: MANTENIDOS" />
-                  <LineBreak />
-                  <Run Text="• Bluetooth/WiFi: PROTEGIDOS" />
-                </TextBlock>
-              </StackPanel>
-            </Border>
-            <TextBlock Text="🎯 Resultados esperados:" FontSize="18" FontWeight="Bold" Foreground="#4ECDC4" Margin="0,30,0,15" />
-            <Border Background="#0F2A20" CornerRadius="8" Padding="20" BorderBrush="#4ECDC4" BorderThickness="1">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                  <TextBlock Text="🎮 GAMING:" FontSize="14" FontWeight="Bold" Foreground="#4ECDC4" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10">
-                    <Run Text="• FPS: +5-15%" />
-                    <LineBreak />
-                    <Run Text="• Input lag: -50-70ms" />
-                    <LineBreak />
-                    <Run Text="• Frame stability: +10-15%" />
-                  </TextBlock>
-                  <TextBlock Text="🔋 BATERÍA:" FontSize="14" FontWeight="Bold" Foreground="#4ECDC4" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE">
-                    <Run Text="• Duración: +10-20%" />
-                    <LineBreak />
-                    <Run Text="• Gestión térmica preservada" />
-                    <LineBreak />
-                    <Run Text="• Sin comprometer funcionalidad" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="🌐 CONECTIVIDAD:" FontSize="14" FontWeight="Bold" Foreground="#4ECDC4" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10">
-                    <Run Text="• Bluetooth: Funcionamiento perfecto" />
-                    <LineBreak />
-                    <Run Text="• WiFi: Optimizado pero estable" />
-                    <LineBreak />
-                    <Run Text="• Discord: Sin problemas de audio" />
-                  </TextBlock>
-                  <TextBlock Text="💻 ESTABILIDAD:" FontSize="14" FontWeight="Bold" Foreground="#4ECDC4" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE">
-                    <Run Text="• Sistema estable para trabajo" />
-                    <LineBreak />
-                    <Run Text="• No compromete productividad" />
-                    <LineBreak />
-                    <Run Text="• Tweaks balanceados, no extremos" />
-                  </TextBlock>
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Background="#1A1A2E" CornerRadius="8" Padding="20" Margin="0,20,0,0" BorderBrush="#7F8C8D" BorderThickness="1">
-              <StackPanel>
-                <TextBlock Text="💡 Recomendaciones adicionales para laptops gaming:" FontSize="14" FontWeight="Bold" Foreground="#7F8C8D" Margin="0,0,0,10" />
-                <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" LineHeight="18">
-                  <Run Text="1. " FontWeight="Bold" /> <Run Text="Monitorea temperaturas durante gaming intensivo" /><LineBreak /><Run Text="2. " FontWeight="Bold" /> <Run Text="Usa modo balanceado de energía para gaming casual" /><LineBreak /><Run Text="3. " FontWeight="Bold" /> <Run Text="Considera ventilación externa para sesiones largas" /><LineBreak /><Run Text="4. " FontWeight="Bold" /> <Run Text="Revierte el preset si experimentas throttling térmico" /><LineBreak /><Run Text="5. " FontWeight="Bold" /> <Run Text="Mantén drivers actualizados (GPU, chipset, BIOS)" /></TextBlock>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-        <ScrollViewer Name="CompetitivePage" Visibility="{Binding CurrentPageName, Converter={StaticResource PageNameToVisibilityConverter}, ConverterParameter='Competitive Gaming'}" VerticalScrollBarVisibility="Auto">
-          <UIElement.RenderTransform>
-            <TranslateTransform />
-          </UIElement.RenderTransform>
-          <StackPanel Margin="40">
-            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,10">
-              <Run Text="🏆" /> <Run Text="COMPETITIVE GAMING PRESET" /></TextBlock>
-            <TextBlock Text="Optimizaciones ultra-agresivas para gaming competitivo - Rendimiento extremo" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30" />
-            <Border Background="#2A0000" CornerRadius="8" Padding="25" Margin="0,0,0,20" BorderBrush="#E81123" BorderThickness="2">
-              <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
-                  <TextBlock Text="🏆" FontFamily="Segoe UI Emoji" FontSize="20" VerticalAlignment="Center" Margin="0,0,10,0" />
-                  <TextBlock Text="¿Por qué un preset específico para gaming competitivo?" FontSize="16" FontWeight="Bold" Foreground="#E81123" VerticalAlignment="Center" />
-                </StackPanel>
-                <TextBlock FontSize="13" Foreground="#FFB3B3" TextWrapping="Wrap" LineHeight="20">
-                  <Run Text="El gaming competitivo requiere optimizaciones extremas que van más allá del gaming casual:" />
-                  <LineBreak />
-                  <LineBreak />
-                  <Run Text="🎯 INPUT LAG:" FontWeight="Bold" Foreground="#FF4444" /> <Run Text=" Cada milisegundo cuenta en CS2, Valorant, Overwatch" /><LineBreak /><Run Text="🌐 LATENCIA:" FontWeight="Bold" Foreground="#FF6B6B" /> <Run Text=" Ping ultra bajo para mejor hitreg y respuesta" /><LineBreak /><Run Text="⚡ PERFORMANCE:" FontWeight="Bold" Foreground="#FF8888" /> <Run Text=" FPS estables &gt; 240Hz, 0.1% low FPS optimizado" /><LineBreak /><Run Text="💾 RECURSOS:" FontWeight="Bold" Foreground="#FFAAAA" /> <Run Text=" Todo dedicado al juego, mínima interferencia del sistema" /></TextBlock>
-              </StackPanel>
-            </Border>
-            <Border Background="#1A0000" CornerRadius="8" Padding="20" Margin="0,0,0,20" BorderBrush="#FF0000" BorderThickness="2">
-              <StackPanel>
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                  <TextBlock Text="⚠️" FontFamily="Segoe UI Emoji" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0" />
-                  <TextBlock Text="ADVERTENCIA CRÍTICA" FontSize="16" FontWeight="Bold" Foreground="#FF0000" VerticalAlignment="Center" />
-                </StackPanel>
-                <TextBlock FontSize="12" Foreground="#FFB3B3" TextWrapping="Wrap" LineHeight="18">
-                  <Run Text="🔥 Este preset aplica optimizaciones EXTREMAS que pueden:" />
-                  <LineBreak />
-                  <Run Text="• Reducir la estabilidad general del sistema" />
-                  <LineBreak />
-                  <Run Text="• Deshabilitar funciones no esenciales permanentemente" />
-                  <LineBreak />
-                  <Run Text="• Requerir conocimiento técnico para resolver problemas" />
-                  <LineBreak />
-                  <LineBreak />
-                  <Run Text="💻 SOLO recomendado para:" FontWeight="Bold" />
-                  <LineBreak />
-                  <Run Text="• PCs dedicados EXCLUSIVAMENTE al gaming" />
-                  <LineBreak />
-                  <Run Text="• Usuarios experimentados en optimización" />
-                  <LineBreak />
-                  <Run Text="• Gaming competitivo profesional (CS2, Valorant, LOL)" />
-                </TextBlock>
-              </StackPanel>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🚀 Aplicar Preset Competitivo EXTREMO" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Aplica TODAS las optimizaciones agresivas para gaming competitivo" />
-                    <LineBreak />
-                    <Run Text="Incluye: Input extremo, Red ultra, CPU/GPU máximo, Servicios mínimos" FontWeight="Bold" Foreground="#E81123" />
-                    <LineBreak />
-                    <Run Text="⚠️ SACRIFICA estabilidad por rendimiento absoluto" FontWeight="Bold" Foreground="#FF0000" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="APLICAR EXTREMO" Style="{StaticResource OnButton}" Background="#E81123" BorderBrush="#FF0000" Width="150" Margin="0,0,8,0" Click="BtnCompetitivePreset_Apply_Click" />
-                  <Button Content="REVERTIR" Style="{StaticResource OffButton}" Width="90" Click="BtnCompetitivePreset_Revert_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🔍 Diagnóstico de Preparación Competitiva" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Analiza si tu sistema está listo para gaming competitivo" />
-                    <LineBreak />
-                    <Run Text="Verifica specs, optimizaciones actuales y da recomendaciones" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="DIAGNÓSTICO" Style="{StaticResource OnButton}" Background="#5865F2" Width="110" Click="BtnCompetitiveDiagnose_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🌐 DNS Competitivo (Cloudflare Ultra)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Configura DNS específicamente optimizado para gaming competitivo" />
-                    <LineBreak />
-                    <Run Text="Cloudflare con configuraciones especiales para latencia mínima" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="APLICAR DNS" Style="{StaticResource OnButton}" Background="#FF6600" BorderBrush="#FF8800" Width="120" Click="BtnCompetitiveDNS_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🔄 Tweaks Críticos (Requieren Reinicio)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Aplica solo los tweaks más críticos que necesitan reinicio" />
-                    <LineBreak />
-                    <Run Text="CPU Scheduling, HPET, Core Isolation, Input Queues" />
-                    <LineBreak />
-                    <Run Text="⚠️ REQUIERE REINICIO INMEDIATO después de aplicar" FontWeight="Bold" Foreground="#FFC107" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                  <Button Content="APLICAR + RESTART" Style="{StaticResource OnButton}" Background="#FF4500" BorderBrush="#FF6600" Width="150" Click="BtnCompetitiveRestart_Click" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <TextBlock Text="✅ Optimizaciones INCLUIDAS (EXTREMAS):" FontSize="18" FontWeight="Bold" Foreground="#E81123" Margin="0,30,0,15" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="20" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                  <TextBlock Text="🎯 INPUT OPTIMIZATIONS (EXTREMO):" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• Mouse acceleration OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Keyboard delay = 0ms" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• USB optimization for 1000Hz+" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Input queues optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Sticky keys OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🌐 NETWORK ULTRA:" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• TCP/IP ultra aggressive" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• All advanced network tweaks" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Network power saving OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• NetBIOS OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• DNS ultra optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="⚡ POWER MAXIMUM:" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• Ultimate Performance plan" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Power throttling OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Core parking OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="🎮 GAMING EXTREMO:" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• Xbox Game Bar OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Windows Game Mode ON" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• GPU scheduling optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• System responsiveness = 0" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Game priority HIGH for 15+ games" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="👻 GHOST PACK EXTREMO:" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• Core Isolation OFF (VBS)" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• MPO Fix (anti-flicker)" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• HPET optimized" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• CPU Scheduling AGGRESSIVE" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10" />
-                  <TextBlock Text="🛑 SERVICES MINIMAL:" FontSize="14" FontWeight="Bold" Foreground="#E81123" Margin="0,0,0,8" />
-                  <TextBlock Text="• Windows Search OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• SysMain OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Non-essential services OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                  <TextBlock Text="• Windows Update OFF" FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,3" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <TextBlock Text="🎯 Resultados esperados:" FontSize="18" FontWeight="Bold" Foreground="#00FF00" Margin="0,30,0,15" />
-            <Border Background="#0A1A0A" CornerRadius="8" Padding="20" BorderBrush="#00FF00" BorderThickness="1">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,20,0">
-                  <TextBlock Text="🎯 COMPETITIVE PERFORMANCE:" FontSize="14" FontWeight="Bold" Foreground="#00FF00" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10">
-                    <Run Text="• Input lag: -70 a -120ms" FontWeight="Bold" Foreground="#00FF00" />
-                    <LineBreak />
-                    <Run Text="• Latencia de red: -15 a -40ms" />
-                    <LineBreak />
-                    <Run Text="• FPS: +10-25%" />
-                    <LineBreak />
-                    <Run Text="• 0.1% Low FPS: +15-30%" />
-                    <LineBreak />
-                    <Run Text="• Frame consistency: +20-35%" />
-                  </TextBlock>
-                  <TextBlock Text="💾 RESOURCES FREED:" FontSize="14" FontWeight="Bold" Foreground="#00FF00" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE">
-                    <Run Text="• RAM: +300-800MB para el juego" />
-                    <LineBreak />
-                    <Run Text="• CPU: +5-15% disponible" />
-                    <LineBreak />
-                    <Run Text="• GPU: 100% dedicado al juego" />
-                    <LineBreak />
-                    <Run Text="• Network: Mínima interferencia" />
-                  </TextBlock>
-                </StackPanel>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="🏆 COMPETITIVE ADVANTAGE:" FontSize="14" FontWeight="Bold" Foreground="#00FF00" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,10">
-                    <Run Text="• Aim más preciso y consistente" />
-                    <LineBreak />
-                    <Run Text="• Mejor hitreg en FPS competitivos" />
-                    <LineBreak />
-                    <Run Text="• Respuesta instantánea a inputs" />
-                    <LineBreak />
-                    <Run Text="• Sin micro-stutters ni lag spikes" />
-                    <LineBreak />
-                    <Run Text="• Ventaja competitiva mensurable" />
-                  </TextBlock>
-                  <TextBlock Text="🎮 GAMES OPTIMIZED FOR:" FontSize="14" FontWeight="Bold" Foreground="#00FF00" Margin="0,0,0,8" />
-                  <TextBlock FontSize="12" Foreground="#B9BBBE">
-                    <Run Text="• Counter-Strike 2" />
-                    <LineBreak />
-                    <Run Text="• Valorant" />
-                    <LineBreak />
-                    <Run Text="• League of Legends" />
-                    <LineBreak />
-                    <Run Text="• Overwatch 2" />
-                    <LineBreak />
-                    <Run Text="• Apex Legends" />
-                    <LineBreak />
-                    <Run Text="• Rocket League" />
-                  </TextBlock>
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Background="#1A1A2E" CornerRadius="8" Padding="20" Margin="0,20,0,0" BorderBrush="#7F8C8D" BorderThickness="1">
-              <StackPanel>
-                <TextBlock Text="⚡ Recomendaciones para gaming competitivo:" FontSize="14" FontWeight="Bold" Foreground="#7F8C8D" Margin="0,0,0,10" />
-                <TextBlock FontSize="12" Foreground="#B9BBBE" TextWrapping="Wrap" LineHeight="18">
-                  <Run Text="1. " FontWeight="Bold" /> <Run Text="Aplica el preset COMPLETO antes de una sesión competitiva" /><LineBreak /><Run Text="2. " FontWeight="Bold" /> <Run Text="REINICIA Windows después de aplicar tweaks críticos" /><LineBreak /><Run Text="3. " FontWeight="Bold" /> <Run Text="Cierra TODOS los programas no esenciales antes de jugar" /><LineBreak /><Run Text="4. " FontWeight="Bold" /> <Run Text="Usa monitor 240Hz+ para aprovechar completamente las optimizaciones" /><LineBreak /><Run Text="5. " FontWeight="Bold" /> <Run Text="Considera revertir el preset si experimentas inestabilidad" /><LineBreak /><Run Text="6. " FontWeight="Bold" /> <Run Text="Mantén drivers actualizados (GPU, mouse, teclado)" /></TextBlock>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-        </ScrollViewer>
-        <ScrollViewer Name="AdvancedLatencyPage" Visibility="{Binding CurrentPageName, Converter={StaticResource PageNameToVisibilityConverter}, ConverterParameter='Latency Tweaks'}" VerticalScrollBarVisibility="Auto">
-          <UIElement.RenderTransform>
-            <TranslateTransform />
-          </UIElement.RenderTransform>
-          <StackPanel Margin="40">
-            <TextBlock FontFamily="Segoe UI Emoji" FontSize="28" FontWeight="Bold" Foreground="#00D9FF" Margin="0,0,0,10">
-              <Run Text="⚡" /> <Run Text="Latency Tweaks" /></TextBlock>
-            <TextBlock Text="Optimizaciones de latencia de bajo nivel del sistema" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,30" />
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🔌 Deshabilitar Interrupt Moderation" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Fuerza procesamiento inmediato de paquetes de red" />
-                    <LineBreak />
-                    <Run Text="Latencia de red -2-10ms por paquete, jitter reducido" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ CPU usage de red puede subir +1-3%" Foreground="#FFA500" />
-                  </TextBlock>
-                </StackPanel>
-                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Tag="interrupt_moderation" Click="ShowTweakInfo" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleInterruptModeration" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnInterruptModeration_On_Click" Unchecked="BtnInterruptModeration_Off_Click" />
-                  <TextBlock Name="TxtInterruptModerationStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="⚡ MenuShow Delay 0ms" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Reduce delay artificial de menús de 400ms → 0ms" />
-                    <LineBreak />
-                    <Run Text="UI responde instantáneamente, Alt+Tab más rápido" FontWeight="Bold" Foreground="#0E7A0D" />
-                  </TextBlock>
-                </StackPanel>
-                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Tag="menu_show_delay" Click="ShowTweakInfo" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleMenuShowDelay" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnMenuShowDelay_On_Click" Unchecked="BtnMenuShowDelay_Off_Click" />
-                  <TextBlock Name="TxtMenuShowDelayStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🎮 Optimizar Data Queue Sizes" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Mouse: 100→256 buffers | Teclado: 100→200 buffers" />
-                    <LineBreak />
-                    <Run Text="Cero inputs perdidos con polling rates 1000Hz+" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ REQUIERE REINICIO" Foreground="#FFA500" />
-                  </TextBlock>
-                </StackPanel>
-                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Tag="data_queue_sizes" Click="ShowTweakInfo" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleDataQueueSizes" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnDataQueueSizes_On_Click" Unchecked="BtnDataQueueSizes_Off_Click" />
-                  <TextBlock Name="TxtDataQueueSizesStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🖥️ CSRSS High Priority" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Prioriza el proceso de rendering Win32 del sistema" />
-                    <LineBreak />
-                    <Run Text="Menos micro-stutters en UI durante gaming intensivo" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ Temporal, se restaura al reiniciar" Foreground="#FFA500" />
-                  </TextBlock>
-                </StackPanel>
-                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Tag="csrss_priority" Click="ShowTweakInfo" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleCsrssPriority" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnCsrssPriority_On_Click" Unchecked="BtnCsrssPriority_Off_Click" />
-                  <TextBlock Name="TxtCsrssPriorityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
-            </Border>
-            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
-              <Grid>
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0">
-                  <TextBlock Text="🎯 GPU IRQ Affinity (Último Core)" Style="{StaticResource SectionTitle}" />
-                  <TextBlock Style="{StaticResource Description}">
-                    <Run Text="Asigna interrupciones GPU a un core dedicado" />
-                    <LineBreak />
-                    <Run Text="DPC latency reducida, frame times más consistentes" FontWeight="Bold" Foreground="#0E7A0D" />
-                    <LineBreak />
-                    <Run Text="⚠️ REQUIERE REINICIO OBLIGATORIO | Mínimo 4 cores" Foreground="#E81123" FontWeight="Bold" />
-                  </TextBlock>
-                </StackPanel>
-                <Button Grid.Column="1" Style="{StaticResource InfoButton}" Margin="0,0,15,0" VerticalAlignment="Center" Tag="gpu_irq_affinity" Click="ShowTweakInfo" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                  <CheckBox Name="ToggleGpuIrqAffinity" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnGpuIrqAffinity_On_Click" Unchecked="BtnGpuIrqAffinity_Off_Click" />
-                  <TextBlock Name="TxtGpuIrqAffinityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
-                </StackPanel>
-              </Grid>
             </Border>
           </StackPanel>
         </ScrollViewer>

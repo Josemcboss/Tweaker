@@ -1,0 +1,24 @@
+{
+  "name": "tweaker",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Josemcboss/Tweaker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Josemcboss/Tweaker/issues"
+  },
+  "homepage": "https://github.com/Josemcboss/Tweaker#readme",
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}

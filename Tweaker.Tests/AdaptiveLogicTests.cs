@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Tweaker.Models;
 using Tweaker.ViewModels;
 
 namespace Tweaker.Tests
 {
-    [TestClass]
     public class AdaptiveLogicTests
     {
-        [TestMethod]
+        [Fact]
         public void Test_MemoryOptimization_Disabled_Under16GB()
         {
             // We need to mock the ViewModel or use it if possible
@@ -28,11 +27,11 @@ namespace Tweaker.Tests
                 tweak.WarningMessage = "Desactivado: Bajo en RAM.";
             }
 
-            Assert.IsTrue(tweak.IsDisabled);
-            Assert.IsFalse(string.IsNullOrEmpty(tweak.WarningMessage));
+            Assert.True(tweak.IsDisabled);
+            Assert.False(string.IsNullOrEmpty(tweak.WarningMessage));
         }
 
-        [TestMethod]
+        [Fact]
         public void Test_Ryzen_Preselection()
         {
             var info = new HardwareInfo { IsRyzen = true };
@@ -44,7 +43,7 @@ namespace Tweaker.Tests
                 tweak.IsEnabled = true;
             }
 
-            Assert.IsTrue(tweak.IsEnabled);
+            Assert.True(tweak.IsEnabled);
         }
     }
 }
