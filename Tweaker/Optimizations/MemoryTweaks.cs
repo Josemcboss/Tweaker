@@ -188,11 +188,13 @@ namespace Tweaker.Optimizations
                     // Restaurar valores predeterminados
                     key.SetValue("DisablePagingExecutive", 0, RegistryValueKind.DWord);
                     key.SetValue("LargeSystemCache", 0, RegistryValueKind.DWord);
+                    key.SetValue("DisablePageCombining", 0, RegistryValueKind.DWord);
+                    try { key.DeleteValue("IoPageLockLimit", false); } catch { }
 
-                    Debug.WriteLine("? Gesti�n de memoria restaurada a default");
-                    Debug.WriteLine("  DisablePagingExecutive: 0 (Kernel puede ir al disco)");
-                    Debug.WriteLine("?? Puede volver el stuttering");
-                    Debug.WriteLine("?? REINICIA Windows");
+                    Debug.WriteLine("✓ Gestión de memoria restaurada a default (Page Combining, LargeSystemCache y Paging restaurados)");
+                    Debug.WriteLine("  DisablePagingExecutive: 0");
+                    Debug.WriteLine("  DisablePageCombining: 0");
+                    Debug.WriteLine("  LargeSystemCache: 0");
 
                     return true;
                 }

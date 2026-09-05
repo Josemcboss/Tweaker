@@ -506,14 +506,79 @@
                 <TextBlock Text="Optimizador Gaming Profesional" FontSize="14" Foreground="#A0A0A0" Margin="0,0,0,10" />
               </StackPanel>
 
-              <!-- System Info Button -->
-              <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding OpenSystemInfoCommand}" Style="{StaticResource OnButton}" Background="#1D1515" BorderBrush="#2D1D1D" Padding="15,10" Cursor="Hand" Margin="0,0,0,10">
-                <StackPanel Orientation="Horizontal">
-                  <Path Data="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M13,17 H11 V11 H13 V17 Z M13,9 H11 V7 H13 V9 Z" Fill="#FFA0A0" Width="14" Height="14" Margin="0,0,8,0" Stretch="Uniform"/>
-                  <TextBlock Text="System Info" FontWeight="Bold" VerticalAlignment="Center" Foreground="#FFFFFFFF"/>
-                </StackPanel>
-              </Button>
+              <!-- Action Buttons -->
+              <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <!-- Restore Point Button -->
+                <Button Name="BtnCreateRestorePoint" Click="BtnCreateRestorePoint_Click" Style="{StaticResource OnButton}" Background="#251F10" BorderBrush="#503E15" Padding="14,10" Cursor="Hand" Margin="0,0,10,10" ToolTip="Crea un Punto de Restauración de Windows y respaldo de Registro antes de optimizar">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🛡️" FontFamily="Segoe UI Emoji" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Crear Punto de Restauración" FontWeight="Bold" VerticalAlignment="Center" Foreground="#F39C12"/>
+                  </StackPanel>
+                </Button>
+
+                <!-- Sync PC State Button -->
+                <Button Name="BtnSyncSystemState" Click="BtnSyncSystemState_Click" Style="{StaticResource OnButton}" Background="#1A2733" BorderBrush="#254055" Padding="14,10" Cursor="Hand" Margin="0,0,10,10" ToolTip="Re-escanea y sincroniza el estado real de los tweaks aplicados en tu PC">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="🔄" FontFamily="Segoe UI Emoji" FontSize="13" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Sincronizar con el PC" FontWeight="Bold" VerticalAlignment="Center" Foreground="#FFFFFFFF"/>
+                  </StackPanel>
+                </Button>
+
+                <!-- System Info Button -->
+                <Button VerticalAlignment="Center" Command="{Binding OpenSystemInfoCommand}" Style="{StaticResource OnButton}" Background="#1D1515" BorderBrush="#2D1D1D" Padding="15,10" Cursor="Hand" Margin="0,0,0,10">
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="M12,2 C6.48,2 2,6.48 2,12 C2,17.52 6.48,22 12,22 C17.52,22 22,17.52 22,12 C22,6.48 17.52,2 12,2 Z M13,17 H11 V11 H13 V17 Z M13,9 H11 V7 H13 V9 Z" Fill="#FFA0A0" Width="14" Height="14" Margin="0,0,8,0" Stretch="Uniform"/>
+                    <TextBlock Text="System Info" FontWeight="Bold" VerticalAlignment="Center" Foreground="#FFFFFFFF"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
             </Grid>
+
+            <!-- Row 1: Real-Time Hardware & Latency Diagnostics Bar -->
+            <Border Grid.Row="1" Grid.ColumnSpan="2" Background="#141419" BorderBrush="#262630" BorderThickness="1" CornerRadius="10" Padding="16,12" Margin="0,0,0,20">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Timer Resolution Status -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="⏱️" FontFamily="Segoe UI Emoji" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                  <StackPanel>
+                    <TextBlock Text="TIMER RESOLUTION" FontSize="10" FontWeight="Bold" Foreground="#888899"/>
+                    <TextBlock Name="TxtRealtimeTimerRes" Text="0.500 ms (Ultra Low Latency)" FontSize="12" FontWeight="SemiBold" Foreground="#0E7A0D"/>
+                  </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="1" Width="1" Height="28" Background="#262630" Margin="10,0"/>
+
+                <!-- GPU Model / VRAM -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="🎮" FontFamily="Segoe UI Emoji" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                  <StackPanel>
+                    <TextBlock Text="ESTADO GPU / VRAM" FontSize="10" FontWeight="Bold" Foreground="#888899"/>
+                    <TextBlock Name="TxtGpuStatusLine" Text="Detección activa • VRAM Libre" FontSize="12" FontWeight="SemiBold" Foreground="#5865F2"/>
+                  </StackPanel>
+                </StackPanel>
+
+                <Border Grid.Column="3" Width="1" Height="28" Background="#262630" Margin="10,0"/>
+
+                <!-- CPU Power State / Idle -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="⚡" FontFamily="Segoe UI Emoji" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                  <StackPanel>
+                    <TextBlock Text="CPU C-STATE / SCHEDULER" FontSize="10" FontWeight="Bold" Foreground="#888899"/>
+                    <TextBlock Name="TxtCpuStateLine" Text="C-State 0 • Win32Priority 0x28" FontSize="12" FontWeight="SemiBold" Foreground="#F39C12"/>
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Row 2, Column 0: Gauges -->
 
             <!-- Row 1: Circular Telemetry Gauges (Side-by-Side) -->
             <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,25">
@@ -758,6 +823,29 @@
                   </Button>
                 </WrapPanel>
               </StackPanel>
+            </Border>
+
+            <!-- Windows Update Protection Alert Banner -->
+            <Border Name="WindowsUpdateReversionBanner" Background="#2B1810" BorderBrush="#E67E22" BorderThickness="1" CornerRadius="8" Padding="16,14" Margin="0,0,0,15" Visibility="Collapsed">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                  <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <TextBlock Text="🛡️" FontFamily="Segoe UI Emoji" FontSize="14" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <TextBlock Text="Protección ante Windows Update" FontWeight="Bold" Foreground="#F39C12" FontSize="14" VerticalAlignment="Center" />
+                  </StackPanel>
+                  <TextBlock Name="TxtReversionNotice" Text="Se detectaron optimizaciones desactivadas externamente por Windows Update." Foreground="#E0E0E0" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+                <Button Grid.Column="1" Name="BtnReapplyReverted" Click="BtnReapplyReverted_Click" Style="{StaticResource OnButton}" Background="#E67E22" BorderBrush="#D35400" Padding="14,8" VerticalAlignment="Center" Cursor="Hand" Margin="10,0,0,0">
+                  <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⚡" FontFamily="Segoe UI Emoji" FontSize="12" Margin="0,0,6,0" VerticalAlignment="Center" />
+                    <TextBlock Text="Re-aplicar Todo" FontWeight="Bold" Foreground="#FFFFFFFF" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
+              </Grid>
             </Border>
 
             <Border Name="ActiveTweaksSection" Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,20" Visibility="Collapsed">
@@ -1427,6 +1515,26 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                   <CheckBox Name="ToggleNetBios" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" ToolTip="Click para activar/desactivar tweak" Checked="BtnNetBios_On_Click" Unchecked="BtnNetBios_Off_Click" />
                   <TextBlock Name="TxtNetBiosStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔌 Desactivar Ahorro Energía Ethernet (EEE)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva Energy Efficient Ethernet (EEE) y Green Ethernet en la NIC" />
+                    <LineBreak />
+                    <Run Text="Cero latencia inicial al recibir paquetes y conexión online continua" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleEthernetEee" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnEthernetEee_On_Click" Unchecked="BtnEthernetEee_Off_Click" />
+                  <TextBlock Name="TxtEthernetEeeStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
                 </StackPanel>
               </Grid>
             </Border>
@@ -2400,6 +2508,206 @@
                   <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0">
+                  <TextBlock Text="🖥️ Optimizar Latencia DWM &amp; Presentación" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Prioriza el hilo de composición DWM y fija MaxFrameLatency = 1" />
+                    <LineBreak />
+                    <Run Text="Frametimes más estables y menor latencia en modo ventana / borderless" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleDwmLatency" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnDwmLatency_On_Click" Unchecked="BtnDwmLatency_Off_Click" />
+                  <TextBlock Name="TxtDwmLatencyStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Anti-Stuttering SSD / NVMe I/O" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva estados de ahorro de energía APST en la interfaz NVMe" />
+                    <LineBreak />
+                    <Run Text="Elimina caídas repentinas de FPS (Low 1% FPS) al cargar texturas" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleNvmeAntiStutter" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnNvmeAntiStutter_On_Click" Unchecked="BtnNvmeAntiStutter_Off_Click" />
+                  <TextBlock Name="TxtNvmeAntiStutterStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🚀 Desactivar CPU Core Parking" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Forzado al 100% del uso de núcleos del CPU" />
+                    <LineBreak />
+                    <Run Text="Evita que los núcleos entren en reposo durante la partida" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleCoreParkingPro" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnCoreParkingPro_On_Click" Unchecked="BtnCoreParkingPro_Off_Click" />
+                  <TextBlock Name="TxtCoreParkingProStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🖼️ Forzar DWM Flip Model &amp; FSO" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Activa la presentación de fotogramas Flip Model Direct3D en juegos sin bordes" />
+                    <LineBreak />
+                    <Run Text="Latencia idéntica a Pantalla Completa Exclusiva sin lag de VSync" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleFlipModel" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnFlipModel_On_Click" Unchecked="BtnFlipModel_Off_Click" />
+                  <TextBlock Name="TxtFlipModelStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🧠 Kernel Executive 100% en RAM" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Mantiene el kernel de Windows y los controladores en la memoria RAM física" />
+                    <LineBreak />
+                    <Run Text="Evita accesos al almacenamiento y elimina tirones por memoria virtual" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleKernelPaging" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnKernelPaging_On_Click" Unchecked="BtnKernelPaging_Off_Click" />
+                  <TextBlock Name="TxtKernelPagingStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Habilitar MSI Mode (DPC Latency Cleanup)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Convierte dispositivos PCI (GPU/Red) a Message Signaled Interrupts" />
+                    <LineBreak />
+                    <Run Text="Reduce latencia DPC a menos de 50us y evita congelamientos" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleMsiMode" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnMsiMode_On_Click" Unchecked="BtnMsiMode_Off_Click" />
+                  <TextBlock Name="TxtMsiModeStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="📦 Desactivar Compresión de Memoria RAM" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Deshabilita la compresión de RAM en segundo plano del kernel" />
+                    <LineBreak />
+                    <Run Text="Menor uso de CPU y frametimes más estables en partidas prolongadas" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleMemoryCompression" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnMemoryCompression_On_Click" Unchecked="BtnMemoryCompression_Off_Click" />
+                  <TextBlock Name="TxtMemoryCompressionStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🎮 Habilitar HAGS (Hardware Accelerated GPU)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Transfiere la programación de VRAM directamente al procesador de la GPU" />
+                    <LineBreak />
+                    <Run Text="Aumento de 5% a 12% de FPS en juegos DirectX 12 y Vulkan" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleHags" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnHags_On_Click" Unchecked="BtnHags_Off_Click" />
+                  <TextBlock Name="TxtHagsStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔥 Desactivar Power Throttling Global" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Evita la reducción de frecuencia de reloj del procesador en hilos de juegos" />
+                    <LineBreak />
+                    <Run Text="Mantiene frecuencias turbo constantes sin caídas de rendimiento" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="TogglePowerThrottlingGlobal" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnPowerThrottlingGlobal_On_Click" Unchecked="BtnPowerThrottlingGlobal_Off_Click" />
+                  <TextBlock Name="TxtPowerThrottlingGlobalStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔊 Latencia Ultra-Baja en Motor de Audio" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Prioriza el motor de audio MMCSS / WASAPI" />
+                    <LineBreak />
+                    <Run Text="Sincronización perfecta de pasos y disparos sin delay auditivo" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleAudioLowLatency" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnAudioLowLatency_On_Click" Unchecked="BtnAudioLowLatency_Off_Click" />
+                  <TextBlock Name="TxtAudioLowLatencyStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
                   <TextBlock Text="🎯 Desactivar TextInputHost.exe" Style="{StaticResource SectionTitle}" />
                   <TextBlock Style="{StaticResource Description}">
                     <Run Text="Suprime la ejecución en segundo plano del panel táctil y teclado en pantalla" />
@@ -2490,6 +2798,393 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                   <CheckBox Name="ToggleSpectreMeltdownGhost" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnSpectreMeltdownGhost_On_Click" Unchecked="BtnSpectreMeltdownGhost_Off_Click" />
                   <TextBlock Name="TxtSpectreMeltdownGhostStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 10 NUEVOS TWEAKS DE RENDIMIENTO COMPETITIVO -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🧠 Desactivar Page Combining (RAM Deduplication Off)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva el hilo del kernel que escanea y fusiona páginas de RAM en segundo plano" />
+                    <LineBreak />
+                    <Run Text="Elimina tirones y caídas repentinas de FPS en partidas prolongadas" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="TogglePageCombining" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnPageCombining_On_Click" Unchecked="BtnPageCombining_Off_Click" />
+                  <TextBlock Name="TxtPageCombiningStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⏱️ Reloj Hardware TSC Invariante &amp; Platform Tick" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Fuerza Enhanced TSC Sync Policy y Platform Tick para el reloj de la CPU" />
+                    <LineBreak />
+                    <Run Text="Frametimes planos y sin jitter en DirectX 12, Unreal Engine y Vulkan" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleTscSync" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnTscSync_On_Click" Unchecked="BtnTscSync_Off_Click" />
+                  <TextBlock Name="TxtTscSyncStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Quantum de CPU para Juegos (Win32PrioritySeparation 0x28)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Asigna intervalos fijos y prioritarios de CPU a la aplicación activa en pantalla" />
+                    <LineBreak />
+                    <Run Text="Maximiza el rendimiento y consistencia del 1% Low FPS" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleQuantumPriority" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnQuantumPriority_On_Click" Unchecked="BtnQuantumPriority_Off_Click" />
+                  <TextBlock Name="TxtQuantumPriorityStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🌐 Optimización de Colas RSS de Red (Separación del Core 0)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Distribuye el procesamiento de paquetes de red en núcleos físicos dedicados (Base Core 2)" />
+                    <LineBreak />
+                    <Run Text="Evita que la tarjeta de red compita con el driver gráfico en el Core 0" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleRssQueues" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnRssQueues_On_Click" Unchecked="BtnRssQueues_Off_Click" />
+                  <TextBlock Name="TxtRssQueuesStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="📉 Desactivar AutoLoggers y Rastreo ETW de Diagnóstico" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Apaga las sesiones de telemetría y diagnósticos automáticos que escriben a disco" />
+                    <LineBreak />
+                    <Run Text="Libera ciclos de CPU y reduce el uso en segundo plano de tu SSD" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleAutologgersDiag" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnAutologgersDiag_On_Click" Unchecked="BtnAutologgersDiag_Off_Click" />
+                  <TextBlock Name="TxtAutologgersDiagStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🎮 Caché de Sombreadores (Shader Cache) Ampliada a 10GB" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Elimina el límite restrictivo de 1GB de DirectX para la compilación de shaders" />
+                    <LineBreak />
+                    <Run Text="Cero stutter al cargar nuevas áreas, skins o efectos en juegos pesados" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleShaderCacheSize" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnShaderCacheSize_On_Click" Unchecked="BtnShaderCacheSize_Off_Click" />
+                  <TextBlock Name="TxtShaderCacheSizeStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🛡️ Desactivar Fault Tolerant Heap (FTH)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Impide que Windows intercepte ejecutables de juegos con capas de compatibilidad innecesarias" />
+                    <LineBreak />
+                    <Run Text="Recupera entre 10% y 15% de velocidad en el motor de memoria del juego" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleFth" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnFth_On_Click" Unchecked="BtnFth_Off_Click" />
+                  <TextBlock Name="TxtFthStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🖱️ Desactivar USB Selective Suspend (Zero Polling Delay)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Mantiene los puertos USB con alimentación continua sin entrar en modo ahorro" />
+                    <LineBreak />
+                    <Run Text="Respuesta instantánea para ratones y teclados a 1000Hz, 4000Hz y 8000Hz" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleUsbSelectiveSuspend" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnUsbSelectiveSuspend_On_Click" Unchecked="BtnUsbSelectiveSuspend_Off_Click" />
+                  <TextBlock Name="TxtUsbSelectiveSuspendStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🚀 TCP Timestamps Off &amp; SACK Segments Enabled" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Ahorra 12 bytes por paquete IP y recupera pérdidas de paquetes selectivamente" />
+                    <LineBreak />
+                    <Run Text="Menor ping, mejor aprovechamiento del ancho de banda y menor jitter" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleTcpTimestampsSack" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnTcpTimestampsSack_On_Click" Unchecked="BtnTcpTimestampsSack_Off_Click" />
+                  <TextBlock Name="TxtTcpTimestampsSackStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🎯 Multimedia Scheduler NoLazyMode &amp; Extreme Responsiveness" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Elimina el modo perezoso de MMCSS y asigna 100% de CPU y GPU al perfil Games" />
+                    <LineBreak />
+                    <Run Text="Máxima prioridad de procesamiento y eliminación total de throttling de red" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleMultimediaExtreme" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnMultimediaExtreme_On_Click" Unchecked="BtnMultimediaExtreme_Off_Click" />
+                  <TextBlock Name="TxtMultimediaExtremeStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 11. MPO Disable -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🖥️ Multi-Plane Overlay (MPO) Disable" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Deshabilita MPO para eliminar flickering y micro-congelamientos en GPU NVIDIA 461.09+" />
+                    <LineBreak />
+                    <Run Text="Fuerza Legacy Flip — Ideal con múltiples monitores o borderless window" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleMpoDisable" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnMpoDisable_On_Click" Unchecked="BtnMpoDisable_Off_Click" />
+                  <TextBlock Name="TxtMpoDisableStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 12. LazyModeTimeout 10000 -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⏱️ MMCSS LazyModeTimeout = 10000" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Reduce la suspensión de ciclos MMCSS entre períodos de inactividad a 10ms" />
+                    <LineBreak />
+                    <Run Text="Menor latencia de scheduler multimedia — Frametimes más planos" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleLazyModeTimeout" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnLazyModeTimeout_On_Click" Unchecked="BtnLazyModeTimeout_Off_Click" />
+                  <TextBlock Name="TxtLazyModeTimeoutStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 13. ThreadDPC Disable -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🔧 ThreadDPC Disable (Non-Threaded DPC Mode)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva los DPCs en modo threaded para reducir cambios de contexto en el Kernel" />
+                    <LineBreak />
+                    <Run Text="ThreadDpcEnable=0 — Menor latencia de interrupción y respuesta ultra-rápida" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleThreadDpc" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnThreadDpc_On_Click" Unchecked="BtnThreadDpc_Off_Click" />
+                  <TextBlock Name="TxtThreadDpcStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 14. IoLatencyCap = 80 -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="💾 StorPort IoLatencyCap = 80 (SSD Gaming)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Limita la cola de I/O de StorPort a 80 ticks para evitar saturación y freeze del SSD" />
+                    <LineBreak />
+                    <Run Text="Evita micro-congelamientos de lectura de assets en NVMe/SATA" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleIoLatencyCap" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnIoLatencyCap_On_Click" Unchecked="BtnIoLatencyCap_Off_Click" />
+                  <TextBlock Name="TxtIoLatencyCapStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 15. Driver PPM Disable -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="⚡ Driver PPM Disable (IntelPPM / AmdPPM)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Deshabilita la administración de energía por software del CPU (Start=4)" />
+                    <LineBreak />
+                    <Run Text="Evita bajones de clock y fluctuaciones de voltaje en pleno juego" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleDriverPpm" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnDriverPpm_On_Click" Unchecked="BtnDriverPpm_Off_Click" />
+                  <TextBlock Name="TxtDriverPpmStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 16. CPU Idle Disable -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🚀 CPU Idle Disable (C-State 0 Forzado)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Fuerza el CPU en C-State 0 permanente — Elimina la latencia de despertar de núcleos" />
+                    <LineBreak />
+                    <Run Text="Mejora drásticamente el 1% Low FPS. (Mayor consumo: recomendado en PCs de escritorio)" FontWeight="Bold" Foreground="#F39C12" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleCpuIdle" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnCpuIdle_On_Click" Unchecked="BtnCpuIdle_Off_Click" />
+                  <TextBlock Name="TxtCpuIdleStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 17. NIC Buffers 2048 -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🌐 NIC Buffers 2048 (Receive / Transmit)" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Amplía los buffers de transmisión y recepción a 2048 descriptores en adaptadores de red" />
+                    <LineBreak />
+                    <Run Text="Cero pérdida de paquetes bajo alta carga — Ping más estable" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleNicBuffers" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnNicBuffers_On_Click" Unchecked="BtnNicBuffers_Off_Click" />
+                  <TextBlock Name="TxtNicBuffersStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- 18. Vulnerable Driver Blocklist Disable -->
+            <Border Style="{DynamicResource NeonGlowCard}" Padding="25" Margin="0,0,0,15">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                  <TextBlock Text="🛡️ Vulnerable Driver Blocklist Disable" Style="{StaticResource SectionTitle}" />
+                  <TextBlock Style="{StaticResource Description}">
+                    <Run Text="Desactiva la lista de bloqueo de drivers de Windows CI — Permite herramientas de OC de bajo nivel" />
+                    <LineBreak />
+                    <Run Text="Sin bloqueos para Afterburner, ThrottleStop o herramientas de tuning" FontWeight="Bold" Foreground="#0E7A0D" />
+                  </TextBlock>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <CheckBox Name="ToggleVulnDriverBlocklist" Style="{StaticResource ModernToggleSwitch}" VerticalAlignment="Center" Margin="0,0,15,0" Checked="BtnVulnDriverBlocklist_On_Click" Unchecked="BtnVulnDriverBlocklist_Off_Click" />
+                  <TextBlock Name="TxtVulnDriverBlocklistStatus" Text="OFF" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Foreground="#E74C3C" />
                 </StackPanel>
               </Grid>
             </Border>

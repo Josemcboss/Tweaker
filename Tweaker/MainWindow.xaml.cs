@@ -49,6 +49,18 @@ namespace Tweaker
             var viewModel = new ViewModels.MainWindowViewModel();
             DataContext = viewModel;
 
+            // Suscribirse a cambio de pestaña para refrescar indicadores de la pestaña activa
+            viewModel.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(ViewModels.MainWindowViewModel.CurrentPageName))
+                {
+                    Dispatcher.InvokeAsync(() =>
+                    {
+                        UpdateTweakIndicators();
+                    });
+                }
+            };
+
             // Inicializar servicios legacy (para compatibilidad temporal)
             _stateManager = TweakStateManager.Instance;
             _telemetry = TelemetryService.Instance;
@@ -105,13 +117,39 @@ namespace Tweaker
                 SystemRestore.PromptCreateRestorePoint();
             }
 
-            // 4. Sincronizar UI con el estado actual del sistema
+            // 4. Sincronizar UI con el estado actual del sistema (reconciliar registro/servicios)
+            var dispatcher = App.ServiceProvider.GetService(typeof(ITweakDispatcher)) as ITweakDispatcher;
+            SyncResult syncResult = null;
+            if (dispatcher != null)
+            {
+                syncResult = await StartupStateVerifier.SyncRealStateAsync(dispatcher, _stateManager);
+            }
+
             await Dispatcher.InvokeAsync(() =>
             {
+                UpdateDashboard();
                 UpdateTweakIndicators();
                 UpdateCurrentPriorityProfile();
-                Debug.WriteLine("✅ UI sincronizada");
+                UpdateReversionBanner(syncResult);
+                Debug.WriteLine("✅ UI sincronizada con el estado real del PC");
             });
+
+            // Notificación informativa al inicio
+            if (syncResult != null)
+            {
+                if (syncResult.RevertedByWindows.Count > 0)
+                {
+                    _notifications.ShowWarning(
+                        $"⚠️ Windows Update o el sistema desactivó {syncResult.RevertedByWindows.Count} optimizaciones. Re-aplícalas desde el Dashboard.",
+                        "Protección de Tweaks");
+                }
+                else if (syncResult.ActiveCount > 0)
+                {
+                    _notifications.ShowSuccess(
+                        $"✅ Se detectaron {syncResult.ActiveCount} optimizaciones ya activas en tu PC.",
+                        "Estado Sincronizado");
+                }
+            }
 
             // 5. Verificaciones adicionales con delay
             await Task.Delay(1000);
@@ -200,10 +238,172 @@ namespace Tweaker
                     ActiveTweaksSection.Visibility = Visibility.Collapsed;
                     NoTweaksMessage.Visibility = Visibility.Visible;
                 }
+                // Actualizar barra de diagnóstico de Hardware y Timer en Vivo
+                UpdateRealtimeHardwareBar();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error updating dashboard: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Actualiza la barra en vivo de Timer Resolution, GPU y CPU C-States
+        /// </summary>
+        private void UpdateRealtimeHardwareBar()
+        {
+            try
+            {
+                // 1. Timer Resolution
+                bool timerOpt = _stateManager.IsTweakEnabled("max_timer_resolution") || _stateManager.IsTweakEnabled("timer_resolution_05ms");
+                if (timerOpt)
+                {
+                    TxtRealtimeTimerRes.Text = "0.500 ms (Ultra Low Latency)";
+                    TxtRealtimeTimerRes.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+                }
+                else
+                {
+                    TxtRealtimeTimerRes.Text = "1.000 ms (Windows Default)";
+                    TxtRealtimeTimerRes.Foreground = new SolidColorBrush(Color.FromRgb(243, 156, 18));
+                }
+
+                // 2. GPU & VRAM State
+                bool mpoDisabled = _stateManager.IsTweakEnabled("mpo_disable");
+                bool hags = _stateManager.IsTweakEnabled("hags_enable") || _stateManager.IsTweakEnabled("gpu_scheduling");
+                TxtGpuStatusLine.Text = $"{(mpoDisabled ? "MPO OFF" : "MPO ON")} • {(hags ? "HAGS ON" : "HAGS OFF")}";
+                TxtGpuStatusLine.Foreground = new SolidColorBrush(Color.FromRgb(88, 101, 242));
+
+                // 3. CPU State
+                bool cpuIdleOff = _stateManager.IsTweakEnabled("cpu_idle_disable");
+                bool quantumOpt = _stateManager.IsTweakEnabled("quantum_gaming_priority");
+                TxtCpuStateLine.Text = $"{(cpuIdleOff ? "C-State 0 Forzado" : "C-States Dinámicos")} • {(quantumOpt ? "Quantum 0x28" : "Quantum Default")}";
+                TxtCpuStateLine.Foreground = cpuIdleOff ? new SolidColorBrush(Color.FromRgb(14, 122, 13)) : new SolidColorBrush(Color.FromRgb(243, 156, 18));
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Crea un Punto de Restauración de Windows y genera respaldo de Registro
+        /// </summary>
+        private async void BtnCreateRestorePoint_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BtnCreateRestorePoint.IsEnabled = false;
+                BtnCreateRestorePoint.Opacity = 0.6;
+
+                _notifications.ShowInfo("Iniciando creación de Punto de Restauración de Windows...", "Respaldo del Sistema");
+
+                bool success = await Task.Run(() => SystemRestore.CreateRestorePoint("GhostOptimizer Pre-Tweak Restore Point", true));
+
+                if (success)
+                {
+                    _notifications.ShowSuccess(
+                        "🛡️ Punto de Restauración creado exitosamente en Windows.\n\nPuedes aplicar cualquier tweak con total seguridad.",
+                        "Punto de Restauración Listo");
+                }
+                else
+                {
+                    _notifications.ShowWarning(
+                        "⚠️ Windows no permitió crear el punto de restauración vía WMI.\n\nVerifica que 'Protección del Sistema' esté activada en el Disco C:.",
+                        "Aviso de Respaldo");
+                }
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error creando punto de restauración: {ex.Message}");
+            }
+            finally
+            {
+                BtnCreateRestorePoint.IsEnabled = true;
+                BtnCreateRestorePoint.Opacity = 1.0;
+            }
+        }
+
+        /// <summary>
+        /// Sincronización manual bajo demanda del estado real del PC
+        /// </summary>
+        private async void BtnSyncSystemState_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BtnSyncSystemState.IsEnabled = false;
+                BtnSyncSystemState.Opacity = 0.6;
+
+                var dispatcher = App.ServiceProvider.GetService(typeof(ITweakDispatcher)) as ITweakDispatcher;
+                if (dispatcher != null)
+                {
+                    var result = await StartupStateVerifier.SyncRealStateAsync(dispatcher, _stateManager);
+                    UpdateDashboard();
+                    UpdateTweakIndicators();
+                    UpdateReversionBanner(result);
+
+                    if (result.RevertedByWindows.Count > 0)
+                    {
+                        _notifications.ShowWarning(
+                            $"⚠️ Sincronización completada: {result.ActiveCount} activos, pero {result.RevertedByWindows.Count} fueron desactivados externamente por Windows. Usa 'Re-aplicar Todo'.",
+                            "Protección de Tweaks");
+                    }
+                    else
+                    {
+                        _notifications.ShowSuccess(
+                            $"✅ Sincronización completada: {result.ActiveCount} optimizaciones activas en tu PC detectadas y actualizadas.",
+                            "Estado Sincronizado");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error al sincronizar: {ex.Message}");
+            }
+            finally
+            {
+                BtnSyncSystemState.IsEnabled = true;
+                BtnSyncSystemState.Opacity = 1.0;
+            }
+        }
+
+        /// <summary>
+        /// Re-aplica con un solo clic todos los tweaks desactivados por Windows Update
+        /// </summary>
+        private async void BtnReapplyReverted_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                BtnReapplyReverted.IsEnabled = false;
+                var dispatcher = App.ServiceProvider.GetService(typeof(ITweakDispatcher)) as ITweakDispatcher;
+                if (dispatcher != null)
+                {
+                    int reapplied = await StartupStateVerifier.ReapplyRevertedTweaksAsync(dispatcher, _stateManager);
+                    UpdateDashboard();
+                    UpdateTweakIndicators();
+                    WindowsUpdateReversionBanner.Visibility = Visibility.Collapsed;
+                    _notifications.ShowSuccess($"✅ Se re-aplicaron con éxito {reapplied} optimizaciones en tu sistema.", "Protección Activada");
+                }
+            }
+            catch (Exception ex)
+            {
+                _notifications.ShowError($"Error al re-aplicar: {ex.Message}");
+            }
+            finally
+            {
+                BtnReapplyReverted.IsEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Actualiza el banner de alerta de Windows Update según el resultado de sincronización
+        /// </summary>
+        private void UpdateReversionBanner(SyncResult? result)
+        {
+            if (result != null && result.RevertedByWindows.Count > 0)
+            {
+                WindowsUpdateReversionBanner.Visibility = Visibility.Visible;
+                TxtReversionNotice.Text = $"Windows Update o el sistema desactivó {result.RevertedByWindows.Count} de tus optimizaciones. Haz clic en 'Re-aplicar Todo' para restaurarlas.";
+            }
+            else
+            {
+                WindowsUpdateReversionBanner.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -566,6 +766,40 @@ namespace Tweaker
                 UpdateToggleState("TransparencyEffects", ToggleTransparency, TxtTransparencyStatus);
                 UpdateToggleState("StickyKeys", ToggleStickyKeys, TxtStickyKeysStatus);
                 UpdateToggleState("raw_aim_curve", ToggleRawAimCurve, TxtRawAimCurveStatus);
+
+                // --- KERNELOS, FRAME STABILITY & DEEP SYSTEM (NUEVOS TWEAKS) ---
+                UpdateToggleState("ethernet_eee_off", ToggleEthernetEee, TxtEthernetEeeStatus);
+                UpdateToggleState("hop_limit_opt", ToggleHopLimit, TxtHopLimitStatus);
+                UpdateToggleState("dwm_latency_opt", ToggleDwmLatency, TxtDwmLatencyStatus);
+                UpdateToggleState("nvme_antistutter", ToggleNvmeAntiStutter, TxtNvmeAntiStutterStatus);
+                UpdateToggleState("core_parking_disable", ToggleCoreParkingPro, TxtCoreParkingProStatus);
+                UpdateToggleState("flip_model_opt", ToggleFlipModel, TxtFlipModelStatus);
+                UpdateToggleState("kernel_paging_opt", ToggleKernelPaging, TxtKernelPagingStatus);
+                UpdateToggleState("msi_mode_enable", ToggleMsiMode, TxtMsiModeStatus);
+                UpdateToggleState("memory_compression_off", ToggleMemoryCompression, TxtMemoryCompressionStatus);
+                UpdateToggleState("hags_enable", ToggleHags, TxtHagsStatus);
+                UpdateToggleState("power_throttling_off", TogglePowerThrottlingGlobal, TxtPowerThrottlingGlobalStatus);
+                UpdateToggleState("audio_low_latency", ToggleAudioLowLatency, TxtAudioLowLatencyStatus);
+
+                // --- COMPETITIVE ULTRA PERFORMANCE (FASE 4) ---
+                UpdateToggleState("page_combining_off", TogglePageCombining, TxtPageCombiningStatus);
+                UpdateToggleState("tsc_sync_enhanced", ToggleTscSync, TxtTscSyncStatus);
+                UpdateToggleState("quantum_gaming_priority", ToggleQuantumPriority, TxtQuantumPriorityStatus);
+                UpdateToggleState("network_rss_queues", ToggleRssQueues, TxtRssQueuesStatus);
+                UpdateToggleState("autologgers_diag_off", ToggleAutologgersDiag, TxtAutologgersDiagStatus);
+                UpdateToggleState("shader_cache_unlimited", ToggleShaderCacheSize, TxtShaderCacheSizeStatus);
+                UpdateToggleState("fth_disable", ToggleFth, TxtFthStatus);
+                UpdateToggleState("system_sleep_states_opt", ToggleUsbSelectiveSuspend, TxtUsbSelectiveSuspendStatus);
+                UpdateToggleState("tcp_timestamps_sack_opt", ToggleTcpTimestampsSack, TxtTcpTimestampsSackStatus);
+                UpdateToggleState("system_responsiveness_extreme", ToggleMultimediaExtreme, TxtMultimediaExtremeStatus);
+                UpdateToggleState("mpo_disable", ToggleMpoDisable, TxtMpoDisableStatus);
+                UpdateToggleState("lazy_mode_timeout", ToggleLazyModeTimeout, TxtLazyModeTimeoutStatus);
+                UpdateToggleState("thread_dpc_disable", ToggleThreadDpc, TxtThreadDpcStatus);
+                UpdateToggleState("io_latency_cap", ToggleIoLatencyCap, TxtIoLatencyCapStatus);
+                UpdateToggleState("driver_ppm_disable", ToggleDriverPpm, TxtDriverPpmStatus);
+                UpdateToggleState("cpu_idle_disable", ToggleCpuIdle, TxtCpuIdleStatus);
+                UpdateToggleState("nic_buffers_2048", ToggleNicBuffers, TxtNicBuffersStatus);
+                UpdateToggleState("vulnerable_driver_blocklist_off", ToggleVulnDriverBlocklist, TxtVulnDriverBlocklistStatus);
             }
             catch (Exception ex)
             {
@@ -1534,9 +1768,315 @@ namespace Tweaker
 
         #endregion
 
-        #region KernelOS Toolbox Handlers
+        #region KernelOS Toolbox & Frame Stability Handlers
 
+        private void BtnDwmLatency_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "dwm_latency_opt",
+                "Advanced",
+                () => FrameStabilityTweaks.OptimizeDwmLatency(),
+                "Latencia DWM y presentación de fotogramas optimizada."
+            );
+            ToggleDwmLatency.IsChecked = true;
+            TxtDwmLatencyStatus.Text = "ON";
+            TxtDwmLatencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
 
+        private void BtnDwmLatency_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "dwm_latency_opt",
+                "Advanced",
+                () => FrameStabilityTweaks.RevertDwmLatency(),
+                "Latencia DWM restaurada a valores por defecto."
+            );
+            ToggleDwmLatency.IsChecked = false;
+            TxtDwmLatencyStatus.Text = "OFF";
+            TxtDwmLatencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnNvmeAntiStutter_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "nvme_antistutter",
+                "Advanced",
+                () => FrameStabilityTweaks.OptimizeNvmeAntiStutter(),
+                "Optimización Anti-Stutter para SSD/NVMe aplicada."
+            );
+            ToggleNvmeAntiStutter.IsChecked = true;
+            TxtNvmeAntiStutterStatus.Text = "ON";
+            TxtNvmeAntiStutterStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnNvmeAntiStutter_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "nvme_antistutter",
+                "Advanced",
+                () => FrameStabilityTweaks.RevertNvmeAntiStutter(),
+                "Optimización de SSD/NVMe restaurada."
+            );
+            ToggleNvmeAntiStutter.IsChecked = false;
+            TxtNvmeAntiStutterStatus.Text = "OFF";
+            TxtNvmeAntiStutterStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnCoreParkingPro_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "core_parking_disable",
+                "Advanced",
+                () => FrameStabilityTweaks.DisableCoreParkingAndOptimizeScheduling(),
+                "CPU Core Parking deshabilitado (100% núcleos activos)."
+            );
+            ToggleCoreParkingPro.IsChecked = true;
+            TxtCoreParkingProStatus.Text = "ON";
+            TxtCoreParkingProStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnCoreParkingPro_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "core_parking_disable",
+                "Advanced",
+                () => FrameStabilityTweaks.RestoreCoreParking(),
+                "CPU Core Parking restaurado a valores del sistema."
+            );
+            ToggleCoreParkingPro.IsChecked = false;
+            TxtCoreParkingProStatus.Text = "OFF";
+            TxtCoreParkingProStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnFlipModel_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "flip_model_opt",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.ForceFlipModelAndFso(),
+                "DWM Flip Model y optimizaciones de presentación aplicados."
+            );
+            ToggleFlipModel.IsChecked = true;
+            TxtFlipModelStatus.Text = "ON";
+            TxtFlipModelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnFlipModel_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "flip_model_opt",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.RevertFlipModelAndFso(),
+                "DWM Flip Model restaurado."
+            );
+            ToggleFlipModel.IsChecked = false;
+            TxtFlipModelStatus.Text = "OFF";
+            TxtFlipModelStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnEthernetEee_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "ethernet_eee_off",
+                "Red & Ping",
+                () => AdvancedGamingSystemTweaks.DisableEthernetPowerSaving(),
+                "Ahorro de energía en Ethernet (EEE) desactivado."
+            );
+            ToggleEthernetEee.IsChecked = true;
+            TxtEthernetEeeStatus.Text = "ON";
+            TxtEthernetEeeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnEthernetEee_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "ethernet_eee_off",
+                "Red & Ping",
+                () => AdvancedGamingSystemTweaks.RevertEthernetPowerSaving(),
+                "Ahorro de energía en Ethernet restaurado."
+            );
+            ToggleEthernetEee.IsChecked = false;
+            TxtEthernetEeeStatus.Text = "OFF";
+            TxtEthernetEeeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnKernelPaging_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "kernel_paging_opt",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.OptimizeKernelPagingAndMemory(),
+                "Kernel Executive configurado 100% en RAM."
+            );
+            ToggleKernelPaging.IsChecked = true;
+            TxtKernelPagingStatus.Text = "ON";
+            TxtKernelPagingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnKernelPaging_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "kernel_paging_opt",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.RevertKernelPagingAndMemory(),
+                "Kernel Executive restaurado."
+            );
+            ToggleKernelPaging.IsChecked = false;
+            TxtKernelPagingStatus.Text = "OFF";
+            TxtKernelPagingStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnAudioLowLatency_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "audio_low_latency",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.OptimizeAudioLatencyBuffering(),
+                "Motor de audio optimizado para latencia ultra-baja."
+            );
+            ToggleAudioLowLatency.IsChecked = true;
+            TxtAudioLowLatencyStatus.Text = "ON";
+            TxtAudioLowLatencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnAudioLowLatency_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "audio_low_latency",
+                "Advanced",
+                () => AdvancedGamingSystemTweaks.RevertAudioLatencyBuffering(),
+                "Motor de audio restaurado."
+            );
+            ToggleAudioLowLatency.IsChecked = false;
+            TxtAudioLowLatencyStatus.Text = "OFF";
+            TxtAudioLowLatencyStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnMsiMode_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "msi_mode_enable",
+                "Advanced",
+                () => DeepSystemTweaks.EnableMsiModeForHardware(),
+                "MSI Mode activado en dispositivos PCI."
+            );
+            ToggleMsiMode.IsChecked = true;
+            TxtMsiModeStatus.Text = "ON";
+            TxtMsiModeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnMsiMode_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "msi_mode_enable",
+                "Advanced",
+                () => DeepSystemTweaks.RevertMsiModeForHardware(),
+                "Configuración MSI Mode restaurada."
+            );
+            ToggleMsiMode.IsChecked = false;
+            TxtMsiModeStatus.Text = "OFF";
+            TxtMsiModeStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnMemoryCompression_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "memory_compression_off",
+                "Advanced",
+                () => DeepSystemTweaks.DisableMemoryCompression(),
+                "Compresión de memoria RAM deshabilitada."
+            );
+            ToggleMemoryCompression.IsChecked = true;
+            TxtMemoryCompressionStatus.Text = "ON";
+            TxtMemoryCompressionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnMemoryCompression_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "memory_compression_off",
+                "Advanced",
+                () => DeepSystemTweaks.EnableMemoryCompression(),
+                "Compresión de memoria RAM habilitada."
+            );
+            ToggleMemoryCompression.IsChecked = false;
+            TxtMemoryCompressionStatus.Text = "OFF";
+            TxtMemoryCompressionStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnHags_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "hags_enable",
+                "Advanced",
+                () => DeepSystemTweaks.EnableHags(),
+                "HAGS (Hardware Accelerated GPU Scheduling) activado."
+            );
+            ToggleHags.IsChecked = true;
+            TxtHagsStatus.Text = "ON";
+            TxtHagsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnHags_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "hags_enable",
+                "Advanced",
+                () => DeepSystemTweaks.DisableHags(),
+                "HAGS desactivado."
+            );
+            ToggleHags.IsChecked = false;
+            TxtHagsStatus.Text = "OFF";
+            TxtHagsStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnPowerThrottlingGlobal_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "power_throttling_off",
+                "Advanced",
+                () => DeepSystemTweaks.DisablePowerThrottling(),
+                "Power Throttling global deshabilitado."
+            );
+            TogglePowerThrottlingGlobal.IsChecked = true;
+            TxtPowerThrottlingGlobalStatus.Text = "ON";
+            TxtPowerThrottlingGlobalStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnPowerThrottlingGlobal_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "power_throttling_off",
+                "Advanced",
+                () => DeepSystemTweaks.EnablePowerThrottling(),
+                "Power Throttling global restaurado."
+            );
+            TogglePowerThrottlingGlobal.IsChecked = false;
+            TxtPowerThrottlingGlobalStatus.Text = "OFF";
+            TxtPowerThrottlingGlobalStatus.Foreground = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(231, 76, 60));
+        }
 
         private void BtnHopLimit_On_Click(object sender, RoutedEventArgs e)
         {
@@ -2556,6 +3096,514 @@ namespace Tweaker
             TxtSpectreMeltdownGhostStatus.Text = "OFF";
             TxtSpectreMeltdownGhostStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
         }
+
+        #region Competitive Ultra Performance Handlers
+
+        private void BtnPageCombining_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "page_combining_off",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.DisablePageCombining(),
+                "Page Combining deshabilitado (Cero ciclos de CPU en escaneo de RAM)."
+            );
+            TogglePageCombining.IsChecked = true;
+            TxtPageCombiningStatus.Text = "ON";
+            TxtPageCombiningStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnPageCombining_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "page_combining_off",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertPageCombining(),
+                "Page Combining restaurado a valores del sistema."
+            );
+            TogglePageCombining.IsChecked = false;
+            TxtPageCombiningStatus.Text = "OFF";
+            TxtPageCombiningStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnTscSync_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "tsc_sync_enhanced",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.EnableTscInvariantClock(),
+                "Reloj Hardware TSC Invariante activado (Cero micro-stuttering en DirectX 12)."
+            );
+            ToggleTscSync.IsChecked = true;
+            TxtTscSyncStatus.Text = "ON";
+            TxtTscSyncStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnTscSync_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "tsc_sync_enhanced",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertTscInvariantClock(),
+                "Reloj TSC restaurado a valores por defecto."
+            );
+            ToggleTscSync.IsChecked = false;
+            TxtTscSyncStatus.Text = "OFF";
+            TxtTscSyncStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnQuantumPriority_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "quantum_gaming_priority",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.OptimizeGamingQuantum(),
+                "Quantum de CPU para gaming optimizado (0x28 - Prioridad máxima en primer plano)."
+            );
+            ToggleQuantumPriority.IsChecked = true;
+            TxtQuantumPriorityStatus.Text = "ON";
+            TxtQuantumPriorityStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnQuantumPriority_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "quantum_gaming_priority",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertGamingQuantum(),
+                "Quantum de CPU restaurado a valores por defecto."
+            );
+            ToggleQuantumPriority.IsChecked = false;
+            TxtQuantumPriorityStatus.Text = "OFF";
+            TxtQuantumPriorityStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnRssQueues_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "network_rss_queues",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.OptimizeRssQueues(),
+                "Colas RSS de Red optimizadas (DPCs de red asignados fuera del Core 0)."
+            );
+            ToggleRssQueues.IsChecked = true;
+            TxtRssQueuesStatus.Text = "ON";
+            TxtRssQueuesStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnRssQueues_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "network_rss_queues",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertRssQueues(),
+                "Colas RSS de red restauradas a valores predeterminados."
+            );
+            ToggleRssQueues.IsChecked = false;
+            TxtRssQueuesStatus.Text = "OFF";
+            TxtRssQueuesStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnAutologgersDiag_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "autologgers_diag_off",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.DisableDiagnosticAutoLoggers(),
+                "AutoLoggers ETW de diagnóstico deshabilitados (Cero telemetría escribiendo a disco)."
+            );
+            ToggleAutologgersDiag.IsChecked = true;
+            TxtAutologgersDiagStatus.Text = "ON";
+            TxtAutologgersDiagStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnAutologgersDiag_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "autologgers_diag_off",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertDiagnosticAutoLoggers(),
+                "AutoLoggers de diagnóstico restaurados."
+            );
+            ToggleAutologgersDiag.IsChecked = false;
+            TxtAutologgersDiagStatus.Text = "OFF";
+            TxtAutologgersDiagStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnShaderCacheSize_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "shader_cache_unlimited",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.OptimizeShaderCacheSize(),
+                "Shader Cache DirectX ampliado a 10GB (Elimina stutters de recompilación)."
+            );
+            ToggleShaderCacheSize.IsChecked = true;
+            TxtShaderCacheSizeStatus.Text = "ON";
+            TxtShaderCacheSizeStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnShaderCacheSize_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "shader_cache_unlimited",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertShaderCacheSize(),
+                "Shader Cache restaurado al límite por defecto."
+            );
+            ToggleShaderCacheSize.IsChecked = false;
+            TxtShaderCacheSizeStatus.Text = "OFF";
+            TxtShaderCacheSizeStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnFth_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "fth_disable",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.DisableFaultTolerantHeap(),
+                "Fault Tolerant Heap (FTH) deshabilitado (Cero overhead en memoria de juegos)."
+            );
+            ToggleFth.IsChecked = true;
+            TxtFthStatus.Text = "ON";
+            TxtFthStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnFth_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "fth_disable",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertFaultTolerantHeap(),
+                "Fault Tolerant Heap restaurado a valores del sistema."
+            );
+            ToggleFth.IsChecked = false;
+            TxtFthStatus.Text = "OFF";
+            TxtFthStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnUsbSelectiveSuspend_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "system_sleep_states_opt",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.DisableUsbSelectiveSuspend(),
+                "USB Selective Suspend deshabilitado (Polling 1000Hz+ constante sin caídas)."
+            );
+            ToggleUsbSelectiveSuspend.IsChecked = true;
+            TxtUsbSelectiveSuspendStatus.Text = "ON";
+            TxtUsbSelectiveSuspendStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnUsbSelectiveSuspend_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "system_sleep_states_opt",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertUsbSelectiveSuspend(),
+                "Ahorro de energía en puertos USB restaurado."
+            );
+            ToggleUsbSelectiveSuspend.IsChecked = false;
+            TxtUsbSelectiveSuspendStatus.Text = "OFF";
+            TxtUsbSelectiveSuspendStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnTcpTimestampsSack_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "tcp_timestamps_sack_opt",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.OptimizeTcpTimestampsAndSack(),
+                "TCP Timestamps deshabilitado y SACK optimizado (12 bytes extra por paquete liberados)."
+            );
+            ToggleTcpTimestampsSack.IsChecked = true;
+            TxtTcpTimestampsSackStatus.Text = "ON";
+            TxtTcpTimestampsSackStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnTcpTimestampsSack_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "tcp_timestamps_sack_opt",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertTcpTimestampsAndSack(),
+                "Ajustes TCP Timestamps y SACK restaurados a valores de Windows."
+            );
+            ToggleTcpTimestampsSack.IsChecked = false;
+            TxtTcpTimestampsSackStatus.Text = "OFF";
+            TxtTcpTimestampsSackStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnMultimediaExtreme_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "system_responsiveness_extreme",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.OptimizeMultimediaExtreme(),
+                "Multimedia Scheduler configurado en modo Extreme NoLazyMode (100% CPU/GPU)."
+            );
+            ToggleMultimediaExtreme.IsChecked = true;
+            TxtMultimediaExtremeStatus.Text = "ON";
+            TxtMultimediaExtremeStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnMultimediaExtreme_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "system_responsiveness_extreme",
+                "GHOST Pack",
+                () => CompetitivePerformanceTweaks.RevertMultimediaExtreme(),
+                "Multimedia Scheduler restaurado a valores normales."
+            );
+            ToggleMultimediaExtreme.IsChecked = false;
+            TxtMultimediaExtremeStatus.Text = "OFF";
+            TxtMultimediaExtremeStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnMpoDisable_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "mpo_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.DisableMpo(),
+                "Multi-Plane Overlay deshabilitado. Adiós flickering de GPU y pantalla negra."
+            );
+            ToggleMpoDisable.IsChecked = true;
+            TxtMpoDisableStatus.Text = "ON";
+            TxtMpoDisableStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnMpoDisable_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "mpo_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertMpo(),
+                "Multi-Plane Overlay restaurado a valores por defecto."
+            );
+            ToggleMpoDisable.IsChecked = false;
+            TxtMpoDisableStatus.Text = "OFF";
+            TxtMpoDisableStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnLazyModeTimeout_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "lazy_mode_timeout",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.SetLazyModeTimeout(),
+                "MMCSS LazyModeTimeout ajustado a 10000. Frametimes más estables."
+            );
+            ToggleLazyModeTimeout.IsChecked = true;
+            TxtLazyModeTimeoutStatus.Text = "ON";
+            TxtLazyModeTimeoutStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnLazyModeTimeout_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "lazy_mode_timeout",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertLazyModeTimeout(),
+                "MMCSS LazyModeTimeout restaurado a valores predeterminados."
+            );
+            ToggleLazyModeTimeout.IsChecked = false;
+            TxtLazyModeTimeoutStatus.Text = "OFF";
+            TxtLazyModeTimeoutStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnThreadDpc_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "thread_dpc_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.DisableThreadDpc(),
+                "ThreadDpcEnable=0 aplicado. Latencia de interrupción reducida."
+            );
+            ToggleThreadDpc.IsChecked = true;
+            TxtThreadDpcStatus.Text = "ON";
+            TxtThreadDpcStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnThreadDpc_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "thread_dpc_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertThreadDpc(),
+                "ThreadDpcEnable restaurado al valor predeterminado."
+            );
+            ToggleThreadDpc.IsChecked = false;
+            TxtThreadDpcStatus.Text = "OFF";
+            TxtThreadDpcStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnIoLatencyCap_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "io_latency_cap",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.SetIoLatencyCap(),
+                "IoLatencyCap=80 aplicado en StorPort/StorNVMe. Sin micro-congelamientos de SSD."
+            );
+            ToggleIoLatencyCap.IsChecked = true;
+            TxtIoLatencyCapStatus.Text = "ON";
+            TxtIoLatencyCapStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnIoLatencyCap_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "io_latency_cap",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertIoLatencyCap(),
+                "IoLatencyCap restaurado a los valores estándar de Windows."
+            );
+            ToggleIoLatencyCap.IsChecked = false;
+            TxtIoLatencyCapStatus.Text = "OFF";
+            TxtIoLatencyCapStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnDriverPpm_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "driver_ppm_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.DisableDriverPpm(),
+                "Driver PPM (IntelPPM/AmdPPM) desactivado (Start=4). Turbo clock sin caídas."
+            );
+            ToggleDriverPpm.IsChecked = true;
+            TxtDriverPpmStatus.Text = "ON";
+            TxtDriverPpmStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnDriverPpm_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "driver_ppm_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertDriverPpm(),
+                "Driver PPM restaurado a valores por defecto."
+            );
+            ToggleDriverPpm.IsChecked = false;
+            TxtDriverPpmStatus.Text = "OFF";
+            TxtDriverPpmStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnCpuIdle_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "cpu_idle_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.DisableCpuIdle(),
+                "CPU Idle deshabilitado (C-State 0 forzado). Respuesta instantánea de núcleos."
+            );
+            ToggleCpuIdle.IsChecked = true;
+            TxtCpuIdleStatus.Text = "ON";
+            TxtCpuIdleStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnCpuIdle_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "cpu_idle_disable",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertCpuIdle(),
+                "CPU Idle restaurado (ahorro de energía de CPU habilitado)."
+            );
+            ToggleCpuIdle.IsChecked = false;
+            TxtCpuIdleStatus.Text = "OFF";
+            TxtCpuIdleStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnNicBuffers_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "nic_buffers_2048",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.SetNicBuffers2048(),
+                "Buffers de Red Rx/Tx ampliados a 2048. Descriptores máximos sin pérdida de paquetes."
+            );
+            ToggleNicBuffers.IsChecked = true;
+            TxtNicBuffersStatus.Text = "ON";
+            TxtNicBuffersStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnNicBuffers_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "nic_buffers_2048",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertNicBuffers(),
+                "Buffers de Red Rx/Tx restaurados a valores predeterminados del adaptador."
+            );
+            ToggleNicBuffers.IsChecked = false;
+            TxtNicBuffersStatus.Text = "OFF";
+            TxtNicBuffersStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        private void BtnVulnDriverBlocklist_On_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweak(
+                "vulnerable_driver_blocklist_off",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.DisableVulnerableDriverBlocklist(),
+                "Lista de bloqueo de drivers CI desactivada. Herramientas de OC y bajo nivel permitidas."
+            );
+            ToggleVulnDriverBlocklist.IsChecked = true;
+            TxtVulnDriverBlocklistStatus.Text = "ON";
+            TxtVulnDriverBlocklistStatus.Foreground = new SolidColorBrush(Color.FromRgb(14, 122, 13));
+        }
+
+        private void BtnVulnDriverBlocklist_Off_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isInitializingTweakStates) return;
+            _tweakHelper.ExecuteTweakRevert(
+                "vulnerable_driver_blocklist_off",
+                "POST-INSTALL Pack",
+                () => CompetitivePerformanceTweaks.RevertVulnerableDriverBlocklist(),
+                "Lista de bloqueo de drivers CI restaurada."
+            );
+            ToggleVulnDriverBlocklist.IsChecked = false;
+            TxtVulnDriverBlocklistStatus.Text = "OFF";
+            TxtVulnDriverBlocklistStatus.Foreground = new SolidColorBrush(Color.FromRgb(231, 76, 60));
+        }
+
+        #endregion
 
         #endregion
 

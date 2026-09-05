@@ -14,30 +14,39 @@ namespace Tweaker.Utilities
         private static readonly TimeSpan MinTimeBetweenRestorePoints = TimeSpan.FromHours(24);
 
         /// <summary>
-        /// Crea un punto de restauración del sistema usando WMI
+        /// Crea un punto de restauración del sistema usando WMI o PowerShell
         /// </summary>
         /// <param name="description">Descripción del punto de restauración</param>
+        /// <param name="force">Forzar creación ignorando límite de 24h</param>
         /// <returns>True si se creó exitosamente</returns>
-        public static bool CreateRestorePoint(string description)
+        public static bool CreateRestorePoint(string description, bool force = true)
         {
             try
             {
                 // Validar descripción
                 if (string.IsNullOrWhiteSpace(description))
                 {
-                    description = $"Tweaker Backup - {DateTime.Now:yyyy-MM-dd HH:mm}";
+                    description = $"GhostOptimizer Backup - {DateTime.Now:yyyy-MM-dd HH:mm}";
                 }
 
-                // Verificar si ya se creó un punto recientemente (limitación de Windows)
-                if (DateTime.Now - _lastRestorePointCreated < MinTimeBetweenRestorePoints)
+                // Si force = true, desactivamos el límite de frecuencia en el Registro de Windows
+                if (force)
                 {
-                    Debug.WriteLine("?? Ya se creó un punto de restauración en las últimas 24 horas");
-                    Debug.WriteLine("   Windows limita a 1 punto por día por defecto");
+                    try
+                    {
+                        using var key = Microsoft.Win32.Registry.LocalMachine.CreateSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore");
+                        key?.SetValue("SystemRestorePointCreationFrequency", 0, Microsoft.Win32.RegistryValueKind.DWord);
+                    }
+                    catch { }
+                }
+                else if (DateTime.Now - _lastRestorePointCreated < MinTimeBetweenRestorePoints)
+                {
+                    Debug.WriteLine("⚠️ Ya se creó un punto de restauración en las últimas 24 horas");
                     return false;
                 }
 
                 Debug.WriteLine("──────────────────────────────────────────");
-                Debug.WriteLine($"?? Creando punto de restauración: {description}");
+                Debug.WriteLine($"🛡️ Creando punto de restauración: {description}");
                 Debug.WriteLine("──────────────────────────────────────────");
 
                 // Método 1: Usar WMI (System.Management)

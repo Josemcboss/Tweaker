@@ -280,6 +280,31 @@ namespace Tweaker.Presets
                     overallSuccess = false;
                 }
 
+                // ────────────────────────────────────────────
+                // STEP 9: GHOST ULTRA COMPETITIVE & POST-INSTALL PACK (18 TWEAKS)
+                // ────────────────────────────────────────────
+                Debug.WriteLine("\n🚀 GHOST ULTRA COMPETITIVE & POST-INSTALL PACK:");
+                Debug.WriteLine("────────────────────────────────────────────");
+
+                if (CompetitivePerformanceTweaks.DisablePageCombining()) { Debug.WriteLine("✓ Page Combining: OFF"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.EnableTscInvariantClock()) { Debug.WriteLine("✓ TSC Invariant Clock: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.OptimizeGamingQuantum()) { Debug.WriteLine("✓ Quantum Gaming Priority (0x28): ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.OptimizeRssQueues()) { Debug.WriteLine("✓ Network RSS Queues: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableDiagnosticAutoLoggers()) { Debug.WriteLine("✓ Diagnostic AutoLoggers: OFF"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.OptimizeShaderCacheSize()) { Debug.WriteLine("✓ Unlimited Shader Cache (10GB): ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableFaultTolerantHeap()) { Debug.WriteLine("✓ Fault Tolerant Heap (FTH): OFF"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableUsbSelectiveSuspend()) { Debug.WriteLine("✓ USB Selective Suspend: OFF"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.OptimizeTcpTimestampsAndSack()) { Debug.WriteLine("✓ TCP Timestamps & SACK: OPTIMIZED"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.OptimizeMultimediaExtreme()) { Debug.WriteLine("✓ Multimedia NoLazyMode: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableMpo()) { Debug.WriteLine("✓ MPO Disable (No Flickering): ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.SetLazyModeTimeout()) { Debug.WriteLine("✓ LazyModeTimeout = 10000: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableThreadDpc()) { Debug.WriteLine("✓ ThreadDPC Disable: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.SetIoLatencyCap()) { Debug.WriteLine("✓ StorPort IoLatencyCap = 80: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableDriverPpm()) { Debug.WriteLine("✓ Driver PPM Disable: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableCpuIdle()) { Debug.WriteLine("✓ CPU Idle Disable (C-State 0): ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.SetNicBuffers2048()) { Debug.WriteLine("✓ NIC Buffers 2048: ON"); tweaksApplied++; }
+                if (CompetitivePerformanceTweaks.DisableVulnerableDriverBlocklist()) { Debug.WriteLine("✓ Vulnerable Driver Blocklist: OFF"); tweaksApplied++; }
+
                 Debug.WriteLine("");
                 Debug.WriteLine("────────────────────────────");
                 if (overallSuccess)
@@ -453,6 +478,31 @@ namespace Tweaker.Presets
                     Debug.WriteLine("? P2P Sharing: Error revirtiendo");
                     overallSuccess = false;
                 }
+
+                // ────────────────────────────────────────────
+                // STEP 9: REVERT GHOST ULTRA COMPETITIVE & POST-INSTALL PACK (18 TWEAKS)
+                // ────────────────────────────────────────────
+                Debug.WriteLine("\n🔄 REVERT GHOST ULTRA COMPETITIVE & POST-INSTALL PACK:");
+                Debug.WriteLine("────────────────────────────────────────────");
+
+                if (CompetitivePerformanceTweaks.RevertPageCombining()) { Debug.WriteLine("✓ Page Combining: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertTscInvariantClock()) { Debug.WriteLine("✓ TSC Invariant Clock: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertGamingQuantum()) { Debug.WriteLine("✓ Quantum Gaming Priority: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertRssQueues()) { Debug.WriteLine("✓ Network RSS Queues: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertDiagnosticAutoLoggers()) { Debug.WriteLine("✓ Diagnostic AutoLoggers: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertShaderCacheSize()) { Debug.WriteLine("✓ Unlimited Shader Cache: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertFaultTolerantHeap()) { Debug.WriteLine("✓ Fault Tolerant Heap (FTH): Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertUsbSelectiveSuspend()) { Debug.WriteLine("✓ USB Selective Suspend: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertTcpTimestampsAndSack()) { Debug.WriteLine("✓ TCP Timestamps & SACK: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertMultimediaExtreme()) { Debug.WriteLine("✓ Multimedia NoLazyMode: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertMpo()) { Debug.WriteLine("✓ MPO: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertLazyModeTimeout()) { Debug.WriteLine("✓ LazyModeTimeout: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertThreadDpc()) { Debug.WriteLine("✓ ThreadDPC: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertIoLatencyCap()) { Debug.WriteLine("✓ StorPort IoLatencyCap: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertDriverPpm()) { Debug.WriteLine("✓ Driver PPM: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertCpuIdle()) { Debug.WriteLine("✓ CPU Idle: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertNicBuffers()) { Debug.WriteLine("✓ NIC Buffers: Restaurado"); tweaksReverted++; }
+                if (CompetitivePerformanceTweaks.RevertVulnerableDriverBlocklist()) { Debug.WriteLine("✓ Vulnerable Driver Blocklist: Restaurado"); tweaksReverted++; }
 
                 Debug.WriteLine("");
                 if (overallSuccess)

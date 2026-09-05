@@ -15,5 +15,15 @@ namespace Tweaker.Services
         /// Used to derive TotalTweaksCount dynamically.
         /// </summary>
         IReadOnlyCollection<string> GetCanonicalTweakIds();
+
+        /// <summary>
+        /// Resolves any alias or canonical ID to its canonical ID.
+        /// </summary>
+        string? GetCanonicalId(string tweakId);
+
+        /// <summary>
+        /// Returns all known aliases for a given tweak ID.
+        /// </summary>
+        IReadOnlyList<string> GetAliases(string tweakId);
     }
 }

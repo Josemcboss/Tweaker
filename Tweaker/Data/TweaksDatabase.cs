@@ -39,11 +39,11 @@ namespace Tweaker.Data
             ["mouse_acceleration"] = new TweakInfo
             {
                 Id = "mouse_acceleration",
-                Title = "Desactivar Aceleraci�n del Mouse",
+                Title = "Desactivar Aceleracion del Mouse",
                 Category = "Input & Visuals",
-                Description = "Elimina la aceleraci�n artificial que Windows aplica al mouse. Esto hace que el cursor se mueva a velocidad constante independientemente de qu� tan r�pido muevas el mouse f�sicamente.",
-                Benefits = "� Aim 1:1 pixel perfect tracking\n� Movimientos predecibles y consistentes\n� Mejor muscle memory para gaming\n� Precisi�n mejorada en shooters competitivos\n� Usado por el 100% de pro players",
-                Warnings = "� Puede sentirse 'lento' al principio\n� Requiere reajustar sensibilidad en juegos\n� Necesitas acostumbrarte al cambio",
+                Description = "Elimina la aceleracin artificial que Windows aplica al mouse. Esto hace que el cursor se mueva a velocidad constante independientemente de qu tan rpido muevas el mouse fsicamente.",
+                Benefits = " Aim 1:1 pixel perfect tracking\n Movimientos predecibles y consistentes\n Mejor muscle memory para gaming\n Precisin mejorada en shooters competitivos\n Usado por el 100% de pro players",
+                Warnings = " Puede sentirse 'lento' al principio\n Requiere reajustar sensibilidad en juegos\n Necesitas acostumbrarte al cambio",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -53,9 +53,9 @@ namespace Tweaker.Data
                 Id = "keyboard_optimization",
                 Title = "Optimizar Teclado",
                 Category = "Input & Visuals",
-                Description = "Reduce el delay de repetici�n de teclas y optimiza la respuesta del teclado para gaming. Configura KeyboardDelay = 0 para respuesta instant�nea.",
-                Benefits = "� Input lag reducido en ~50ms\n� Respuesta m�s r�pida de teclas\n� Mejor para spam de habilidades\n� Movimiento m�s fluido en juegos",
-                Warnings = "� Puede causar repetici�n accidental de teclas\n� Algunos juegos pueden no beneficiarse",
+                Description = "Reduce el delay de repeticion de teclas y optimiza la respuesta del teclado para gaming. Configura KeyboardDelay = 0 para respuesta instantnea.",
+                Benefits = " Input lag reducido en ~50ms\n Respuesta ms rpida de teclas\n Mejor para spam de habilidades\n Movimiento ms fluido en juegos",
+                Warnings = " Puede causar repeticion accidental de teclas\n Algunos juegos pueden no beneficiarse",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -66,8 +66,8 @@ namespace Tweaker.Data
                 Title = "Efectos Visuales OFF",
                 Category = "Input & Visuals",
                 Description = "Deshabilita animaciones de Windows, transparencias y efectos visuales para liberar recursos de GPU. Configura VisualFXSetting = 2 (Mejor rendimiento).",
-                Benefits = "� FPS +3-8% en promedio\n� GPU usage -5-10% (disponible para el juego)\n� Alt+Tab 50% m�s r�pido\n� RAM libre +200-500MB\n� Frame times m�s consistentes",
-                Warnings = "� Windows se ver� m�s 'plano'\n� Sin animaciones ni transparencias\n� Menos atractivo visualmente",
+                Benefits = " FPS +3-8% en promedio\n GPU usage -5-10% (disponible para el juego)\n Alt+Tab 50% ms rpido\n RAM libre +200-500MB\n Frame times ms consistentes",
+                Warnings = " Windows se ver ms 'plano'\n Sin animaciones ni transparencias\n Menos atractivo visualmente",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -77,9 +77,9 @@ namespace Tweaker.Data
                 Id = "memory_optimization",
                 Title = "Optimizar RAM",
                 Category = "Input & Visuals",
-                Description = "Evita que Windows use archivo de paginaci�n para c�digo ejecutable del kernel. Requiere al menos 16GB de RAM para funcionar correctamente.",
-                Benefits = "� Kernel siempre en RAM f�sica\n� Latencia del sistema reducida\n� Mejor responsividad general\n� Sin paginaci�n de c�digo cr�tico",
-                Warnings = "� REQUIERE 16GB+ de RAM\n� Puede causar inestabilidad con poca RAM\n� Solo para sistemas con memoria suficiente",
+                Description = "Evita que Windows use archivo de paginacin para cdigo ejecutable del kernel. Requiere al menos 16GB de RAM para funcionar correctamente.",
+                Benefits = " Kernel siempre en RAM fsica\n Latencia del sistema reducida\n Mejor responsividad general\n Sin paginacin de cdigo crtico",
+                Warnings = " REQUIERE 16GB+ de RAM\n Puede causar inestabilidad con poca RAM\n Solo para sistemas con memoria suficiente",
                 Recommended = false,
                 Risk = RiskLevel.Moderate
             },
@@ -90,8 +90,8 @@ namespace Tweaker.Data
                 Title = "Disable Transparency Effects",
                 Category = "Input & Visuals",
                 Description = "Deshabilita efectos de transparencia y Acrylic de Windows. Libera recursos de GPU que se usaban para renderizar transparencias.",
-                Benefits = "� GPU usage -3-8%\n� VRAM liberada +50-200MB\n� Compositor m�s eficiente\n� Mejor frame stability\n� Menos carga en GPU integradas",
-                Warnings = "� Ventanas se ven m�s s�lidas\n� Sin efectos de transparencia modernos\n� Interfaz menos 'premium'",
+                Benefits = " GPU usage -3-8%\n VRAM liberada +50-200MB\n Compositor ms eficiente\n Mejor frame stability\n Menos carga en GPU integradas",
+                Warnings = " Ventanas se ven ms slidas\n Sin efectos de transparencia modernos\n Interfaz menos 'premium'",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -102,8 +102,8 @@ namespace Tweaker.Data
                 Title = "Deshabilitar Sticky Keys",
                 Category = "Input & Visuals",
                 Description = "Elimina los popups molestos de accesibilidad que aparecen al presionar Shift 5 veces, Num Lock mantenido, etc. durante gaming.",
-                Benefits = "� Sin interrupciones durante gaming\n� Elimina popups de Shift x5\n� Sin alertas de accesibilidad\n� Gaming ininterrumpido",
-                Warnings = "� Desactiva funciones de accesibilidad\n� No recomendado si usas esas funciones",
+                Benefits = " Sin interrupciones durante gaming\n Elimina popups de Shift x5\n Sin alertas de accesibilidad\n Gaming ininterrumpido",
+                Warnings = " Desactiva funciones de accesibilidad\n No recomendado si usas esas funciones",
                 Recommended = true,
                 Risk = RiskLevel.Safe
             },
@@ -1327,6 +1327,190 @@ namespace Tweaker.Data
                 Warnings = "• Requiere conexión a internet activa y puede tardar varios minutos",
                 Recommended = true,
                 Risk = RiskLevel.Safe
+            },
+
+            // ────────────────────────────────────────────
+            // COMPETITIVE GAMING: FPS & INPUT DELAY TWEAKS
+            // ────────────────────────────────────────────
+            ["usb_msi_mode"] = new TweakInfo
+            {
+                Id = "usb_msi_mode",
+                Title = "Modo MSI para Controladores USB / XHCI",
+                Category = "Input & Visuals",
+                Description = "Habilita Message Signaled Interrupts (MSI) y prioridad Alta en los controladores USB. Elimina cuellos de botella de interrupciones de línea (legacy IRQ) y fluctuaciones de sondeo en ratones gaming de 1000Hz/4000Hz/8000Hz.",
+                Benefits = "• Reduce jitter y micro-stutters al mover el ratón\n• Evita caídas de polling rate en periféricos de alta tasa\n• Reduce DPC latency en el subsistema USB",
+                Warnings = "• Requiere reinicio para que los drivers de hardware cambien el modo de interrupción",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = true
+            },
+
+            ["gamebar_presence_mitigation"] = new TweakInfo
+            {
+                Id = "gamebar_presence_mitigation",
+                Title = "Eliminar GameBar Presence & Captura Fantasma",
+                Category = "Sistema & GPU",
+                Description = "Bloquea GameBarPresenceWriter y servicios de captura en segundo plano de Windows que inyectan hooks de renderizado y causan input delay en modo Borderless Fullscreen.",
+                Benefits = "• Menor latencia de renderizado DWM\n• Elimina el stuttering causado por la telemetría de Xbox Game Bar\n• Aumenta la consistencia de 0.1% low FPS",
+                Warnings = "• Desactiva la barra de juego de Xbox (Win+G)",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["kernel_tsc_sync"] = new TweakInfo
+            {
+                Id = "kernel_tsc_sync",
+                Title = "Sincronización TSC Mejorada & Kernel Low-Tick",
+                Category = "GHOST Pack",
+                Description = "Configura el kernel de Windows para usar TSC Sync Policy Enhanced y desactiva Dynamic Tick para fijar la sincronización entre núcleos de CPU sin variabilidad de reloj.",
+                Benefits = "• Sincronización precisa del Time Stamp Counter en todos los núcleos\n• Elimina micro-delays en el bucle principal de juegos modernos\n• Tiempos de frame mucho más estables",
+                Warnings = "• Requiere reinicio del sistema",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                RequiresRestart = true
+            },
+
+            ["timer_resolution_05ms"] = new TweakInfo
+            {
+                Id = "timer_resolution_05ms",
+                Title = "Resolución Global de Timer a 0.5ms",
+                Category = "Input & Visuals",
+                Description = "Fuerza la resolución global del temporizador del sistema a 0.500 ms (máxima precisión permitida por Windows) para un despacho de frames y lectura de inputs ultra-inmediata.",
+                Benefits = "• Reduce input lag en juegos competitivos\n• Despacho de paquetes de red y polling más frecuente y preciso\n• Menor fluctuación en frametimes",
+                Warnings = "• Ligero aumento insignificante en uso de energía en portátiles con batería",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["dwm_latency_opt"] = new TweakInfo
+            {
+                Id = "dwm_latency_opt",
+                Title = "Optimizar Latencia DWM & Presentación",
+                Category = "Advanced",
+                Description = "Prioriza el hilo de composición DWM y fija MaxFrameLatency = 1 para eliminar retrasos de fotogramas.",
+                Benefits = "• Reducción de latencia en modo ventana y borderless\n• Frametimes más consistentes",
+                Warnings = "• Ninguno.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 5
+            },
+            ["nvme_antistutter"] = new TweakInfo
+            {
+                Id = "nvme_antistutter",
+                Title = "Anti-Stuttering SSD / NVMe I/O",
+                Category = "Advanced",
+                Description = "Desactiva estados de ahorro de energía APST en la interfaz NVMe para streaming continuo de texturas en juegos.",
+                Benefits = "• Elimina caídas repentinas de FPS (Low 1% FPS)\n• Carga instantánea de texturas en mapas pesados",
+                Warnings = "• Consumo eléctrico ligeramente superior en reposo de SSD.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["core_parking_disable"] = new TweakInfo
+            {
+                Id = "core_parking_disable",
+                Title = "Desactivar CPU Core Parking",
+                Category = "Advanced",
+                Description = "Forzado al 100% del uso de núcleos del CPU, evitando que el sistema ponga núcleos en reposo durante el juego.",
+                Benefits = "• Respuesta instantánea del procesador\n• Evita congelamientos al cambiar hilos del juego",
+                Warnings = "• Ligero incremento de temperatura en reposo.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 8
+            },
+
+            ["flip_model_opt"] = new TweakInfo
+            {
+                Id = "flip_model_opt",
+                Title = "Forzar DWM Flip Model & FSO",
+                Category = "Advanced",
+                Description = "Activa la presentación de fotogramas Flip Model Direct3D en juegos sin bordes, eliminando la latencia de ventana.",
+                Benefits = "• Latencia idéntica a Pantalla Completa Exclusiva en modo Ventana\n• Sin lag de VSync de Windows",
+                Warnings = "• Ninguno.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 4
+            },
+            ["ethernet_eee_off"] = new TweakInfo
+            {
+                Id = "ethernet_eee_off",
+                Title = "Desactivar Ahorro Energía Ethernet (EEE)",
+                Category = "Red & Ping",
+                Description = "Desactiva Energy Efficient Ethernet (EEE) y Green Ethernet en la tarjeta de red.",
+                Benefits = "• Cero latencia inicial al recibir paquetes\n• Elimina micro-desconexiones en partidas online",
+                Warnings = "• Ninguno.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                PingReduction = 3
+            },
+            ["kernel_paging_opt"] = new TweakInfo
+            {
+                Id = "kernel_paging_opt",
+                Title = "Kernel Executive 100% en RAM",
+                Category = "Advanced",
+                Description = "Configura DisablePagingExecutive = 1 para forzar que el kernel de Windows y drivers permanezcan en la RAM física.",
+                Benefits = "• Evita accesos a memoria virtual de almacenamiento durante el juego\n• Menos tirones de disco",
+                Warnings = "• Requiere al menos 8GB o 16GB de memoria RAM física.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["audio_low_latency"] = new TweakInfo
+            {
+                Id = "audio_low_latency",
+                Title = "Latencia Ultra-Baja en Motor de Audio",
+                Category = "Advanced",
+                Description = "Prioriza el motor de audio MMCSS / WASAPI para sincronización perfecta de efectos de sonido.",
+                Benefits = "• Respuesta instantánea de pasos y disparos\n• Cero delay entre fotograma y sonido",
+                Warnings = "• Ninguno.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+
+            ["msi_mode_enable"] = new TweakInfo
+            {
+                Id = "msi_mode_enable",
+                Title = "Habilitar MSI Mode (DPC Latency Cleanup)",
+                Category = "Advanced",
+                Description = "Convierte dispositivos PCI (GPU/Red) a Message Signaled Interrupts para evitar colisiones de IRQ.",
+                Benefits = "• Reduce latencia DPC a <50us\n• Elimina micro-congelamientos y ruidos de audio",
+                Warnings = "• Requiere reinicio del equipo.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 6
+            },
+            ["memory_compression_off"] = new TweakInfo
+            {
+                Id = "memory_compression_off",
+                Title = "Desactivar Compresión de Memoria",
+                Category = "Advanced",
+                Description = "Deshabilita la compresión de RAM en segundo plano del kernel para liberar ciclos de CPU.",
+                Benefits = "• Menor uso de CPU en segundo plano\n• Frametimes más estables",
+                Warnings = "• Recomendado para sistemas con 16GB de RAM o más.",
+                Recommended = true,
+                Risk = RiskLevel.Safe
+            },
+            ["hags_enable"] = new TweakInfo
+            {
+                Id = "hags_enable",
+                Title = "Habilitar HAGS (Hardware Accelerated GPU)",
+                Category = "Advanced",
+                Description = "Transfiere la programación de VRAM de la CPU directamente al procesador de la GPU.",
+                Benefits = "• Incremento de 5-12% en FPS en juegos DX12/Vulkan\n• Gestión eficiente de VRAM",
+                Warnings = "• Requiere reiniciar el sistema para surtir efecto.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 10
+            },
+            ["power_throttling_off"] = new TweakInfo
+            {
+                Id = "power_throttling_off",
+                Title = "Desactivar Power Throttling Global",
+                Category = "Advanced",
+                Description = "Evita que Windows reduzca las frecuencias de reloj del procesador en hilos de juegos.",
+                Benefits = "• Frecuencia de CPU máxima constante\n• Rendimiento sin fluctuaciones",
+                Warnings = "• Ligero aumento de temperatura.",
+                Recommended = true,
+                Risk = RiskLevel.Safe,
+                FpsGain = 5
             }
         };
 

@@ -128,26 +128,98 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Marca un tweak como activado
+        /// Marca un tweak como activado y sincroniza sus alias
         /// </summary>
         public void SetTweakEnabled(string tweakId, string category)
         {
-            if (!_tweakStates.ContainsKey(tweakId))
+            if (string.IsNullOrWhiteSpace(tweakId)) return;
+
+            void SetSingle(string id)
             {
-                _tweakStates[tweakId] = new TweakState
+                if (!_tweakStates.ContainsKey(id))
                 {
-                    Id = tweakId,
-                    Category = category,
-                    IsEnabled = false
-                };
+                    _tweakStates[id] = new TweakState
+                    {
+                        Id = id,
+                        Category = category,
+                        IsEnabled = false
+                    };
+                }
+
+                _tweakStates[id].IsEnabled = true;
+                _tweakStates[id].LastModified = DateTime.Now;
             }
 
-            _tweakStates[tweakId].IsEnabled = true;
-            _tweakStates[tweakId].LastModified = DateTime.Now;
+            SetSingle(tweakId);
+
+            if (_dispatcher != null)
+            {
+                string? canonical = _dispatcher.GetCanonicalId(tweakId);
+                if (!string.IsNullOrEmpty(canonical) && !canonical.Equals(tweakId, StringComparison.OrdinalIgnoreCase))
+                {
+                    SetSingle(canonical);
+                }
+
+                var aliases = _dispatcher.GetAliases(tweakId);
+                foreach (var alias in aliases)
+                {
+                    SetSingle(alias);
+                }
+            }
 
             TweakHistoryLogger.Log("Activado", tweakId, category);
 
             SaveState();
+            NotifyStateChanged();
+        }
+
+        /// <summary>
+        /// Marca un tweak como desactivado y sincroniza sus alias
+        /// </summary>
+        public void SetTweakDisabled(string tweakId)
+        {
+            if (string.IsNullOrWhiteSpace(tweakId)) return;
+
+            string category = "General";
+            if (_tweakStates.TryGetValue(tweakId, out var state) && !string.IsNullOrEmpty(state.Category))
+            {
+                category = state.Category;
+            }
+
+            void DisableSingle(string id)
+            {
+                if (_tweakStates.ContainsKey(id))
+                {
+                    _tweakStates[id].IsEnabled = false;
+                    _tweakStates[id].LastModified = DateTime.Now;
+                }
+            }
+
+            DisableSingle(tweakId);
+
+            if (_dispatcher != null)
+            {
+                string? canonical = _dispatcher.GetCanonicalId(tweakId);
+                if (!string.IsNullOrEmpty(canonical))
+                {
+                    DisableSingle(canonical);
+                }
+
+                var aliases = _dispatcher.GetAliases(tweakId);
+                foreach (var alias in aliases)
+                {
+                    DisableSingle(alias);
+                }
+            }
+
+            TweakHistoryLogger.Log("Desactivado", tweakId, category);
+
+            SaveState();
+            NotifyStateChanged();
+        }
+
+        private void NotifyStateChanged()
+        {
             OnPropertyChanged(nameof(ActiveTweaksCount));
             OnPropertyChanged(nameof(TweaksByCategory));
             OnPropertyChanged(nameof(OptimizationPercentage));
@@ -157,39 +229,56 @@ namespace Tweaker.Utilities
         }
 
         /// <summary>
-        /// Marca un tweak como desactivado
-        /// </summary>
-        public void SetTweakDisabled(string tweakId)
-        {
-            if (_tweakStates.ContainsKey(tweakId))
-            {
-                _tweakStates[tweakId].IsEnabled = false;
-                _tweakStates[tweakId].LastModified = DateTime.Now;
-
-                TweakHistoryLogger.Log("Desactivado", tweakId, _tweakStates[tweakId].Category ?? "General");
-
-                SaveState();
-                OnPropertyChanged(nameof(ActiveTweaksCount));
-                OnPropertyChanged(nameof(TweaksByCategory));
-                OnPropertyChanged(nameof(OptimizationPercentage));
-                OnPropertyChanged(nameof(EstimatedFpsGain));
-                OnPropertyChanged(nameof(EstimatedLatencyReduction));
-                OnPropertyChanged(nameof(EstimatedRamFreed));
-            }
-        }
-
-        /// <summary>
-        /// Verifica si un tweak est� activado
+        /// Verifica si un tweak está activado, resolviendo aliases automáticamente
         /// </summary>
         public bool IsTweakEnabled(string tweakId)
         {
-            return _tweakStates.ContainsKey(tweakId) && _tweakStates[tweakId].IsEnabled;
+            if (string.IsNullOrWhiteSpace(tweakId)) return false;
+
+            if (_tweakStates.TryGetValue(tweakId, out var direct) && direct.IsEnabled)
+                return true;
+
+            if (_dispatcher != null)
+            {
+                string? canonical = _dispatcher.GetCanonicalId(tweakId);
+                if (!string.IsNullOrEmpty(canonical) && !canonical.Equals(tweakId, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (_tweakStates.TryGetValue(canonical, out var canState) && canState.IsEnabled)
+                        return true;
+                }
+
+                var aliases = _dispatcher.GetAliases(tweakId);
+                foreach (var alias in aliases)
+                {
+                    if (_tweakStates.TryGetValue(alias, out var aliasState) && aliasState.IsEnabled)
+                        return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// Contador de tweaks activos (propiedad observable)
+        /// Contador de tweaks activos sin duplicar por alias
         /// </summary>
-        public int ActiveTweaksCount => _tweakStates.Count(t => t.Value.IsEnabled);
+        public int ActiveTweaksCount
+        {
+            get
+            {
+                if (_dispatcher != null)
+                {
+                    var canonicalIds = _dispatcher.GetCanonicalTweakIds();
+                    int count = 0;
+                    foreach (var id in canonicalIds)
+                    {
+                        if (IsTweakEnabled(id))
+                            count++;
+                    }
+                    return count;
+                }
+                return _tweakStates.Count(t => t.Value.IsEnabled);
+            }
+        }
 
         /// <summary>
         /// Ganancia estimada de FPS
@@ -212,39 +301,48 @@ namespace Tweaker.Utilities
         /// </summary>
         public int TotalTweaksCount => _dispatcher?.GetCanonicalTweakIds().Count ?? 62;
 
-
         /// <summary>
-        /// Porcentaje de optimizacin aplicado
+        /// Porcentaje de optimización aplicado
         /// </summary>
         public int OptimizationPercentage =>
             TotalTweaksCount > 0 ? (ActiveTweaksCount * 100) / TotalTweaksCount : 0;
 
         /// <summary>
-        /// Obtiene el conteo de tweaks activos (m�todo auxiliar para compatibilidad)
+        /// Obtiene el conteo de tweaks activos (método auxiliar para compatibilidad)
         /// </summary>
         public int GetActiveTweaksCount() => ActiveTweaksCount;
 
         /// <summary>
-        /// Tweaks agrupados por categor�a
+        /// Tweaks agrupados por categoría sin contar duplicados de alias
         /// </summary>
         public Dictionary<string, int> TweaksByCategory
         {
             get
             {
-                return _tweakStates
-                    .Where(t => t.Value.IsEnabled)
-                    .GroupBy(t => t.Value.Category)
+                var enabled = _tweakStates.Values.Where(t => t.IsEnabled);
+                if (_dispatcher != null)
+                {
+                    var canonicalIds = new HashSet<string>(_dispatcher.GetCanonicalTweakIds(), StringComparer.OrdinalIgnoreCase);
+                    enabled = enabled.Where(t => canonicalIds.Contains(t.Id));
+                }
+                return enabled
+                    .GroupBy(t => t.Category ?? "General")
                     .ToDictionary(g => g.Key, g => g.Count());
             }
         }
 
         /// <summary>
-        /// Obtiene los tweaks m�s recientes
+        /// Obtiene los tweaks más recientes sin duplicados de alias
         /// </summary>
         public List<TweakState> GetRecentTweaks(int count = 5)
         {
-            return _tweakStates.Values
-                .Where(t => t.IsEnabled)
+            var enabled = _tweakStates.Values.Where(t => t.IsEnabled);
+            if (_dispatcher != null)
+            {
+                var canonicalIds = new HashSet<string>(_dispatcher.GetCanonicalTweakIds(), StringComparer.OrdinalIgnoreCase);
+                enabled = enabled.Where(t => canonicalIds.Contains(t.Id));
+            }
+            return enabled
                 .OrderByDescending(t => t.LastModified)
                 .Take(count)
                 .ToList();

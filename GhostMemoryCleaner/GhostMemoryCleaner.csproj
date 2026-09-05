@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>..\Tweaker\Resources\GhostOptimizer.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    
+    <PackageId>GhostMemoryCleaner</PackageId>
+    <Title>Ghost Optimizer - Memory &amp; Cache Purge</Title>
+    <Product>Ghost Optimizer Memory Cleaner</Product>
+    <Company>DaddyGhost</Company>
+    <Description>Standalone High-Performance RAM &amp; Standby Cache Purger</Description>
+    <Copyright>Copyright © 2024-2026 DaddyGhost</Copyright>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Version>1.0.0</Version>
+    
+    <!-- Configuración para publicación standalone portátil -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <SelfContained Condition="'$(Configuration)' != 'Release'">false</SelfContained>
+    <RuntimeIdentifier Condition="'$(Configuration)' == 'Release'">win-x64</RuntimeIdentifier>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="..\Tweaker\Resources\GhostOptimizer.ico" Link="Resources\GhostOptimizer.ico" />
+  </ItemGroup>
+
+</Project>

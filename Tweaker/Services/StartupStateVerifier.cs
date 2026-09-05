@@ -6,25 +6,39 @@ using System.Threading.Tasks;
 namespace Tweaker.Services
 {
     /// <summary>
-    /// On app startup, reconciles tweaks_state.json with real system state.
-    /// For every tweak that has a GetRealState() implementation, it queries
-    /// the live registry/WMI and corrects any discrepancy silently.
+    /// Detailed report produced after inspecting real PC state against saved state.
+    /// </summary>
+    public class SyncResult
+    {
+        public int SyncedCount { get; set; }
+        public int ActiveCount { get; set; }
+        public int NewlyDetectedCount { get; set; }
+        public int DiscrepanciesCorrected { get; set; }
+        public List<string> RevertedByWindows { get; set; } = new List<string>();
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+
+        public bool HasRevertedTweaks => RevertedByWindows.Count > 0;
+    }
+
+    /// <summary>
+    /// Reconciles tweaks_state.json with real system state (Registry, Services, WMI, PowerCFG).
+    /// Detects tweaks already enabled on the PC, as well as tweaks reverted by Windows Update.
     /// </summary>
     public static class StartupStateVerifier
     {
+        public static SyncResult? LastSyncResult { get; private set; }
+
         /// <summary>
         /// Runs asynchronously so it does not block the UI thread.
         /// Call after InjectDispatcher() and before UpdateNamedToggles().
         /// </summary>
-        public static async Task SyncRealStateAsync(
+        public static async Task<SyncResult> SyncRealStateAsync(
             ITweakDispatcher dispatcher,
             Utilities.TweakStateManager stateManager)
         {
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
-                int synced = 0;
-                int mismatches = 0;
-
+                var result = new SyncResult();
                 var canonicalIds = dispatcher.GetCanonicalTweakIds();
 
                 foreach (var tweakId in canonicalIds)
@@ -37,21 +51,31 @@ namespace Tweaker.Services
                         if (realState is null)
                             continue;
 
+                        result.SyncedCount++;
                         bool jsonState = stateManager.IsTweakEnabled(tweakId);
 
-                        if (realState.Value != jsonState)
+                        if (realState.Value)
                         {
-                            mismatches++;
-                            Debug.WriteLine($"[StartupSync] Discrepancy on '{tweakId}': JSON={jsonState}, System={realState.Value} → correcting.");
-
-                            // Silently correct the JSON to match reality.
-                            if (realState.Value)
-                                stateManager.SetTweakEnabled(tweakId, "System Sync");
-                            else
-                                stateManager.SetTweakDisabled(tweakId);
+                            result.ActiveCount++;
+                            if (!jsonState)
+                            {
+                                result.NewlyDetectedCount++;
+                                result.DiscrepanciesCorrected++;
+                                Debug.WriteLine($"[StartupSync] ✨ Found pre-existing active tweak '{tweakId}' in Windows → setting ON.");
+                                stateManager.SetTweakEnabled(tweakId, "System Detected");
+                            }
                         }
-
-                        synced++;
+                        else
+                        {
+                            // Si el chequeo en vivo es false pero el usuario lo había activado:
+                            // NO borrar ni desactivar el estado guardado del usuario (puede requerir reinicio
+                            // o permisos específicos). Solo se registra para información o re-aplicación manual.
+                            if (jsonState)
+                            {
+                                result.RevertedByWindows.Add(tweakId);
+                                Debug.WriteLine($"[StartupSync] ℹ️ Tweak '{tweakId}' guardado como activo, pendiente de verificación en sistema o reinicio.");
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -59,7 +83,44 @@ namespace Tweaker.Services
                     }
                 }
 
-                Debug.WriteLine($"[StartupSync] ✅ Synced {synced} tweaks, corrected {mismatches} discrepancies.");
+                LastSyncResult = result;
+                Debug.WriteLine($"[StartupSync] ✅ Synced {result.SyncedCount} tweaks. Active on PC: {result.ActiveCount}, Newly detected: {result.NewlyDetectedCount}, Reverted by Windows: {result.RevertedByWindows.Count}");
+                return result;
+            });
+        }
+
+        /// <summary>
+        /// One-click reapplication of any tweaks that were disabled externally by Windows Update.
+        /// </summary>
+        public static async Task<int> ReapplyRevertedTweaksAsync(
+            ITweakDispatcher dispatcher,
+            Utilities.TweakStateManager stateManager)
+        {
+            if (LastSyncResult == null || LastSyncResult.RevertedByWindows.Count == 0)
+                return 0;
+
+            return await Task.Run(() =>
+            {
+                int reApplied = 0;
+                var toReapply = new List<string>(LastSyncResult.RevertedByWindows);
+                foreach (var tweakId in toReapply)
+                {
+                    try
+                    {
+                        if (dispatcher.ApplyTweak(tweakId))
+                        {
+                            stateManager.SetTweakEnabled(tweakId, "Re-applied (Protection)");
+                            reApplied++;
+                            LastSyncResult.RevertedByWindows.Remove(tweakId);
+                            Debug.WriteLine($"[StartupSync] 🛡️ Successfully re-applied reverted tweak: {tweakId}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"[StartupSync] Failed to reapply '{tweakId}': {ex.Message}");
+                    }
+                }
+                return reApplied;
             });
         }
     }

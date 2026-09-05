@@ -218,9 +218,9 @@ namespace Tweaker.Optimizations
                         return false;
                     }
 
-                    // LargeSystemCache = 1 (Optimiza para aplicaciones, no servicios)
-                    key.SetValue("LargeSystemCache", 1, RegistryValueKind.DWord);
-                    Debug.WriteLine("   ? LargeSystemCache = 1 (Application optimized)");
+                    // LargeSystemCache = 0 (Optimiza para aplicaciones / juegos, no caché de servidor)
+                    key.SetValue("LargeSystemCache", 0, RegistryValueKind.DWord);
+                    Debug.WriteLine("   ✓ LargeSystemCache = 0 (Application optimized)");
 
                     // IoPageLockLimit = 16384 (16MB para I/O locking)
                     key.SetValue("IoPageLockLimit", 16384, RegistryValueKind.DWord);

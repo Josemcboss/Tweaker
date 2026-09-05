@@ -141,7 +141,7 @@ namespace Tweaker.Controls
         #region Public Methods
 
         /// <summary>
-        /// Refresca el estado del toggle basado en TweakHelper
+        /// Refresca el estado del toggle basado en TweakStateManager
         /// </summary>
         public void RefreshToggleState()
         {
@@ -149,17 +149,15 @@ namespace Tweaker.Controls
 
             try
             {
-                
-                // Por ahora, asume que el toggle ya tiene el estado correcto
-                // bool isActive = Utilities.TweakHelper.IsTweakActive(TweakId);
+                bool isActive = Utilities.TweakStateManager.Instance.IsTweakEnabled(TweakId);
 
-                // TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
-                // TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+                TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
 
-                // TweakToggleSwitch.IsChecked = isActive;
+                TweakToggleSwitch.IsChecked = isActive;
 
-                // TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
-                // TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+                TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
             }
             catch { }
         }
@@ -169,13 +167,17 @@ namespace Tweaker.Controls
         /// </summary>
         public void SetToggleState(bool isActive)
         {
-            // TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
-            // TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
+            try
+            {
+                TweakToggleSwitch.Checked -= TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked -= TweakToggleSwitch_Unchecked;
 
-            // TweakToggleSwitch.IsChecked = isActive;
+                TweakToggleSwitch.IsChecked = isActive;
 
-            // TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
-            // TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+                TweakToggleSwitch.Checked += TweakToggleSwitch_Checked;
+                TweakToggleSwitch.Unchecked += TweakToggleSwitch_Unchecked;
+            }
+            catch { }
         }
 
         #endregion
