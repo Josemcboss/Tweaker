@@ -1,0 +1,98 @@
+<Window x:Class="Tweaker.Controls.InGameToastOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        Focusable="False"
+        ShowActivated="False"
+        Width="460"
+        Height="80"
+        WindowStartupLocation="Manual">
+    <Window.Resources>
+        <Storyboard x:Key="ToastShowAnimation">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.0" To="1.0" Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="RootBorder"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="-25" To="0" Duration="0:0:0.35">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase Amplitude="0.3" EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Key="ToastHideAnimation">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1.0" To="0.0" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="RootBorder"
+                             Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                             From="0" To="-20" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction>
+                    <CubicEase EasingMode="EaseIn" />
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </Window.Resources>
+
+    <Border Name="RootBorder"
+            CornerRadius="22"
+            Background="#EE141519"
+            BorderBrush="#5865F2"
+            BorderThickness="1.5"
+            Margin="6"
+            Padding="14,10,18,10">
+        <Border.RenderTransform>
+            <TranslateTransform Y="0" />
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect Color="#5865F2" BlurRadius="20" ShadowDepth="0" Opacity="0.55" />
+        </Border.Effect>
+
+        <Grid VerticalAlignment="Center">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Icono Gaming con halo pulsante -->
+            <Border Grid.Column="0" Width="44" Height="44" CornerRadius="22" Background="#282B30" Margin="0,0,12,0" VerticalAlignment="Center">
+                <Border.Effect>
+                    <DropShadowEffect Color="#00FF88" BlurRadius="12" ShadowDepth="0" Opacity="0.4" />
+                </Border.Effect>
+                <TextBlock Name="TxtIcon" Text="🎮" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+
+            <!-- Contenido de Texto y Badges -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="GHOST OPTIMIZER" FontFamily="Impact, Arial Black" FontSize="11" Foreground="#00FF88" Margin="0,0,8,0" VerticalAlignment="Center" />
+                    <Border Background="#35363C" CornerRadius="4" Padding="6,1" VerticalAlignment="Center">
+                        <TextBlock Name="TxtBadge" Text="GAME MODE ACTIVO" FontSize="9" FontWeight="Bold" Foreground="#FFFFFF" />
+                    </Border>
+                </StackPanel>
+
+                <TextBlock Name="TxtGameName"
+                           Text="Counter-Strike 2 Detectado"
+                           FontSize="13.5"
+                           FontWeight="Bold"
+                           Foreground="#FFFFFF"
+                           Margin="0,2,0,2"
+                           TextTrimming="CharacterEllipsis" />
+
+                <TextBlock Name="TxtDetails"
+                           Text="Timer 0.5ms • Ultimate Performance • Standby RAM limpia"
+                           FontSize="10.5"
+                           Foreground="#A3A6AA"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

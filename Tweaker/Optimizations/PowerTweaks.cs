@@ -482,5 +482,35 @@ namespace Tweaker.Optimizations
                 return false;
             }
         }
+
+        /// <summary>
+        /// Cambia al plan de energía especificado ("ultimate", "high", "balanced")
+        /// </summary>
+        public static bool SwitchPowerPlan(string planType)
+        {
+            try
+            {
+                switch (planType.ToLowerInvariant())
+                {
+                    case "ultimate":
+                        return EnableUltimatePerformance();
+                    case "high":
+                        // GUID estándar de Alto Rendimiento en Windows
+                        ExecutePowerCfgCommand("-setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c", "Activando Alto Rendimiento");
+                        return true;
+                    case "balanced":
+                        // GUID estándar de Equilibrado en Windows
+                        ExecutePowerCfgCommand("-setactive 381b4222-f694-41f0-9685-ff5bb260df2e", "Activando Equilibrado");
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error cambiando plan de energía: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

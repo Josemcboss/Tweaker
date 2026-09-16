@@ -90,5 +90,21 @@ namespace Tweaker.Optimizations
                 return null;
             }
         }
+
+        /// <summary>
+        /// Obtiene la resolución actual del temporizador en milisegundos
+        /// </summary>
+        public static double GetCurrentResolutionMs()
+        {
+            try
+            {
+                NtQueryTimerResolution(out _, out _, out uint current);
+                return current / 10000.0;
+            }
+            catch
+            {
+                return 15.625;
+            }
+        }
     }
 }

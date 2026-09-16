@@ -9,7 +9,7 @@ title Ghost Optimizer - Build Release
 color 0B
 echo.
 echo ====================================================
-echo    GHOST OPTIMIZER - COMPILADOR DE RELEASE v2.5.0
+echo    GHOST OPTIMIZER - COMPILADOR DE RELEASE v2.6.0
 echo ====================================================
 echo.
 echo Este script compilara el ejecutable optimizado

@@ -73,6 +73,9 @@ namespace Tweaker
                 MainWindow mainWin = new MainWindow();
                 mainWin.Show();
 
+                // Inicializar servicio de System Tray / Bandeja del sistema
+                SystemTrayService.Instance.Initialize();
+
                 ScheduleDelayedLocalization(mainWin);
             }
             catch (Exception ex)
@@ -203,6 +206,12 @@ namespace Tweaker
 
         protected override void OnExit(ExitEventArgs e)
         {
+            try
+            {
+                SystemTrayService.Instance.Dispose();
+            }
+            catch { }
+
             OptimizationBackup.EndSession();
             TweakStateManager.Instance.Dispose();
             base.OnExit(e);

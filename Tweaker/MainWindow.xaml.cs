@@ -186,19 +186,20 @@ namespace Tweaker
         }
 
         /// <summary>
-        /// Minimiza la ventana
+        /// Minimiza la ventana a la bandeja del sistema (System Tray)
         /// </summary>
         private void MinimizeButton_Click(object sender, RoutedEventArgs e)
         {
-            this.WindowState = WindowState.Minimized;
+            SystemTrayService.Instance.MinimizeToTray(this);
         }
 
         /// <summary>
-        /// Cierra la aplicación
+        /// Oculta o cierra la aplicación según el comportamiento de tray sigiloso
         /// </summary>
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            Application.Current.Shutdown();
+            // Ocultar a la bandeja en lugar de matar el proceso para mantener optimizaciones de fondo y Game Booster
+            SystemTrayService.Instance.MinimizeToTray(this);
         }
 
         #endregion

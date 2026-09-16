@@ -82,6 +82,43 @@ namespace Tweaker.Optimizations
                 totalBytesFreed += res9.bytes;
                 totalFilesDeleted += res9.files;
 
+                // 5. Steam Download & Shader Caches
+                try
+                {
+                    string programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                    string steamPath = Path.Combine(programFilesX86, "Steam");
+                    if (Directory.Exists(steamPath))
+                    {
+                        var resSteam1 = CleanDirectory(Path.Combine(steamPath, "steamapps", "downloading"));
+                        var resSteam2 = CleanDirectory(Path.Combine(steamPath, "steamapps", "shadercache"));
+                        var resSteam3 = CleanDirectory(Path.Combine(steamPath, "appcache", "httpcache"));
+                        totalBytesFreed += resSteam1.bytes + resSteam2.bytes + resSteam3.bytes;
+                        totalFilesDeleted += resSteam1.files + resSteam2.files + resSteam3.files;
+                    }
+                }
+                catch { }
+
+                // 6. PrismLauncher & Minecraft Caches
+                try
+                {
+                    string roamingPrism = Path.Combine(appData, "PrismLauncher");
+                    if (Directory.Exists(roamingPrism))
+                    {
+                        var resPrism = CleanDirectory(Path.Combine(roamingPrism, "cache"));
+                        totalBytesFreed += resPrism.bytes;
+                        totalFilesDeleted += resPrism.files;
+                    }
+
+                    string dotMinecraft = Path.Combine(appData, ".minecraft");
+                    if (Directory.Exists(dotMinecraft))
+                    {
+                        var resMcWeb = CleanDirectory(Path.Combine(dotMinecraft, "webcache2"));
+                        totalBytesFreed += resMcWeb.bytes;
+                        totalFilesDeleted += resMcWeb.files;
+                    }
+                }
+                catch { }
+
                 long mbFreed = totalBytesFreed / (1024 * 1024);
                 Debug.WriteLine($"✓ Limpieza de shaders completada: {totalFilesDeleted} archivos eliminados, {mbFreed} MB liberados");
                 return (true, totalBytesFreed, totalFilesDeleted);

@@ -1,0 +1,162 @@
+﻿<UserControl x:Class="Tweaker.Views.GamingHubView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1200"
+             Foreground="White">
+    <UserControl.Resources>
+        <Style x:Key="CardBorder" TargetType="Border">
+            <Setter Property="Background" Value="#1E1F22"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="BorderBrush" Value="#2B2D31"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#5865F2"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="14,8"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DarkButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#35373C"/>
+            <Setter Property="Foreground" Value="#DCDDDE"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
+        <StackPanel MaxWidth="1100" HorizontalAlignment="Left">
+            <!-- Encabezado -->
+            <StackPanel Margin="0,0,0,20">
+                <TextBlock Text="🎮 Gaming Hub &amp; Herramientas QoL" FontSize="26" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="Control de latencia de kernel, conmutación de planes de energía, limpieza de shaders y diagnóstico de mitigaciones." 
+                           FontSize="13" Foreground="#B9BBBE" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Barra de Notificación -->
+            <Border Background="#2B2D31" CornerRadius="6" Padding="12,8" Margin="0,0,0,16">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="⚡ Estado: " FontWeight="SemiBold" Foreground="#5865F2"/>
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#E0E0E0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Tarjeta 1: Timer Resolution & Planes de Energía en 2 Columnas -->
+            <Grid Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="16"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Columna Izquierda: Temporizador de Alta Precisión -->
+                <Border Grid.Column="0" Style="{StaticResource CardBorder}" Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="⏱️ System Timer Resolution" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,6"/>
+                        <TextBlock Text="Fija la frecuencia del reloj del sistema a 0.5 ms para reducir la dispersión de frametimes en juegos competitivos." 
+                                   FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,12" TextWrapping="Wrap"/>
+                        
+                        <Border Background="#141517" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Resolución Actual: " Foreground="#8E9297" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding TimerResolutionDisplay}" FontSize="18" FontWeight="Bold" Foreground="#5865F2" Margin="6,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource PrimaryButton}" Content="⚡ Forzar 0.500 ms" Command="{Binding SetTimerHalfMsCommand}"/>
+                            <Button Style="{StaticResource DarkButton}" Content="🔄 Restaurar" Command="{Binding RestoreTimerCommand}"/>
+                            <Button Style="{StaticResource DarkButton}" Content="Refrescar" Command="{Binding RefreshTimerCommand}"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Columna Derecha: Switcher de Planes de Energía -->
+                <Border Grid.Column="2" Style="{StaticResource CardBorder}" Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="🔋 Selector de Planes de Energía" FontSize="16" FontWeight="Bold" Foreground="White" Margin="0,0,0,6"/>
+                        <TextBlock Text="Cambia al instante el plan de Windows o desbloquea el esquema oculto de Máximo Rendimiento." 
+                                   FontSize="12" Foreground="#B9BBBE" Margin="0,0,0,12" TextWrapping="Wrap"/>
+
+                        <Border Background="#141517" CornerRadius="6" Padding="12" Margin="0,0,0,12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Plan Activo: " Foreground="#8E9297" FontSize="13" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding ActivePowerPlan}" FontSize="14" FontWeight="Bold" Foreground="#3BA55C" Margin="6,0,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <WrapPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource PrimaryButton}" Content="🚀 Ultimate Performance" 
+                                    Command="{Binding SwitchPowerPlanCommand}" CommandParameter="ultimate"/>
+                            <Button Style="{StaticResource DarkButton}" Content="⚡ Alto Rendimiento" 
+                                    Command="{Binding SwitchPowerPlanCommand}" CommandParameter="high"/>
+                            <Button Style="{StaticResource DarkButton}" Content="⚖️ Equilibrado" 
+                                    Command="{Binding SwitchPowerPlanCommand}" CommandParameter="balanced"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Tarjeta 2: Limpieza de Caché de Shaders & Launchers -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="🧹 Restaurador de Caché de Shaders &amp; Launchers" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Elimina cachés fragmentadas de DirectX (D3D), NVIDIA (DXCache/GLCache), AMD, Steam y Minecraft/PrismLauncher." 
+                                       FontSize="12" Foreground="#B9BBBE" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" Style="{StaticResource PrimaryButton}" Content="🚀 Limpiar Shaders Ahora" 
+                                Command="{Binding CleanAllShadersCommand}" IsEnabled="{Binding IsCleaning, Converter={x:Null}}"/>
+                    </Grid>
+
+                    <Border Background="#141517" CornerRadius="6" Padding="12" Margin="0,6,0,0">
+                        <TextBlock Text="{Binding CacheCleanResult}" FontSize="13" Foreground="#B9BBBE"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <!-- Tarjeta 3: Panel de Diagnóstico de Mitigaciones de Sistema -->
+            <Border Style="{StaticResource CardBorder}">
+                <StackPanel>
+                    <Grid Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="📊 Diagnóstico de Mitigaciones &amp; Latencia de Sistema" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Resumen de tecnologías de Windows que impactan en los FPS y la estabilidad de frametimes." 
+                                       FontSize="12" Foreground="#B9BBBE" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Button HorizontalAlignment="Right" Style="{StaticResource DarkButton}" Content="🔄 Refrescar" Command="{Binding RefreshMitigationsCommand}"/>
+                    </Grid>
+
+                    <ListView ItemsSource="{Binding Mitigations}" Height="190" Background="#141517" BorderThickness="0" Foreground="White">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Característica / Mitigación" DisplayMemberBinding="{Binding Name}" Width="260"/>
+                                <GridViewColumn Header="Estado Actual" DisplayMemberBinding="{Binding Status}" Width="240"/>
+                                <GridViewColumn Header="Impacto en Gaming / FPS" DisplayMemberBinding="{Binding ImpactOnFps}" Width="320"/>
+                                <GridViewColumn Header="Descripción" DisplayMemberBinding="{Binding Description}" Width="240"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
+

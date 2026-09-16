@@ -472,7 +472,7 @@ namespace Tweaker.ViewModels
         {
             if (string.IsNullOrEmpty(page)) return;
 
-            if (page is "Dashboard" or "Profiles" or "History" or "Presets")
+            if (page is "Dashboard" or "Profiles" or "History" or "Presets" or "CyberSecurity" or "GamingHub")
             {
                 CurrentSection = null;
                 CurrentPageName = page;
